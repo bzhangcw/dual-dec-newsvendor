@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2020)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: repair-lag.aux
+The style file: informs2014.bst
+Database file #1: repair.bib
+Warning--empty year in kiwiel_lagrangian_2007; set to ????
+Warning--empty journal in kiwiel_lagrangian_2007
+You've used 6 entries,
+            2869 wiz_defined-function locations,
+            638 strings with 5668 characters,
+and the built_in function-call counts, 5425 in all, are:
+= -- 554
+> -- 112
+< -- 4
++ -- 48
+- -- 37
+* -- 384
+:= -- 676
+add.period$ -- 11
+call.type$ -- 6
+change.case$ -- 45
+chr.to.int$ -- 7
+cite$ -- 8
+duplicate$ -- 535
+empty$ -- 437
+format.name$ -- 54
+if$ -- 1119
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 62
+newline$ -- 24
+num.names$ -- 24
+pop$ -- 251
+preamble$ -- 1
+purify$ -- 36
+quote$ -- 0
+skip$ -- 106
+stack$ -- 0
+substring$ -- 561
+swap$ -- 149
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 54
+warning$ -- 2
+while$ -- 42
+width$ -- 0
+write$ -- 74
+(There were 2 warnings)

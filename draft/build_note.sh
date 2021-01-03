@@ -28,15 +28,14 @@ else
   TEX=$DOC.${AFFIX}.tex
 fi
 
-cd $DOC/ &&
-  $PANDOC_FILTERS/pandoc \
-    --citeproc \
-    --katex --toc \
-    --csl=assets/ieee.csl \
-    --css=assets/pandoc.css \
-    -o $HTML \
-    --toc \
-    -s $MD
+$PANDOC_FILTERS/pandoc \
+  --citeproc \
+  --katex --toc \
+  --csl=assets/ieee.csl \
+  --css=assets/pandoc.css \
+  -o $HTML \
+  --toc \
+  -s $MD
 
 echo $PWD
 # latex

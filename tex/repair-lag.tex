@@ -1,0 +1,493 @@
+\input{header.note.tex}
+
+\usepackage{svg}
+\svgpath{fig}
+
+%
+% variables for title and author
+%
+\author{Chuwen}
+\date{\today}
+
+
+\title{}
+
+
+%%
+%% end added
+%%
+
+\begin{document}
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\hypertarget{lagrangian-relaxation}{%
+  \section{Lagrangian relaxation}\label{lagrangian-relaxation}}
+
+Consider the following newsvendor-like problem
+\begin{equation}\label{eq:primal}
+  \begin{aligned}
+                  & \min f(\delta, \epsilon)                                                                       \\
+    \mathbf{s.t.} &                                                                                                \\
+                  & y + \delta - \epsilon = b                                                                      \\
+                  & y \in \Omega_y \subseteq \mathbb{R}^n, \delta \in \mathbb{R}^n_+ , \epsilon \in \mathbb{R}^n_+
+  \end{aligned}
+\end{equation}
+
+where \(f\) is a convex function of \(\delta, \epsilon\). The
+right-hand-side on the binding constraints is in the positive orthant:
+\(b \in \mathbb R_+^n.\) This problem widely appears in applications of
+device maintenance, inventory management, and so on. In the basic
+settings, let \(y\) be the ordering quantity quantities in a multi-item
+newsvendor problem, one minimizes the total expected cost:
+
+\[\min_{y \in \mathbb R_+} \mathbf E\left(h\cdot e^\mathsf{T} \max\{y - b,  0\} + p \cdot e^\mathsf{T} \max\{b - y,  0\}\right)\]
+
+It is easy to verify its equivalence to the problem above.
+
+Let \(\lambda\in\mathbb{R}^n\) be the Lagrangian multiplier, the dual
+function is:
+
+\begin{equation}\label{eq:dual}
+  \begin{aligned}
+    \phi(\lambda) = & \min_{\delta, \epsilon} f(\delta, \epsilon) + \lambda^\mathsf{T}\delta - \lambda^\mathsf{T} \epsilon+ \min_y \lambda^\mathsf{T} y - \lambda^\mathsf{T} b \\
+    \mathbf{s.t.}   &                                                                                                                                                          \\
+                    & y \in \Omega_y                                                                                                                                           \\
+                    & \delta \in \mathbb{R}^n_+ , \epsilon \in \mathbb{R}^n_+
+  \end{aligned}
+\end{equation}
+
+We assume the resulting two subproblems for \(\delta, \epsilon\) and
+\(y\) are easy.
+
+\hypertarget{affine-case}{%
+  \subsection{Affine case}\label{affine-case}}
+
+\textbf{The case for repair problem}
+
+Let \(f=p^\mathsf{T}\delta + h^\mathsf{T} \epsilon\), we have
+
+\[\phi(\lambda) = \min_{\delta, \epsilon} (p+ \lambda)^\mathsf{T}\delta + (h - \lambda)^\mathsf{T} \epsilon+ \min_y \lambda^\mathsf{T} y - \lambda^\mathsf{T} b\]
+
+Then \(\phi\) is unbounded unless \(\lambda \in \Lambda\) where
+\(\Lambda = \{\lambda: \lambda \in [-p, h]\}\), in which case
+
+\[\phi(\lambda) = \min_{y\in \Omega_y} \lambda^\mathsf{T} y - \lambda^\mathsf{T} b,\; \lambda\in \Lambda\]
+
+and \(\delta^\star, \epsilon^\star = 0\) are corresponding optimizers
+for any \(\lambda \in \Lambda\)
+
+\hypertarget{conditions-for-strong-duality}{%
+  \subsection{Conditions for strong
+    duality}\label{conditions-for-strong-duality}}
+
+It's well known that strong duality does not hold in general. We review
+some of the cases here. The Lagrangian duality theory can be found in
+any standard text.
+
+\begin{theorem}
+  if \(\Omega_y\) is convex then the strong duality holds ...,
+  i.e.~\(\phi^\star = f^\star\)
+\end{theorem}
+
+add justifications here (slater, ...)
+
+A more interesting result is devoted to mixed integer problems.
+\textbf{(Review Here)}.
+
+\begin{lemma}
+  if \(\Omega_y = \{y \in \mathbb R^n: y \in \Omega, y\in \mathbb Z^n\}\).
+  Then we have the following relation for dual function,
+  \[ \phi^\star = \min_{\delta, \epsilon} f(\delta, \epsilon)\quad \textbf{ s.t. }  y + \delta - \epsilon = b,\; y \in \textrm{conv}(\Omega_y)\]
+\end{lemma}
+
+This immediately follows the strong duality by the perfect formulation.
+
+\begin{theorem}\label{strong-ip}
+  We conclude the strong duality holds since
+  \(Y = \{(y, \delta, \epsilon): y + \delta - \epsilon = b,\; y \in \textsf{conv}(\Omega_y)\}\)
+  is already \emph{a perfect formulation} in the sense that
+  \(Y = \textsf{conv}(Y)\)
+\end{theorem}
+
+\textbf{add a proposition to show this or add more conditions to
+  justify}
+
+
+\hypertarget{subgradient-method}{%
+  \section{Subgradient method}\label{subgradient-method}}
+
+To solve the reduced problem, we consider a variant class of subgradient
+methods:
+
+\begin{equation}\lambda_{k+1} = \mathcal{P}(\lambda_{k} + s_{k}d_{k})\end{equation}
+
+where \(\mathcal P\) is the projection onto dual space \(\Lambda\).
+\(d_k\) is the update direction for current iteration and \(s_{k}\) is
+the step size using target-based rule:
+
+\begin{equation}\label{eq:step_size}
+  s_{k} = \gamma_k\frac{\phi^\star - \phi(\lambda_k)}{||d_{k}||^2}
+\end{equation}
+
+Note the direction \(d_k\) computed by
+
+\begin{equation}\label{eq:direction}
+  d_k = \bar y_k - b
+\end{equation}
+
+where \(\bar y_k\) is the convex combination of previous iterations
+\(\{y_i\}_{i=1,...k}\) and each \(y_i\) solves
+\(\phi_i = \phi(\lambda_i)\):
+
+\begin{equation}\bar y_k = \sum^i_k \alpha^i_k y_i,\quad  \sum^i_k \alpha^i_k = 1, \alpha^i_k \ge 0\end{equation}
+
+Alternatively, one can express the convexity in a recursive manner:
+
+\begin{equation}\bar y_k = (1-\alpha_k)\cdot\bar y_{k-1} + \alpha_k \cdot y_k \end{equation}
+
+For we simplicity take \(g_k= y_k - b\), then \(g_k\) is a subgradient
+of \(\phi\) at \(\lambda_k\):
+
+\begin{equation}g_k \in \partial \phi_k\end{equation}
+
+The direction can be rewritten as the combination of the subgradient and
+previous directions:
+
+\begin{equation}\label{eq:direction_recursive}
+  d_k = (1-\alpha_k) \cdot d_{k-1} + \alpha_k\cdot g_k
+\end{equation}
+
+
+The dual subgradient algorithm can be summarized as follows.
+\(\varepsilon,\varepsilon_s\) are the tolerance parameter for objective gap and stepsize, respectively.
+\(\varepsilon > 0 ,\varepsilon_s > 0\).
+
+\begin{algorithm}[H]
+  \SetAlgoLined
+  Initialization. \(\alpha_0 = 1, \lambda_0 = e, \gamma_0 = 1\)  \\
+  \While{\(\bar z^k - \phi^k \ge \varepsilon\) \textbf{and} \(s^k \ge \varepsilon_s\)}
+  {
+    Let current iteration be \(k\)\\
+    Update the multipliers by
+    \[\lambda_{k} = \mathcal{P}(\lambda_{k-1} + s_{k-1}d_{k-1})\]
+
+    Solve dual problem \(\phi_k\) by \eqref{eq:dual}
+    and compute subgradient \(g_k\) respectively.
+
+    Compute \(\gamma_k, \alpha_k\) properly.
+
+    Compute current direction by \eqref{eq:direction} or \eqref{eq:direction_recursive}
+
+    Update \(\epsilon_k,\delta_k ,\bar \epsilon_k ,\bar \delta_k, z_k, \bar z_k \)
+    by the \underline{Recovery Algorithm} \ref{alg:recovery}
+
+    Stepsize is updated by \eqref{eq:step_size}
+  }
+  \caption{The Subgradient Algorithm}
+\end{algorithm}
+
+It is obvious to see the solutions during dual optimization
+\((y, \epsilon, \delta) = (y^k, 0, 0)\) are feasible if and only if we
+can find \(y^k = d\), which in general will not hold. This motivates the following
+algorithm based on linear programming theory.
+
+\begin{algorithm}[H]\label{alg:recovery}
+  \SetAlgoLined
+  \begin{equation}\label{eq:recovery}
+    \begin{aligned}
+       & \epsilon_k = \max\{y_k - b, 0\}           \\
+       & \delta_k = \max\{b - y_k, 0\}             \\
+       & \bar \epsilon_k = \max\{\bar y_k - b, 0\} \\
+       & \bar \delta_k = \max\{b - \bar y_k, 0\}
+    \end{aligned}\end{equation}
+  \caption{Recovery Algorithm}
+\end{algorithm}
+
+To simplify our presentation, let
+\(z\) be a function of \(y\) such that \(z_k = z(y_k)\), then \(z\) is
+also convex in \(y\) since both function \(f\) and \(\max\{\cdot, 0\}\)
+are convex. It's also worth to notice that \(\bar \epsilon_k\) should
+not be calculated as running averages:
+\(\bar \epsilon_k \neq \sum^i_k \alpha^i_k \epsilon_i\). For such an
+``averaged'' solution, we let
+\(\bar z_k = z(\bar y_k)\). We later find the recovery algorithm achieves
+at the optimal objective.
+
+
+\hypertarget{convergence}{%
+  \section{Convergence}\label{convergence}}
+
+
+We first review several features for the subgradient method regarding
+parameters \(\gamma_k, \alpha_k\) and search direction \(d_k\) produced from convex combinations.
+
+The target based rule are well-known as the Polyak rule \cite{polyak_general_1967}.
+The idea of using previous searching directions is introduced to accelerate the subgradient method and provide a better stopping criterion,
+see \cite{camerini1975improving}, \cite{brannlund1995generalized}, \cite{barahona_volume_2000}.
+\cite{brannlund1995generalized} showed that with convex combinations the optimal choice of stepsize is
+equivalent to the Camerini-Fratta-Maffioli modification, it also provides an analysis on its linear convergence rate.
+
+From the primal perspective, our method is close to \emph{primal
+  averaging method}. \cite{nedic_approximate_2009}
+gives a line of analysis on convergence and quality of the primal
+approximation by averaging over all previous solutions with a constant
+stepsize. They use a simple averaging scheme that can be rephrased into a
+recursive equation with \(\alpha_k = 1/k\) such that:
+
+\[\bar y_k = \frac{k-1}{k}\cdot\bar y_{k-1} + \frac{1}{k} \cdot y_k\]
+
+then it gives lower and upper bounds for the averaged solution
+that involve the primal violation, norm of the subgradient, etc. Furthermore, they only analyze the case for constant
+stepsize \(s_k = s, s\ge 0\) and the search direction defined solely by
+the subgradient. We refer to \cite{kiwiel_lagrangian_2007} for target based
+stepsizes. The volume algorithm proposed by \cite{barahona_volume_2000} is close to the
+case mentioned in \cite{brannlund1995generalized} in a dual
+viewpoint while adopting \(\hat \lambda_{k}\) instead of \(\lambda_k\) from the best dual bound
+\(\hat \phi_k = \max_{i=1, ..., k} \phi(\lambda_i)\):
+
+\[\lambda_{k+1} = \mathcal{P}(\hat\lambda_{k} + s_{k}d_{k})\]
+
+\emph{There is no existing proof of convergence} for the volume
+algorithm, and our experiments show that the algorithm converges to
+non-optimal solutions occasionally.
+
+\textbf{(Remark / Difference for our method)}
+
+Since the solution is strictly feasible by implementation of the
+recovery algorithm \ref{eq:recovery}, i.e., there is no need to bound for feasibility gap
+as has been done in most of literature covering the \textbf{primal
+  recovery}. Instead, we have analyze the quality of the heuristic, i.e.:
+
+\[
+  |\bar z_k - \phi_k| \textrm { or } |\bar z_k - z^\star|
+\]
+
+We found its convergence is closely related to strong duality of the problem. Accounting for performance,
+we suggest several specific choices of parameters regarding the subgradient method \((\gamma, \alpha, d)\).
+
+
+\hypertarget{analysis-outline}{%
+  \subsection{Analysis outline}\label{analysis-outline}}
+
+\begin{itemize}
+  \tightlist
+  \item
+        we've showed \hyperlink{conditions for strong-duality}{zero duality gap}
+        \(\phi^\star = f^\star= z^\star\)
+  \item
+        we show \(\lambda_k\) converges to \(\lambda^\star \in \Lambda^\star\)
+        for our choices of \(\gamma_k, \alpha_k\)
+  \item
+        we show primal solution \(\bar z_k\) converges to \(z^\star\)
+\end{itemize}
+
+\begin{lemma}\(\epsilon\)-subgradient.
+  \begin{equation}\label{eq:subgrad}
+    \begin{aligned}
+      g_{k}^\mathsf{T}(\lambda_{k}  -\lambda) \le \phi_{k} - \phi(\lambda)
+      d_{k}^\mathsf{T}(\lambda_{k}  -\lambda) \le \phi_{k} - \phi(\lambda) + \epsilon_k
+    \end{aligned}
+  \end{equation}
+\end{lemma}
+
+where
+
+\begin{equation}\label{eq:def_eps}
+  \epsilon_k = \sum^i_k \alpha^i_k \cdot \left [g_i^\mathsf{T}(\lambda_k - \lambda_i) + \phi_i - \phi_k \right ]
+\end{equation}
+
+Notice \(\epsilon_k\) can be further simplified by the definition of
+\(\phi\):
+
+\begin{equation}\label{eq:def_eps_simple}
+  \epsilon_k = \sum^i_k \alpha^i_k \cdot \left ( g_i^\mathsf{T}\lambda_k  - \phi_k \right )
+\end{equation}
+
+\begin{lemma} \label{lemma:dual_conv} Dual convergence, \cite{brannlund1995generalized}. The
+  subgradient method is convergent if \(\epsilon_k\) satisfies:
+  \begin{equation}
+    \frac{1}{2}(2 - \gamma_k) (\phi_{k} - \phi^\star)  + \epsilon_k \le 0
+  \end{equation}
+\end{lemma}
+\begin{proof}
+  The proof can be done by showing the monotonic decrease of
+  \(\|\lambda_{k} - \lambda^\star\|\) via the iterative equations.
+  \begin{equation}\begin{aligned}
+      \|\lambda_{k+1} - \lambda^\star\|^2 \le ||\lambda_k - \lambda^\star||^2
+      + 2\cdot \gamma_k \frac{(\phi^\star - \phi_{k})}{\|d_{k}\|^{2}} d_k^\mathsf{T}(\lambda_k - \lambda^\star)
+      + (\gamma_{k})^{2} \frac{(\phi^\star - \phi_{k})^{2}}{\|d_{k}\|^{2}}
+    \end{aligned}\end{equation}
+
+  Notice: \begin{equation}\begin{aligned}
+          & 2  \cdot d_k^\mathsf{T}(\lambda_k - \lambda^\star) + \gamma_{k}(\phi^\star - \phi_{k}) \\
+      \le & 2 (\phi_{k} - \phi^\star + \epsilon_k) + \gamma_k(\phi^\star -\phi_k)                  \\
+      =   & (2 - \gamma_k) (\phi_{k} - \phi^\star)  + 2\epsilon_k \le 0
+    \end{aligned}\end{equation}
+
+  and we have the convergence.
+\end{proof}
+
+The next proposition states several convergence-guaranteed choices on
+parameters for convexity \(\alpha_k\) and stepsize \(\gamma_k\). Part
+(a) originally appears in \cite{brannlund1995generalized}. Besides, we
+also consider a slower scheme that is widely used and simple to
+implement.
+
+\begin{theorem} Choices of parameters.
+
+  \begin{enumerate}
+    \def\labelenumi{(\alph{enumi})}
+    \tightlist
+    \item
+          The choice of stepsize and direction in the subgradient method defined
+          by
+  \end{enumerate}
+
+  \[\alpha_{k}=\gamma_{k}=\begin{cases}\|d_{k-1}\|^2 /(\|d_{k-1}\|^2- g_{k}^\mathsf{T} d_{k-1}), & \text { if } g_{k}^\mathsf{T} d_{k-1} <0 \\ 1, & \text { otherwise }\end{cases}\]
+
+  generates the fastest convergence speed with respect to
+
+  \[\|\lambda_{k+1}-\lambda^\star\|^{2} \leqslant\|\lambda_{k}-\lambda^\star\|^{2}-F(\gamma_{k}, \alpha_{k})(\phi_k-\phi^\star)^{2}\]
+
+  where
+
+  \[F(\gamma_{k}, \alpha_{k})=\begin{cases}
+      \frac{\|d_k\|^2}{\|d_k\|^2 \|g_k\|^2-(g_k^\mathsf{T} d_k)^{2}}, & \textrm { if } g_k^\mathsf{T} d_k <0 \\
+      1/\|g_k\|^2,                                                    & \text { otherwise }\end{cases}\]
+
+  \begin{enumerate}
+    \def\labelenumi{(\alph{enumi})}
+    \setcounter{enumi}{1}
+    \tightlist
+    \item
+          to show the following is also convergent?
+  \end{enumerate}
+
+  \[\alpha_k = \frac{1}{k}, \gamma_k = \gamma \in [1, 2]\]
+
+
+\end{theorem}
+
+\begin{theorem} \label{lemma:recovery}  Recovery Algorithm \eqref{eq:recovery}
+  \begin{enumerate}
+    \def\labelenumi{(\alph{enumi})}
+    \tightlist
+    \item
+          For fixed \(y=y_k\), \((\epsilon_k, \delta_k)\) is the optimal
+          solution for the restricted primal problem.
+  \end{enumerate}
+
+  \[f(\epsilon_k, \delta_k) \le f(\epsilon, \delta), \quad \forall \delta\ge 0, \epsilon\ge 0, y= y_k\]
+
+  \begin{enumerate}
+    \def\labelenumi{(\alph{enumi})}
+    \setcounter{enumi}{1}
+    \tightlist
+    \item
+  \end{enumerate}
+
+  \[\bar z_k \le \sum^i_k \alpha^i_k z^i\]
+\end{theorem}
+
+\begin{proof}
+  By convexity.
+\end{proof}
+
+Now we visit properties for primal solutions.
+
+\textbf{Proposition 3} Primal solution bounds \(|\bar z_k - z^\star|\) ?
+
+\begin{proof} we notice:
+  \begin{itemize}
+    \tightlist
+    \item
+          \(- \delta_k + \epsilon_k = g_k = y_k -d\) is bounded, suppose
+          \(\|g_k - g^\star\|\le L_g\)
+    \item
+          \(f, z\) is Lipschitz continuous with \(L_z\)
+    \item
+          \(\phi^\star - \phi_k \le g_k^\mathsf{T} (\lambda^\star - \lambda^k)\le \|g_k\|\|\lambda^\star - \lambda^k\|\Rightarrow \phi^k -\phi^\star\)
+          by boundedness of \(g^k\)
+    \item
+          \(\epsilon_k \le \frac{1}{2}(2 - \gamma_k) ( \phi^\star - \phi_k) \to 0\)
+    \item
+          \(\epsilon_k = d_k^\mathsf{T} \lambda_k - \phi_k \to 0\) (converge
+          from above)
+    \item
+          \(d_k^\mathsf{T} \lambda_k = (\bar y_k - b)^\mathsf{T} \lambda_k \to \phi^\star\)
+  \end{itemize}
+
+  \textbf{(affine case)}
+
+  we notice a strong duality pair with fixed \(d_k\) at each iteration
+  \(k\).
+
+  \begin{equation}
+    \begin{aligned}
+      \mathbf{(P)}  \quad & \min_{\delta, \epsilon} p^\mathsf{T} \delta + h^\mathsf{T} \epsilon \\
+      \mathbf{s.t.} \quad & d_k + \delta - \epsilon = 0                                         \\
+                          & \delta \in \mathbb{R}_+^n, \epsilon \in \mathbb{R}_+^n
+    \end{aligned}
+  \end{equation}
+
+  and
+
+  \begin{equation}
+    \begin{aligned}
+      \mathbf{(D)}  \quad & \max_{\lambda} d_k^\mathsf{T} \lambda          \\
+      \mathbf{s.t.} \quad & -p \le \lambda \le h, \lambda \in \mathbb{R}^n
+    \end{aligned}
+  \end{equation}
+
+  by \ref{lemma:recovery}, \((\bar \epsilon_k, \bar \delta_k)\) minimizes the primal
+  problem. Since \textbf{(P)} is well-defined,
+  \(\exists\; \lambda_k^\star \in [-p, h]\) such that:
+
+  \[\begin{aligned}
+       & d_k^\mathsf{T} \lambda_k^\star = \bar z^k = p^\mathsf{T} \bar \delta_k + h^\mathsf{T} \bar \epsilon_k \\
+       & z^\star \ge d_k^\mathsf{T} \lambda_k^\star \ge  d_k^\mathsf{T} \lambda_k
+    \end{aligned}\]
+
+  Then the sequence \(\displaystyle\{d_k^\mathsf{T} \lambda_k^\star\}_k\)
+  is bounded from below and above. As
+  \(d_k^\mathsf{T} \lambda_k \to \phi^\star\) and by strong duality
+  \(\phi^\star = z^\star\) we conclude \(\bar z^k \to z^\star\)
+\end{proof}
+\hypertarget{computational-results}{%
+  \subsection{Computational Results}\label{computational-results}}
+
+
+
+The volume algorithm uses \(\hat \lambda_{k}\), instead we use\(\lambda_{k}\) which actually is better.
+Figure \ref{fig:divergent_volume} is a typical case of divergence of volume algorithm.
+\texttt{normal\_x} means the values are computed from subgradient
+method by using \(\lambda_{k}\). \texttt{volume\_x} is from the volume
+algorithm with \(\hat \lambda_{k} = \arg\max_k \hat \phi_{k}\)
+
+We compare computational results on variants of subgradient method mentioned in our paper.
+
+0. bench: by MILP solver: GUROBI 9.1
+
+1. normal: here we are using \(\alpha_k = 1/k\) and a diminishing \(\gamma\)
+
+2. volume: the volume algorithm
+
+3. to-be-added: the \(\alpha_k\) choices in \cite{brannlund1995generalized} \textbf{this should be a much quicker choice}
+
+We summarize all \(60\) test cases randomly generated for the repair model.
+
+\input{table.comp_repair_cases.tex}
+
+\includegraphics{../imgs/conv_0_15_15.png}\label{fig:divergent_volume}
+
+% finish off
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\bibliography{repair}
+\bibliographystyle{informs2014}
+
+\end{document}
