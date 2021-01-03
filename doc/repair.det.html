@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Chuwen" />
+  <title>repair.det</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <link rel="stylesheet" href="assets/pandoc.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+   var mathElements = document.getElementsByClassName("math");
+   for (var i = 0; i < mathElements.length; i++) {
+    var texText = mathElements[i].firstChild;
+    if (mathElements[i].tagName == "SPAN") {
+     katex.render(texText.data, mathElements[i], {
+      displayMode: mathElements[i].classList.contains('display'),
+      throwOnError: false,
+      fleqn: false
+     });
+  }}});
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.4.0/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true });</script>
+  
+</head>
+<body>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#the-repair-model">The repair model</a>
+<ul>
+<li><a href="#formulation">Formulation</a></li>
+<li><a href="#lagrangian-relaxation">Lagrangian Relaxation</a>
+<ul>
+<li><a href="#subproblem-for-each-plane">Subproblem for each plane</a></li>
+<li><a href="#subgradient-method">Subgradient Method</a></li>
+<li><a href="#rounding">Rounding</a></li>
+<li><a href="#numerical-experiments">Numerical Experiments</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</nav>
+<!--
+- infinite dimensional? so we can study the static
+- risk measure instead of expectation?
+- quadratic or any kind of differentiable function instead of a minimax
+ -->
+<h1 id="the-repair-model">The repair model</h1>
+<h2 id="formulation">Formulation</h2>
+<blockquote>
+<p>Notation</p>
+</blockquote>
+<ul>
+<li><span class="math inline">I, T</span> - set of plane, time periods, respectively</li>
+<li><span class="math inline">b, h</span> - demand withdraw and plane idle cost, respectively</li>
+<li><span class="math inline">\tau</span> - lead time for maintenance</li>
+</ul>
+<p>The demand is stochastic with some distribution <span class="math inline">f\in \mathscr F</span></p>
+<ul>
+<li><span class="math inline">\boldsymbol d_t</span> - demand/number of planes needed at time <span class="math inline">t</span></li>
+</ul>
+<blockquote>
+<p>Decision</p>
+</blockquote>
+<ul>
+<li><span class="math inline">x_{it}</span> - 0 - 1 variable, 1 if plane <span class="math inline">i</span> starts a maintenance at time <span class="math inline">t</span></li>
+<li><span class="math inline">u_{it}</span> - 0 - 1 variable, 1 if plane is working at time <span class="math inline">t</span></li>
+<li><span class="math inline">s_{it} \ge 0</span> - the lifespan of plane <span class="math inline">i</span> at time <span class="math inline">t</span></li>
+</ul>
+<p>The DRO/SP model, the goal is to minimize unsatisfied demand and surplus (idle) flights. A minimax objective function that is widely used in Newsvendor problems can be written as follows:</p>
+<p><span class="math display">\min_{u,x,s} b \cdot (d_t - \sum_i u_{it})_+ + h \cdot  ( \sum_i u_{it} - d_t)_+ </span></p>
+<p>Alternatively, we use the following objective function with <span class="math inline">\delta^+_t, \delta^-_t</span> indicating unsatisfied demand and surplus, respectively. Let <span class="math inline">z</span> be the objective function</p>
+<p><span class="math display">\begin{aligned}
+  z = &amp;\min_{x_{it}, u_{it}, \delta_t^+, \delta_t^-} \sum_t (b\cdot  \delta_t^+ + h \cdot \delta_t^-)\\
+  \mathbf{s.t.}  &amp; \\
+  &amp;  \sum_i u_{it} + \delta_t^+ - \delta_t^- = d_t&amp; \forall t \in T \\
+  &amp;  s_{i, t+1} =  s_{i t}  - \alpha_i  u_{it} + \beta_i  x_{i, t- \tau} &amp; \forall i \in I, t \in T\\
+  &amp;  x_{it} +  u_{i, t} \le 1&amp; \forall i \in I, t \in T\\
+  &amp;  x_{it} + x_{i\rho} + u_{i, \rho} \le 1&amp; \forall i \in I,  t\in T, \rho = t + 1, ..., t+\tau \\
+  &amp;   s_{i t} \ge L&amp; \forall i \in I, t \in T 
+\end{aligned}</span></p>
+<p>We define the last four sets of constraint as <span class="math inline">\Omega_i</span>, which describe the non-overlapping requirements during a maintenance for each <span class="math inline">i</span>.</p>
+<p>Let <span class="math inline">U, X, S \in \mathbb R^{|I|\times |T|}_+</span> be the matrix of <span class="math inline">u_{it}, x_{it}</span> and <span class="math inline">s_{it}</span>, <span class="math inline">U_{(i,.)}</span> be the <span class="math inline">i</span>th row of <span class="math inline">U</span>. Let <span class="math inline">\delta^+, \delta^-</span> be the vector of <span class="math inline">\delta_t^+, \delta_t^-</span>, respectively. It allows a more compact formulation.</p>
+<p><span class="math display">\begin{aligned}
+  &amp; \min_{U, X, S}  e^\top (b\cdot  \delta^+ + h \cdot \delta^-)\\
+  \mathbf{s.t.}  &amp; \\
+  &amp;  U^\top e + \delta^+ - \delta^- = d&amp; \forall t \in T \\
+  &amp; X_{(i,\cdot)}, U_{(i,\cdot)}, S_{(i,\cdot)} \in \Omega_i &amp; \forall i \in I 
+\end{aligned}</span></p>
+<p>We propose a polynomial-time approximation to this problem by Lagrangian relaxation and a subgradient method. At each iteration of the dual search procedure, a set of sub-problems are solved by dynamic programming. The convergence of any black-box subgradient method can be found in (<span class="citation" data-cites="polyak_general_nodate">1</span>, and books by Nesterov, Bertsimas, … to be added), and the complexity are verified on the level of <span class="math inline">O(\frac{1}{\epsilon^2})</span>. We refer further analysis on the rate and convergence of such class of algorithm to <span class="citation" data-cites="nesterov_primal-dual_2009">2</span>, <span class="citation" data-cites="nedic_approximate_2009">3</span>. Since regular sugradient method does not grant primal feasibility, there are methods… We use the volume algorithm described in <span class="citation" data-cites="barahona_volume_2000">4</span> to update the dual multipliers while approximating a primal feasible solutions to the linear relaxation. The volume algorithm applied to our problem has further properties. Besides the lower bound acquired in the dual relaxation, the convex combination of past iterations in the algorithm gives an upper bound to the original problem. This explicitly bounds the optimal value. Although the solution terminated at the subgradient method is not guaranteed to be integral, it gives a tight interval that asymptotically approaches to the optimal value.</p>
+<p>If we allow a tolerance <span class="math inline">\epsilon \ge 0</span> on subgradient method, the worst overall complexity is <span class="math inline">O\left(\frac{1}{\epsilon^2}\cdot\tau\cdot|I|\cdot|T|^3\right)</span>.</p>
+<h2 id="lagrangian-relaxation">Lagrangian Relaxation</h2>
+<pre><code>todo
+- can do better on complexity</code></pre>
+<p>The Lagrangian is introduced by relaxing the equality constraint, so we have:</p>
+<p><span class="math display">\begin{aligned} 
+z_{\mathsf{LD}}  &amp;= - \sum_t \lambda_t d_t + \min_{\delta_t^+, \delta_t^-, U} \sum_t \left [ (b + \lambda_t) \cdot \delta_t^+ + (h-\lambda_t)\cdot \delta_t^- \right ] + \sum_i \sum_t\lambda_t u_{it} \\
+ \end{aligned}</span></p>
+<p><span class="math inline">z_{\mathsf{LD}}(\lambda)</span> is unbounded unless <span class="math inline">-b \le \lambda_t \le h</span>, it reduces to a set of low dimensional minimization problems for each <span class="math inline">i</span>:</p>
+<p><span class="math display">\begin{aligned}
+  z_{\mathsf{LD}} &amp;= - \sum_t \lambda_t d_t  + \min_{U}\sum_i \sum_t\lambda_t u_{it} \\ 
+  \mathbf {s.t. }  &amp; \\
+  &amp; X_{(i,\cdot)}, U_{(i,\cdot)}, S_{(i,\cdot)} \in \Omega_i \\
+  &amp; -b \le \lambda_t \le h
+\end{aligned}</span></p>
+<p>Next we provide analysis on properties of the subproblem.</p>
+<h3 id="subproblem-for-each-plane">Subproblem for each plane</h3>
+<p>In the dual search process, one should solve a set of subproblems <span class="math inline">\forall i\in I</span> defined as follows:</p>
+<p><span class="math display">\begin{aligned}
+\min_{\Omega_i} \sum_t \lambda_t \cdot u_{i,t}
+\end{aligned}</span></p>
+<p>The model describes a problem to minimize total cost while keeping the lifespan safely away from the lower bound <span class="math inline">L</span>. We solve this by dynamic programming.</p>
+<p>Define state: <span class="math inline">y_t = \left[m_t,s_t \right]^\top</span>, where <span class="math inline">m_t</span> <strong>denotes the remaining time of the undergoing maintenance</strong>. <span class="math inline">s_t</span> is the remaining lifespan. At each period <span class="math inline">t</span> we decide whether the plane <span class="math inline">i</span> is idle or waiting (for the maintenance), working, or starting a maintenance, i.e.:</p>
+<p><span class="math display">(u_t, x_t) \in \left\{(1, 0), (0,0), (0, 1)\right\}</span></p>
+<p>We have the Bellman equation: <span class="math display">V_n(u_t, x_t | m_t, s_t) = \lambda_t \cdot u_t + \min_{u,x} V_{n-1}(...)</span></p>
+<p>Complexity: let <span class="math inline">s_0</span> be the initial lifespan and finite time horizon be <span class="math inline">|T|</span>, we notice the states for remaining maintenance waiting time is finite, <span class="math inline">m_t \in \{0, 1, ..., \tau\}</span>.</p>
+<p>Let total number of possible periods to initiate a maintenance be <span class="math inline">n_1</span>, and working periods be <span class="math inline">n_2</span>. If we ignore lower bound <span class="math inline">L</span> on <span class="math inline">s</span>, total number of possible values of <span class="math inline">s</span> is bounded above: <span class="math inline">|s| = \sum_i^{|T|}\sum_j^{|T| - i} 1=(|T| + 1)(\frac{1}{2}|T| + 1)</span> since <span class="math inline">n_1 + n_2 \le |T|</span>. For each subproblem we have at most 3 actions, thus we conclude this problem can be solved by dynamic programming in polynomial time, the complexity is: <span class="math inline">O\left(\tau\cdot|T|^3 \right)</span></p>
+<h3 id="subgradient-method">Subgradient Method</h3>
+<p>Lagrange multipliers is updated by a subgradient method. (volume algorithm, etc.)</p>
+<p><strong>The Volume Algorithm HERE</strong></p>
+<p>Notice:</p>
+<ul>
+<li><p>At iteration <span class="math inline">k</span>, suppose <span class="math inline">-b \le \lambda^k_t \le h, \forall t \in T</span>, we use dynamic programming to solve the relaxed minimization problem, then the (integral) solution <span class="math inline">( X^k, S^k, U^k)</span> is also feasible for the original problem (compute <span class="math inline">\delta^+, \delta^-</span> accordingly). The primal value <span class="math inline">z^k</span> is the upper bound for optimal solution <span class="math inline">z^\star</span>: <span class="math inline">z^k\ge z^\star</span>.</p></li>
+<li><p>In the volume algorithm, we consider the convex combination <span class="math inline">\bar X</span> of past iterations <span class="math inline">\{X^1, ..., X^k\}</span>. We update <span class="math inline">\bar X \leftarrow \alpha X^k + (1-\alpha) \bar X</span>. It’s easy to verify <span class="math inline">\bar z \ge z^\star \ge z_{\textsf{LD}}^k</span>, where <span class="math inline">\bar z</span> is the primal objective value for <span class="math inline">\bar X</span> and <span class="math inline">z_{\textsf{LD}}^k</span> is the dual value for <span class="math inline">X^k</span>. By the termination criterion <span class="math inline">|\bar z - z_{\textsf{LD}}^k| \le \epsilon_z</span> for some small value <span class="math inline">\epsilon_z &gt;0</span>, we conclude the <span class="math inline">\bar z</span> converges to the optimal value <span class="math inline">z^\star</span>.</p></li>
+<li><p>While <span class="math inline">\bar z \to z^\star</span>, there is no guarantee for the solution <span class="math inline">\bar X, \bar U</span> being integral via the volume algorithm; <span class="math inline">\bar X, \bar U</span> is feasible only to the linear relaxation.</p></li>
+<li><p>Remark:</p>
+<ul>
+<li>The projection for dual variables is simple since there is only a box constraint. More computation would be needed if we use the minimax objective function, i.e., <span class="math inline">q \ge h\cdot (U^\top e - d), q\ge b\cdot (d-U^\top e)</span>, in which case two set of multipliers are needed, say <span class="math inline">\lambda, \mu \ge 0</span>, and the projection should be done onto: <span class="math display">\{(\lambda,\mu)|\lambda +\mu \le 1\}</span></li>
+</ul></li>
+</ul>
+<h3 id="rounding">Rounding</h3>
+<ul>
+<li>*compute <span class="math inline">\min c ^\top | x - x^\star|</span> where <span class="math inline">x^\star</span> is the (possibly) fractional solution achieving the best bound, using DP.</li>
+</ul>
+<p>still working on this.</p>
+<h3 id="numerical-experiments">Numerical Experiments</h3>
+<p>In this section, In this section, we report numerical results to demonstrate the efficiency and effectiveness of our proposed algorithms for solving the repair problem (<strong>ref here</strong>). We parallelize the subproblems to available cores solved by dynamic programming.</p>
+<p>(details on the algorithm, parameters, et cetera.)</p>
+<h4 id="convergence-of-lagrange-relaxation">Convergence of Lagrange Relaxation</h4>
+<p>We randomly generated 5-8 instances for each problem class with size <span class="math inline">|I| = 10, 15, 20</span> and <span class="math inline">|T| = 25, 30</span>. We use Gurobi 9.1 to compute benchmarks: lower bound <span class="math inline">\mathsf{bench\_lb}</span> and primal objective value <span class="math inline">\mathsf{bench\_sol}</span> within 300 seconds. The value and bound for subgradient methods are <span class="math inline">\mathsf{subgrad\_val}</span>, <span class="math inline">\mathsf{subgrad\_lb}</span>, respectively. We set the maximum iterations to 400 so that the subgradient method terminates at a comparable time with Gurobi. At last, we compare <span class="math inline">\mathsf{primal\_gap}</span> and <span class="math inline">\mathsf{bound\_gap}</span> in the last two columns. All the computations have been performed on a Mac mini (2018) with 3.2 GHz 6-Core Intel Core i7 processor and a RAM of 32 GB.</p>
+<p>It can be observed that the subgradient method performed closely to commercial mixed-integer linear solver.</p>
+<h1 class="unnumbered" id="reference">Reference</h1>
+<div id="refs" class="references" role="doc-bibliography">
+<div id="ref-polyak_general_nodate">
+<p>[1]B. T. Polyak, “A general method for solving extremal problems,” <em>Soviet Mathematics Doklady</em>, p. 5, 1967.</p>
+</div>
+<div id="ref-nesterov_primal-dual_2009">
+<p>[2]Y. Nesterov, “Primal-dual subgradient methods for convex problems,” <em>Mathematical programming</em>, vol. 120, no. 1, pp. 221–259, 2009.</p>
+</div>
+<div id="ref-nedic_approximate_2009">
+<p>[3]A. Nedić and A. Ozdaglar, “Approximate primal solutions and rate analysis for dual subgradient methods,” <em>SIAM Journal on Optimization</em>, vol. 19, no. 4, pp. 1757–1780, 2009.</p>
+</div>
+<div id="ref-barahona_volume_2000">
+<p>[4]F. Barahona and R. Anbil, “The volume algorithm: Producing primal solutions with a subgradient method,” <em>Mathematical Programming</em>, vol. 87, no. 3, pp. 385–399, 2000.</p>
+</div>
+</div>
+</body>
+</html>

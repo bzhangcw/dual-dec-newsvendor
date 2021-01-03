@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Chuwen" />
+  <title>repair</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <link rel="stylesheet" href="assets/pandoc.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+   var mathElements = document.getElementsByClassName("math");
+   for (var i = 0; i < mathElements.length; i++) {
+    var texText = mathElements[i].firstChild;
+    if (mathElements[i].tagName == "SPAN") {
+     katex.render(texText.data, mathElements[i], {
+      displayMode: mathElements[i].classList.contains('display'),
+      throwOnError: false,
+      fleqn: false
+     });
+  }}});
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.4.0/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true });</script>
+  
+</head>
+<body>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#progress-summary">Progress summary</a></li>
+<li><a href="#the-air-repair-model">The air-repair model</a></li>
+<li><a href="#deterministic">Deterministic</a>
+<ul>
+<li><a href="#subgradient-method">Subgradient method</a></li>
+<li><a href="#subproblem-for-each-plane">Subproblem for each plane</a></li>
+</ul></li>
+<li><a href="#stochastic">Stochastic</a>
+<ul>
+<li><a href="#mean-variance">Mean-variance</a></li>
+<li><a href="#finite-support-and-likelihood-robust">Finite support and likelihood robust</a></li>
+</ul></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</nav>
+<h1 id="progress-summary">Progress summary</h1>
+<ul>
+<li>Polynomial-time algorithm for deterministic problem:
+<ul>
+<li>The problem can be solved with subgradient method in polynomial time. If we allow tolerance <span class="math inline">\epsilon \ge 0</span> on subgradient method, the worst complexity is <span class="math inline">O\left(\frac{1}{\epsilon^2}\cdot\tau\cdot|I|\cdot|T|^3\right)</span>.</li>
+<li>Converge and rate:
+<ul>
+<li>we can only retrieve a feasible primal solution from the simplest subgradient method by <span class="citation" data-cites="polyak_general_nodate">1</span>.</li>
+<li>Good approximation to optimal solution can be found via the volume algorithm by <span class="citation" data-cites="barahona_volume_2000">2</span>.</li>
+<li>The rate and convergence of such class of algorithm can be found in <span class="citation" data-cites="nesterov_primal-dual_2009">3</span>, <span class="citation" data-cites="nedic_approximate_2009">4</span>.</li>
+<li>todo: try alternative formulation: <span class="math inline">U^\top e - d + \epsilon_+ - \epsilon_- = 0</span></li>
+</ul></li>
+<li>Details:
+<ul>
+<li>The subproblem at each subgradient iteration on dual problem can be solved by dynamic programming, at the cost of <span class="math inline">O\left(\tau\cdot|T|^3 \right)</span>.</li>
+<li>The dual variables can be solved <strong>analytically</strong>.</li>
+</ul></li>
+<li>Computations has been done for DP, subgradient method (volume algorithm).</li>
+</ul></li>
+</ul>
+<p>a quick look at the results (<span class="math inline">|I| = 10, |T| = 20, 10</span> random generated instances)</p>
+<!--
+- infinite dimensional? so we can study the static
+- risk measure instead of expectation?
+- quadratic or any kind of differentiable function instead of a minimax
+ -->
+<h1 id="the-air-repair-model">The air-repair model</h1>
+<blockquote>
+<p>Notation</p>
+</blockquote>
+<ul>
+<li><span class="math inline">I, T</span> - set of plane, time periods, respectively</li>
+<li><span class="math inline">b, h</span> - demand withdraw and plane idle cost, respectively</li>
+<li><span class="math inline">\tau</span> - lead time for maintenance</li>
+</ul>
+<p>The demand is stochastic with some distribution <span class="math inline">f\in \mathscr F</span></p>
+<ul>
+<li><span class="math inline">\boldsymbol d_t</span> - demand/number of planes needed at time <span class="math inline">t</span></li>
+</ul>
+<blockquote>
+<p>Decision</p>
+</blockquote>
+<ul>
+<li><span class="math inline">x_{it}</span> - 0 - 1 variable, 1 if plane <span class="math inline">i</span> starts a maintenance at time <span class="math inline">t</span></li>
+<li><span class="math inline">u_{it}</span> - 0 - 1 variable, 1 if plane is working at time <span class="math inline">t</span></li>
+<li><span class="math inline">s_{it} \ge 0</span> - the lifespan of plane <span class="math inline">i</span> at time <span class="math inline">t</span></li>
+</ul>
+<p>The DRO/SP model, the goal is to minimize unsatisfied demand and surplus (idle) flights, using a newsvendor-like objective function</p>
+<p><span class="math display">\begin{aligned}
+&amp; q_t \equiv b \cdot (d_t - \sum_i u_{it})_+ + h \cdot  ( \sum_i u_{it} - d_t)_+  \\
+  &amp; \inf \max_{f\in \mathscr F}\mathbb E_f \left[ \sum_t q_t  \right] \\
+  \mathbf{s.t.}  &amp; \\
+  &amp; q_t \ge b\cdot \left (d_t - \sum_i u_{it} \right) &amp; \forall t \in T \\
+  &amp; q_t \ge h\cdot \left (\sum_i u_{it} - d_t \right ) &amp; \forall t \in T \\
+  &amp;  s_{i, t+1} =  s_{i t}  - \alpha_i  u_{it} + \beta_i  x_{i, t- \tau} &amp; \forall i \in I, t \in T\\
+  &amp;  x_{it} +  u_{i, t} \le 1&amp; \forall i \in I, t \in T\\
+  &amp;  x_{it} + x_{i\rho} + u_{i, \rho} \le 1&amp; \forall i \in I,  t\in T, \rho = t + 1, ..., t+\tau \\
+  &amp;   s_{i t} \ge L&amp; \forall i \in I, t \in T 
+\end{aligned}</span></p>
+<p>We define the last four sets of constraint as <span class="math inline">\Omega_i</span>, which describe the non-overlapping requirements during a maintenance.</p>
+<h1 id="deterministic">Deterministic</h1>
+<p>We first consider the deterministic problem.</p>
+<p>The problem can be solved with subgradient method in polynomial time and the solution is exact. If we allow tolerance <span class="math inline">\epsilon \ge 0</span> on subgradient method, the complexity is:</p>
+<p><span class="math display">O\left(\frac{1}{\epsilon^2}\cdot\tau\cdot|I|\cdot|T|^3\right)</span></p>
+<h2 id="subgradient-method">Subgradient method</h2>
+<p>Relax binding constraints of <span class="math inline">q</span></p>
+<p><span class="math display">\begin{aligned}
+  z_{\mathsf{LD}}(\lambda, \mu)&amp; = \inf_{x, s, u} \left[ \sum_t 
+      q_t (1-\lambda_t - \theta_t) + d_t(b\lambda_t -h \theta_t)
+    + \sum_i \sum_t u_{i,t}(h\theta_t - b\lambda_t) \right] \\ 
+  \mathbf {s.t. }  &amp; \\
+  &amp; x_{(i,\cdot)}, u_{(i,\cdot)}, s_{(i,\cdot)} \in \Omega_i
+\end{aligned}</span></p>
+<p><span class="math inline">\Omega_i</span> defined as the region of <span class="math inline">x_{(i,\cdot)}, u_{(i,\cdot)}, s_{(i,\cdot)}, \forall i\in I</span>.</p>
+<p>we notice <span class="math inline">z_{\mathsf{LD}}(\lambda, \theta)</span> is unbounded unless: <span class="math display">\lambda, \theta \in \{\lambda, \theta \ge 0 \big | (1-\lambda_t - \theta_t) \ge 0,\forall t\in T\}</span></p>
+<p>we have: <span class="math display">\begin{aligned}
+z_{\mathsf{LD}}(\lambda, \theta) = \sum_t 
+      d_t(b\lambda_t -h \theta_t) + \inf_{x, s, u} \left[  \sum_i \sum_t u_{i,t}(h\theta_t - b\lambda_t) \right]
+\end{aligned}</span></p>
+<p>We wish to solve: <span class="math display">\sup_{(\lambda, \theta)}z_{\mathsf{LD}}</span></p>
+<p>We can solve for each <span class="math inline">i\in I</span> independently at each iteration of a subgradient method.</p>
+<p>Notice:</p>
+<ul>
+<li>at iteration <span class="math inline">k</span>, suppose multipliers <span class="math inline">\lambda^k + \theta^k \le 1</span>, if <span class="math inline">( x^\star, s^\star, u^\star)</span> solves the relaxed minimization problem, then it is also feasible for the original problem (compute <span class="math inline">q</span> accordingly). The optimality gap can easily be calculated by simple evaluations.</li>
+<li>at each iteration <span class="math inline">k</span>, the sub-gradients: <span class="math inline">\mathcal P</span> is the orthogonal projection onto <span class="math inline">\mathcal D =\left\{(\lambda, \theta) \;| \; \lambda + \theta \le 1\right\}</span></li>
+</ul>
+<p><span class="math display">\begin{aligned}
+  &amp;\nabla \lambda^k = b\cdot \left(d -  (U^k)^\top e\right) \\
+  &amp;\nabla \theta^k = h\cdot \left((U^k)^\top e - d\right) \\
+  &amp;\theta^{k+1} = \mathcal P (\theta^k + a^k\nabla\theta^k ) \\
+  &amp;\lambda^{k+1} = \mathcal P (\lambda^k + a^k\nabla\lambda^k )
+\end{aligned}</span></p>
+<ul>
+<li>the projection <span class="math inline">\mathcal P</span> can be computed very easily. Since the projection <span class="math inline">(\tilde\lambda, \tilde\theta)</span> onto <span class="math inline">\mathcal D</span> can be formulated as the model <span class="math inline">\inf_{\lambda\ge 0, \theta \ge 0, \lambda + \theta \le e} ||\tilde\lambda-\lambda||^2 + ||\tilde\theta - \theta||^2</span>, and solved analytically.</li>
+</ul>
+<h2 id="subproblem-for-each-plane">Subproblem for each plane</h2>
+<p>The subproblem <span class="math inline">\forall i\in I</span> is defined as follows:</p>
+<p><span class="math display">\begin{aligned}
+c_t \equiv (h\theta_t - b\lambda_t) \\
+\inf_{\Omega_i} \sum_t c_t \cdot u_{i,t}
+\end{aligned}</span></p>
+<p>The model describes a problem to maximize total utility while keeping the lifespan safely away from the lower bound <span class="math inline">L</span>. Define state: <span class="math inline">y_t = \left[m_t,s_t \right]^\top</span>, where <span class="math inline">m_t</span> <strong>denotes the remaining time of the undergoing maintenance</strong>. <span class="math inline">s_t</span> is the remaining lifespan.</p>
+<p>At each period <span class="math inline">t</span> we decide whether the plane <span class="math inline">i</span> is idle or waiting (for the maintenance), working, or starting a maintenance, i.e.:</p>
+<p><span class="math display">(u_t, x_t) \in \left\{(1, 0), (0,0), (0, 1)\right\}</span></p>
+<p>We have the optimal equation: <span class="math display">V_n(u_t, x_t | m_t, s_t) = c_t \cdot u_t + \inf_{u,x} V_{n-1}(...)</span></p>
+<p>Complexity: let <span class="math inline">s_0</span> be the initial lifespan and finite time horizon be <span class="math inline">|T|</span>, we notice the states for remaining maintenance waiting time is finite, <span class="math inline">m_t \in \{0, 1, ..., \tau\}</span>.</p>
+<p>Let total number of possible periods to initiate a maintenance be <span class="math inline">n_1</span>, and working periods be <span class="math inline">n_2</span>. If we ignore lower bound <span class="math inline">L</span> on <span class="math inline">s</span>, total number of possible values of <span class="math inline">s</span> is bounded above: <span class="math inline">|s| = \sum_i^{|T|}\sum_j^{|T| - i} 1=(|T| + 1)(\frac{1}{2}|T| + 1)</span> since <span class="math inline">n_1 + n_2 \le |T|</span>. For each subproblem we have at most 3 actions, thus we conclude this problem can be solved by dynamic programming in polynomial time, the complexity is: <span class="math inline">O\left(\tau\cdot|T|^3 \right)</span></p>
+<h1 id="stochastic">Stochastic</h1>
+<p>We use boldface notation to denote random variables. We let the vector <span class="math inline">\boldsymbol q = [\boldsymbol q_1, ..., \boldsymbol q_{|T|}]^\top, \boldsymbol d = [\boldsymbol d_1,...,\boldsymbol d_{|T|}]^\top</span>, <span class="math inline">\Xi_d</span> be the support for <span class="math inline">\boldsymbol{d}</span>. For simplicity, we let <span class="math inline">\boldsymbol e</span> be the vector of ones of corresponding dimension in matrix-vector calculations.</p>
+<p>The DRO/SP model, the goal is to minimize worst-case expected unsatisfied demand and surplus (idle) flights</p>
+<p><span class="math display">\begin{aligned}
+  &amp; \inf \sup_{f\in \mathscr F}\mathbb E_f \left[ \sum_t \boldsymbol q_t  \right] \\
+  \mathbf{s.t.}  &amp; \\
+  &amp; \boldsymbol q \ge b\cdot \left (\boldsymbol d - \boldsymbol U^\top \boldsymbol{e} \right) &amp; \forall \boldsymbol d \in \Xi_d\\
+  &amp; \boldsymbol q \ge h\cdot \left ( \boldsymbol U^\top \boldsymbol{e}  - \boldsymbol d \right ) &amp; \forall \boldsymbol d \in \Xi_d \\
+  &amp; \boldsymbol x_{(i,\cdot)}, \boldsymbol u_{(i,\cdot)}, \boldsymbol s_{(i,\cdot)} \in \Omega_i &amp; \forall i\in I
+\end{aligned}</span></p>
+<p>Same relaxation scheme can be used on the DRO models:</p>
+<ul>
+<li>Mean-variance, in <span class="citation" data-cites="delage_distributionally_2010">5</span>.</li>
+<li>Likelihood, in <span class="citation" data-cites="wang_likelihood_2016">6</span></li>
+</ul>
+<!-- ## Independent Demand
+
+Suppose $\boldsymbol{d}_t, t = 1, ..., |T|$ is independent  -->
+<h2 id="mean-variance">Mean-variance</h2>
+<p>With moment uncertainty for <span class="math inline">\boldsymbol d: \mathbb{E}(\boldsymbol d) = \mu_0, ...</span>, in <span class="citation" data-cites="delage_distributionally_2010">5</span>. The DRO model is equivalent to the following problem:</p>
+<p><span class="math display">\begin{aligned}
+\inf_{\boldsymbol{x}, \boldsymbol{Q}, \boldsymbol{\beta}, r, s} &amp; \left(\gamma_{2} \boldsymbol{\Sigma}_{0}-\boldsymbol{\mu}_{0} \boldsymbol{\mu}_{0}^{\top}\right) \bullet \boldsymbol{Q}+r+\left(\boldsymbol{\Sigma}_{0} \bullet \boldsymbol{P}\right)-2 \boldsymbol{\mu}_{0}^{\top} \boldsymbol{p} + \gamma_{1} s \\
+\mathbf { s.t. } &amp; \\
+&amp; \boldsymbol{d}^{\top} \boldsymbol{Q} \boldsymbol{d} -\boldsymbol{d^\top\beta} + r \ge \sum_t \boldsymbol q_t &amp; \forall \boldsymbol d \in \Xi_d \\
+&amp; \boldsymbol{Q} \succeq 0, \boldsymbol{\beta} \in \mathbb{R}^{|T|}, 
+\begin{bmatrix}
+  \boldsymbol{P} &amp; \boldsymbol{p} \\
+  \boldsymbol{p}^\top &amp; s
+\end{bmatrix} \succeq 0, \; 
+\boldsymbol \beta = 2 (\boldsymbol p + \boldsymbol{Q\mu}_0)\\
+&amp; \boldsymbol q \ge b\cdot \left (\boldsymbol d - \boldsymbol U^\top \boldsymbol{e} \right) &amp; \forall \boldsymbol d \in \Xi_d\\
+  &amp; \boldsymbol q \ge h\cdot \left ( \boldsymbol U^\top \boldsymbol{e}  - \boldsymbol d \right ) &amp; \forall \boldsymbol d \in \Xi_d \\
+&amp; \boldsymbol x_{(i,\cdot)}, \boldsymbol u_{(i,\cdot)}, \boldsymbol s_{(i,\cdot)} \in \Omega_i &amp; \forall i\in I
+\end{aligned}</span></p>
+<h2 id="finite-support-and-likelihood-robust">Finite support and likelihood robust</h2>
+<p>The problem is, let <span class="math inline">\boldsymbol Q = [\boldsymbol{q}^1, ..., \boldsymbol{q}^N]</span></p>
+<p><span class="math display">\begin{aligned}
+  &amp; \sup_{\beta, \theta, \Omega_i, \forall i} \theta + \beta \gamma +  \beta N - \underbrace{\beta \mathbf N^\top \log(\frac{\beta \mathbf N}{\boldsymbol{Q} e-\theta \mathbf 1})}_{\mathcal D_{KL}(\beta \mathbf N | \boldsymbol{Q} e-\theta \mathbf 1)}  \\
+  \textbf {s.t.} \\
+  &amp; \beta \ge 0 \\
+  &amp; \boldsymbol{Q} e \ge \theta \mathbf 1 \\ 
+  &amp; \boldsymbol q^n \ge b\cdot \left (\boldsymbol d^n - \boldsymbol{U}^\top e \right) &amp; \forall n = 1, ..., N\\
+  &amp; \boldsymbol q^n \ge h\cdot \left ( \boldsymbol{U}^\top e  -\boldsymbol d^n  \right ) &amp; \forall n = 1, ..., N \\
+  &amp; \boldsymbol x_{(i,\cdot)}, \boldsymbol u_{(i,\cdot)}, \boldsymbol s_{(i,\cdot)} \in \Omega_i &amp; \forall i\in I
+\end{aligned}</span></p>
+<p>Relax binding constraints for <span class="math inline">\boldsymbol Q, \boldsymbol U</span>: <span class="math display">\boldsymbol z_{\mathsf{LD}} = \sup_{\boldsymbol Q} ...+ \sum_n (b\lambda^n - h\theta^n)^\top \boldsymbol{d}^n + \sum_n(\lambda^n +\theta^n)^\top q^n  \\
++ \sup_{\boldsymbol U}\sum_i\sum_t(\sum_nh\theta^n_t - b\lambda^n_t)\boldsymbol u_{it}</span></p>
+<p>We can optimize for <span class="math inline">\boldsymbol Q, \boldsymbol U</span> separately, at each step, subproblems can be solved in polynomial time.</p>
+<h1 class="unnumbered" id="reference">Reference</h1>
+<div id="refs" class="references" role="doc-bibliography">
+<div id="ref-polyak_general_nodate">
+<p>[1]B. T. Polyak, “A general method for solving extremal problems,” <em>Soviet Mathematics Doklady</em>, p. 5, 1967.</p>
+</div>
+<div id="ref-barahona_volume_2000">
+<p>[2]F. Barahona and R. Anbil, “The volume algorithm: Producing primal solutions with a subgradient method,” <em>Mathematical Programming</em>, vol. 87, no. 3, pp. 385–399, 2000.</p>
+</div>
+<div id="ref-nesterov_primal-dual_2009">
+<p>[3]Y. Nesterov, “Primal-dual subgradient methods for convex problems,” <em>Mathematical programming</em>, vol. 120, no. 1, pp. 221–259, 2009.</p>
+</div>
+<div id="ref-nedic_approximate_2009">
+<p>[4]A. Nedić and A. Ozdaglar, “Approximate primal solutions and rate analysis for dual subgradient methods,” <em>SIAM Journal on Optimization</em>, vol. 19, no. 4, pp. 1757–1780, 2009.</p>
+</div>
+<div id="ref-delage_distributionally_2010">
+<p>[5]E. Delage and Y. Ye, “Distributionally robust optimization under moment uncertainty with application to data-driven problems,” <em>Operations Research</em>, vol. 58, no. 3, 2010, doi: <a href="https://doi.org/10.1287/opre.1090.0741">10.1287/opre.1090.0741</a>.</p>
+</div>
+<div id="ref-wang_likelihood_2016">
+<p>[6]Z. Wang, P. W. Glynn, and Y. Ye, “Likelihood robust optimization for data-driven problems,” <em>Computational Management Science</em>, vol. 13, no. 2, pp. 241–261, Apr. 2016, doi: <a href="https://doi.org/10.1007/s10287-015-0240-3">10.1007/s10287-015-0240-3</a>.</p>
+</div>
+</div>
+</body>
+</html>

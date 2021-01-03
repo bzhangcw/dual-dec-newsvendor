@@ -1,0 +1,116 @@
+# @license: %MIT License%:~ http://www.opensource.org/licenses/MIT
+# @project: pyrp
+# @file: /model.py
+# @created: Sunday, 1st November 2020
+# @author: C. Zhang (chuwzhang@gmail.com)
+# @modified: C. Zhang (chuwzhang@gmail.com>)
+#    Sunday, 1st November 2020 9:56:16 pm
+# @description:
+
+import argparse
+
+from .util import *
+
+
+def repair_mip_model(problem, **kwargs):
+  time_limit = kwargs.get("timelimit", 300)
+  mip_gap = kwargs.get("mipgap", 0.1)
+  engine = kwargs.get("engine", "gurobi").lower()
+  scale = kwargs.get("scale", 5)
+  if engine.lower() == 'copt':
+    import coptpy as cp
+    env = cp.Envr()
+    # Create COPT model
+    model = env.createModel("assembly_shop")
+    quicksum = cp.quicksum
+    ENGINE = cp.COPT
+    PREFIX = "nameprefix"
+    MIPGAP = cp.COPT.param.RelGap
+    TIMELIMIT = cp.COPT.param.TimeLimit
+    # raise ValueError("need more dev")
+  else:
+    import gurobipy as gr
+    model = gr.Model('assembly_shop')
+    quicksum = gr.quicksum
+    ENGINE = gr.GRB
+    PREFIX = "name"
+    MIPGAP = ENGINE.param.MIPGap
+    TIMELIMIT = ENGINE.param.TimeLimit
+
+  # vars
+  I = problem['I']
+  T = problem['T'][:scale]
+  D = problem['D'][:scale]
+  h = problem['h']
+  p = problem['p']
+  tau = problem['tau']
+  s0 = problem['s0']
+
+  # add model vars
+  x = model.addVars(I, T, **{PREFIX: 'x', "vtype": ENGINE.BINARY})
+  u = model.addVars(I, T, **{PREFIX: 'u', "vtype": ENGINE.BINARY})
+  s = model.addVars(I, T, **{PREFIX: 's', "lb": problem['L']})
+  dp = model.addVars(T, **{PREFIX: "dp"})
+  dn = model.addVars(T, **{PREFIX: "dn"})
+
+  # constrs
+  for idx, i in enumerate(I):
+    a, b = problem['a'][idx], problem['b'][idx]
+    model.addConstr(s[i, 0] == s0 - a * u[i, 0])
+    for t in T[:-1]:
+      model.addConstr(s[i, t + 1] == s[i, t] - a * u[i, t + 1] +
+                      b * x.get((i, t - tau + 1), 0))
+
+  for idx, i in enumerate(I):
+    for t in T:
+      for rho in range(t, t + tau):
+        if rho == t:
+          model.addConstr(x[i, t] + u.get((i, rho), 0) <= 1)
+        else:
+          model.addConstr(
+              x[i, t] + x.get((i, rho), 0) + u.get((i, rho), 0) <= 1)
+  ql = qt = {}
+  for t in T:
+    i_sum = quicksum(u[i, t] for i in I)
+    qt[t] = model.addConstr(i_sum - D[t] + dp[t] - dn[t] == 0)
+
+  obj = quicksum(p * v * v for v in dp.values()) + quicksum(
+      h * v * v for v in dn.values())
+  model.setObjective(obj)
+  model.setParam(TIMELIMIT, 200)
+  model.setParam("Logging", 1)
+
+  if engine == 'copt':
+    model.solve()
+    ssol = model.getInfo(ENGINE.Info.Value, s)
+    usol = model.getInfo(ENGINE.Info.Value, u)
+    xsol = model.getInfo(ENGINE.Info.Value, x)
+
+  else:
+    model.optimize()
+    ssol = model.getAttr(ENGINE.Attr.X, s)
+    usol = model.getAttr(ENGINE.Attr.X, u)
+    xsol = model.getAttr(ENGINE.Attr.X, x)
+
+  sol = np.zeros(shape=(len(I), len(T), 3))
+  for idx, i in enumerate(I):
+    for t in T:
+      sol[idx, t] = [usol[i, t], xsol[i, t], ssol[i, t]]
+
+  return model, sol, xsol, usol, ssol, ql, qt
+
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--alg', default='mip', type=str)
+  args = parser.parse_args()
+  num_i = 10
+  num_t = 20
+  problem = create_instance(num_i, num_t)
+  alg = args.alg
+  if alg == 'mip':
+    model, sol, xsol, usol, ssol, ql, qt = repair_mip_model(
+        problem, engine='gurobi', scale=5)
+    print(sol[0, 0])
+  else:
+    pass

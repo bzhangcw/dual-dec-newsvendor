@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+
+\bibitem{barahona_volume_2000}
+{\sc F.~Barahona and R.~Anbil}, {\em The volume algorithm: producing primal
+  solutions with a subgradient method}, Mathematical Programming, 87 (2000),
+  pp.~385--399.
+\newblock Publisher: Springer.
+
+\bibitem{brannlund1995generalized}
+{\sc U.~Br{\"a}nnlund}, {\em A generalized subgradient method with relaxation
+  step}, Mathematical Programming, 71 (1995), pp.~207--219.
+
+\bibitem{camerini1975improving}
+{\sc P.~M. Camerini, L.~Fratta, and F.~Maffioli}, {\em On improving relaxation
+  methods by modified gradient techniques}, in Nondifferentiable optimization,
+  Springer, 1975, pp.~26--34.
+
+\bibitem{polyak_general_1967}
+{\sc B.~T. Polyak}, {\em A general method for solving extremal problems},
+  Soviet Mathematics Doklady,  (1967), p.~5.
+
+\end{thebibliography}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Chuwen" />
+  <title>repair.stoc</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <link rel="stylesheet" href="assets/pandoc.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+   var mathElements = document.getElementsByClassName("math");
+   for (var i = 0; i < mathElements.length; i++) {
+    var texText = mathElements[i].firstChild;
+    if (mathElements[i].tagName == "SPAN") {
+     katex.render(texText.data, mathElements[i], {
+      displayMode: mathElements[i].classList.contains('display'),
+      throwOnError: false,
+      fleqn: false
+     });
+  }}});
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@8.4.0/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true });</script>
+  
+</head>
+<body>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#stochastic">Stochastic</a>
+<ul>
+<li><a href="#dynamic-multistage-model">Dynamic / Multistage model</a></li>
+<li><a href="#static-distributionally-robust-model">Static Distributionally Robust Model</a>
+<ul>
+<li><a href="#moment-uncertainty">Moment Uncertainty</a></li>
+<li><a href="#finite-support-and-likelihood-robust">Finite support and likelihood robust</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</nav>
+<p>this file is dedicated to some thoughts on stochastic properties。</p>
+<p>We want to show the same algorithm works for both dynamic and static models.</p>
+<h1 id="stochastic">Stochastic</h1>
+<h2 id="dynamic-multistage-model">Dynamic / Multistage model</h2>
+<p>We now consider the optimization model under uncertainty. Suppose demand <span class="math inline">\boldsymbol{d}</span> is random with respect to some unknown distribution <span class="math inline">f \in \mathcal F</span>. Similarly, we wish to solve stochastic model that minimizes expected summation of shortages and surpluses deviated from the demand unfold within a finite horizon.</p>
+<p>Fruitful research has been done in the field of stochastic programming. Traditionally, stochastic programming approaches solve the expected objective that might be too optimistic. (see …) Robust optimization, in contrast, optimizes a worst-case objective subject to the ambiguity set (see …). Recently, the distributionally robust methods (see …) provide a paradigm to minimize the worst-case risk …</p>
+<p>The multistage or dynamic models are known to be intractable, where at each stage decision is made after the realization of uncertain events. SAA… Furthermore, linear decision rules (LDR), see @, and <span class="citation" data-cites="bertsimas_adaptive_2019">1</span> provides detailed analysis on LDR named after <em>adaptive distributionally robust optimization</em>.</p>
+<p>We notice the stochastic version inherits the property that it could be decomposed into a set of independent subproblems by relaxing linking constraints. The idea regarding Lagrangian relaxation to dynamic optimization models is not new. <span class="citation" data-cites="hawkins_langrangian_2003">2</span> develops the theory of Lagrangian relaxation on so-called <em>weakly coupled Markov decision process</em> with applications to queueing networks, supply-chain management problems, and multiarmed bandits, et cetera. It provides analysis of both infinite and finite horizon versions of the problem. <span class="citation" data-cites="adelman_relaxations_2008">3</span> later contributes to the bound and optimality gap for both Lagrangian and linear programming relaxations.</p>
+<p>We use boldface notation to denote random variables and corresponding decision variables.<br />
+Let <span class="math inline">\Xi_d</span> be the support for random variable <span class="math inline">\boldsymbol{d}</span>. Let <span class="math inline">\boldsymbol y = \left[\boldsymbol m,\boldsymbol s \right]</span> be the variable under uncertainty. Since <span class="math inline">\boldsymbol y</span> sufficiently represents the state at period <span class="math inline">t</span>, we can write the multistage optimization model using dynamic programming equations.</p>
+<p>Define <span class="math inline">V_{t}</span> is the optimal value with <span class="math inline">t</span> periods to go. Consider the following multistage stochastic optimization problem:</p>
+<p><span class="math display">z = \min_{\small{\boldsymbol\delta^-_t, \boldsymbol\delta^+_t, \boldsymbol u_{it}, \boldsymbol x_{it}}}
+\mathbb{E}_f \left[ \sum_t^{|T|}h \cdot \boldsymbol \delta^-_t + b \cdot \boldsymbol \delta^+_t \right ]</span></p>
+<p>While the decisions are taken under conditions: <span class="math display">\sum_i \boldsymbol u_{it} - \boldsymbol\delta^-_t + \boldsymbol\delta^+_t = \boldsymbol{d}_t, \quad \\
+\boldsymbol s_{it}, \boldsymbol u_{it}, \boldsymbol x_{it}\in \Omega_i</span></p>
+<p>Now limit the scope to the finite horizon. We are interested in the expected value with known initial state <span class="math inline">\boldsymbol y_0</span>: <span class="math display">
+z_T(y_0) = \mathbb{E}_f ()
+</span></p>
+<p>Similar to the deterministic problem, the Bellman iteration can be written as:</p>
+<p><span class="math display">V_{t}(\boldsymbol y, \boldsymbol{d}_t) = 
+\min_{\small{\boldsymbol\delta^-_t, \boldsymbol\delta^+_t, \boldsymbol u_{it}, \boldsymbol x_{it}}}  
+h \cdot \boldsymbol \delta^-_t + b \cdot \boldsymbol \delta^+_t + \mathbb E_{f} \left [ V_{t-1}(\boldsymbol y&#39;, \boldsymbol{d}&#39;_{t-1}) \big | \boldsymbol y, \boldsymbol{d}_t\right]</span></p>
+<p>We now investigate the Lagrangian relaxation. The analysis is similar to existing results in <span class="citation" data-cites="adelman_relaxations_2008">3</span>, <span class="citation" data-cites="hawkins_langrangian_2003">2</span>. The difference lies in the fact that we do not enforce <span class="math inline">\lambda_t</span> to be identical across the stages <span class="math inline">t = 1, ..., |T|</span>, which is necessary for infinite dimensional problems.</p>
+<p><strong>Proposition 1.</strong> Lagrangian relaxation provides a lower bound for any multiplier <span class="math inline">\lambda = (\lambda_1, ..., \lambda_{|T|})</span> such that <span class="math inline">\lambda_t \in [-b, h],\; \forall t=1,..., |T|</span>. <span class="math display">V_{t}(\boldsymbol y, \boldsymbol d_t) \ge -\lambda_t \boldsymbol d_t + \sum_{i\in I} V_{it}(\boldsymbol y_i, \boldsymbol d_t)</span></p>
+<p>Where <span class="math inline">V_{it}</span> is the optimal equation for each <span class="math inline">i</span></p>
+<p><span class="math display">V_{it}(\boldsymbol y, \boldsymbol d_t) = \boldsymbol u_{it} \lambda_t + \mathbb E_{f} \left [ V_{i,t-1}(\boldsymbol y&#39;, \boldsymbol{d}&#39;_t) \big | \boldsymbol y, \boldsymbol{d}_t \right]</span></p>
+<p><strong>PF.</strong> Relax binding constraints, since any feasible solution is the solution to the relaxed problem, we have:</p>
+<p><span class="math display">\begin{aligned}
+  V_{t}(\boldsymbol y, \boldsymbol d_t) &amp; \ge 
+\min_{\small{\boldsymbol\delta^-_t, \boldsymbol\delta^+_t, \boldsymbol u_{it}, \boldsymbol x_{it}}}  
+(h - \lambda_t )\cdot \boldsymbol \delta^-_t + (b + \lambda_t) \cdot \boldsymbol \delta^+_t 
++ \sum_i \boldsymbol{u}_{it} \lambda_t - \lambda_t \boldsymbol d_t
++ \mathbb E_{f} \left [ V_{t-1}(\boldsymbol y&#39;, \boldsymbol{d}&#39;_t) \big | \boldsymbol y, \boldsymbol{d}_t \right ] \\
+\end{aligned}</span></p>
+<p>The RHS is unbounded unless <span class="math inline">\lambda_t \in [-b, h]</span>, we have:</p>
+<p><span class="math display">\begin{aligned}
+  V_{t}(\boldsymbol y, \boldsymbol d_t) &amp; \ge 
+\min_{\small{\boldsymbol u_{it}, \boldsymbol x_{it}}}  
+ \sum_i \boldsymbol{u}_{it} \lambda_t - \lambda_t \boldsymbol d_t
++ \mathbb E_{f} \left [ V_{t-1}(\boldsymbol y&#39;, \boldsymbol{d}&#39;_t) \big | \boldsymbol y, \boldsymbol{d}_t\right] \\
+&amp; = - \lambda_t \boldsymbol d_t + \sum_{i\in I} V_{it}(\boldsymbol y_i, \boldsymbol d_t)
+\end{aligned}</span></p>
+<p><em>The last line can be verified by induction similar to</em> <span class="citation" data-cites="hawkins_langrangian_2003">2</span>. This completes the proof. <span class="math inline">\quad\blacksquare</span></p>
+<p><strong>Proposition 2.</strong> subgradient of <span class="math inline">\lambda</span>.</p>
+<p><!-- We first have to show this is convex, then maybe piecewise linear then the subgradient exists --></p>
+<h2 id="static-distributionally-robust-model">Static Distributionally Robust Model</h2>
+<p>The DRO/SP model, the goal is to minimize worst-case expected unsatisfied demand and surplus (idle) flights</p>
+<p><span class="math display">\begin{aligned}
+  &amp; \min \max_{f\in \mathscr F}\mathbb E_f  \left[e^\top( b \cdot\boldsymbol{\delta^+}  + h\cdot \boldsymbol \delta^-)\right] \\
+  \mathbf{s.t.}  &amp; \\
+  &amp; \boldsymbol{U} ^\top e + \boldsymbol \delta^+ - \boldsymbol \delta^-  = \boldsymbol d &amp; \forall \boldsymbol d \in \Xi_d\\
+  &amp; \boldsymbol U_{(i,\cdot)}, \boldsymbol X_{(i,\cdot)}, \boldsymbol S_{(i,\cdot)} \in \Omega_i &amp; \forall i\in I
+\end{aligned}</span></p>
+<p>Same relaxation scheme can be used on the DRO models:</p>
+<ul>
+<li>Mean-variance, in <span class="citation" data-cites="delage_distributionally_2010">4</span>.</li>
+<li>Likelihood, in <span class="citation" data-cites="wang_likelihood_2016">5</span></li>
+</ul>
+<h3 id="moment-uncertainty">Moment Uncertainty</h3>
+<p>With moment uncertainty for <span class="math inline">\boldsymbol d: \mathbb{E}(\boldsymbol d) = \mu_0, ...</span>, in <span class="citation" data-cites="delage_distributionally_2010">4</span>. The DRO model is equivalent to the following problem:</p>
+<p><span class="math display">\begin{aligned}
+\min_{\boldsymbol{U}, \boldsymbol{Q}, \boldsymbol{\beta}, r, s} &amp; \left(\gamma_{2} \boldsymbol{\Sigma}_{0}-\boldsymbol{\mu}_{0} \boldsymbol{\mu}_{0}^{\top}\right) \bullet \boldsymbol{Q}+r+\left(\boldsymbol{\Sigma}_{0} \bullet \boldsymbol{P}\right)-2 \boldsymbol{\mu}_{0}^{\top} \boldsymbol{p} + \gamma_{1} s \\
+\mathbf { s.t. } &amp; \\
+&amp; \boldsymbol{Q} \succeq 0, \boldsymbol{\beta} \in \mathbb{R}^{|T|}, 
+\begin{bmatrix}
+  \boldsymbol{P} &amp; \boldsymbol{p} \\
+  \boldsymbol{p}^\top &amp; s
+\end{bmatrix} \succeq 0, \; 
+\boldsymbol \beta = 2 (\boldsymbol p + \boldsymbol{Q\mu}_0)\\
+&amp; \boldsymbol{U} ^\top e + \boldsymbol \delta^+ - \boldsymbol \delta^-  = \boldsymbol d &amp; \forall \boldsymbol d \in \Xi_d\\
+&amp; \boldsymbol{d}^{\top} \boldsymbol{Q} \boldsymbol{d} -\boldsymbol{d^\top\beta} + r \ge e^\top( b \cdot\boldsymbol{\delta^+}  + h\cdot \boldsymbol \delta^-) &amp; \forall \boldsymbol d \in \Xi_d \\
+&amp; \boldsymbol X_{(i,\cdot)}, \boldsymbol U_{(i,\cdot)}, \boldsymbol S_{(i,\cdot)} \in \Omega_i &amp; \forall i\in I
+\end{aligned}</span></p>
+<p>semi-infinite constraints are equivalent to (substitute <span class="math inline">\boldsymbol\delta^- = \boldsymbol u + \boldsymbol \delta^+ - \boldsymbol d</span>，we have immediately)</p>
+<p><span class="math display">\begin{bmatrix}
+  \boldsymbol Q &amp;  (he- \boldsymbol \beta)/2 \\
+  (he- \boldsymbol \beta)^\top/2 &amp; r - (h+b)e^\top \boldsymbol \delta^+ - h e^\top   \boldsymbol U^\top e
+\end{bmatrix} \succeq 0</span></p>
+<p>wrap up:</p>
+<p><span class="math display">\begin{aligned}
+\min_{\boldsymbol{x}, \boldsymbol{Q}, \boldsymbol{\beta}, r, s} &amp; \left(\gamma_{2} \boldsymbol{\Sigma}_{0}-\boldsymbol{\mu}_{0} \boldsymbol{\mu}_{0}^{\top}\right) \bullet \boldsymbol{Q}+r+\left(\boldsymbol{\Sigma}_{0} \bullet \boldsymbol{P}\right)-2 \boldsymbol{\mu}_{0}^{\top} \boldsymbol{p} + \gamma_{1} s \\
+\mathbf { s.t. } &amp; \\
+&amp; \boldsymbol{Q} \succeq 0, \boldsymbol{\beta} \in \mathbb{R}^{|T|}, 
+\begin{bmatrix}
+  \boldsymbol{P} &amp; \boldsymbol{p} \\
+  \boldsymbol{p}^\top &amp; s
+\end{bmatrix} \succeq 0, \; 
+\boldsymbol \beta = 2 (\boldsymbol p + \boldsymbol{Q\mu}_0)\\
+&amp; \begin{bmatrix}
+  \boldsymbol Q &amp;  (he- \boldsymbol \beta)/2 \\
+  (he- \boldsymbol \beta)^\top/2 &amp; r - (h+b)e^\top \boldsymbol \delta^+ - h e^\top   \boldsymbol U^\top e
+\end{bmatrix} \succeq 0 \\
+&amp; \boldsymbol X_{(i,\cdot)}, \boldsymbol U_{(i,\cdot)}, \boldsymbol S_{(i,\cdot)} \in \Omega_i &amp; \forall i\in I
+\end{aligned}</span></p>
+<p>is this too complex?</p>
+<h3 id="finite-support-and-likelihood-robust">Finite support and likelihood robust</h3>
+<p>The problem is, let <span class="math inline">\boldsymbol Q = [\boldsymbol{q}^1, ..., \boldsymbol{q}^N]</span></p>
+<p><span class="math display">\begin{aligned}
+  &amp; \max_{\beta, \theta, \Omega_i, \forall i} \theta + \beta \gamma +  \beta N - \underbrace{\beta \mathbf N^\top \log(\frac{\beta \mathbf N}{\boldsymbol{Q} e-\theta \mathbf 1})}_{\mathcal D_{KL}(\beta \mathbf N | \boldsymbol{Q} e-\theta \mathbf 1)}  \\
+  \textbf {s.t.} \\
+  &amp; \beta \ge 0 \\
+  &amp; \boldsymbol{Q} e \ge \theta \mathbf 1 \\ 
+  &amp; \boldsymbol{U} ^\top e + \boldsymbol \delta^+ - \boldsymbol \delta^-  = \boldsymbol d^n &amp; \forall n = 1, ..., N \\
+  &amp; \boldsymbol x_{(i,\cdot)}, \boldsymbol u_{(i,\cdot)}, \boldsymbol s_{(i,\cdot)} \in \Omega_i &amp; \forall i\in I
+\end{aligned}</span></p>
+<h1 class="unnumbered" id="reference">Reference</h1>
+<div id="refs" class="references" role="doc-bibliography">
+<div id="ref-bertsimas_adaptive_2019">
+<p>[1]D. Bertsimas, M. Sim, and M. Zhang, “Adaptive distributionally robust optimization,” <em>Management Science</em>, 2019, doi: <a href="https://doi.org/10.1287/mnsc.2017.2952">10.1287/mnsc.2017.2952</a>.</p>
+</div>
+<div id="ref-hawkins_langrangian_2003">
+<p>[2]J. T. Hawkins, “A langrangian decomposition approach to weakly coupled dynamic optimization problems and its applications,” PhD thesis, Massachusetts Institute of Technology, 2003.</p>
+</div>
+<div id="ref-adelman_relaxations_2008">
+<p>[3]D. Adelman and A. J. Mersereau, “Relaxations of weakly coupled stochastic dynamic programs,” <em>Operations Research</em>, vol. 56, no. 3, pp. 712–727, 2008.</p>
+</div>
+<div id="ref-delage_distributionally_2010">
+<p>[4]E. Delage and Y. Ye, “Distributionally robust optimization under moment uncertainty with application to data-driven problems,” <em>Operations Research</em>, vol. 58, no. 3, 2010, doi: <a href="https://doi.org/10.1287/opre.1090.0741">10.1287/opre.1090.0741</a>.</p>
+</div>
+<div id="ref-wang_likelihood_2016">
+<p>[5]Z. Wang, P. W. Glynn, and Y. Ye, “Likelihood robust optimization for data-driven problems,” <em>Computational Management Science</em>, vol. 13, no. 2, pp. 241–261, Apr. 2016, doi: <a href="https://doi.org/10.1007/s10287-015-0240-3">10.1007/s10287-015-0240-3</a>.</p>
+</div>
+</div>
+</body>
+</html>

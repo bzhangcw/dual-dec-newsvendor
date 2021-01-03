@@ -1,0 +1,609 @@
+%%
+% Copyright (c) 2017 - 2020, Pascal Wagler;
+% Copyright (c) 2014 - 2020, John MacFarlane
+%
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+% - Redistributions of source code must retain the above copyright
+% notice, this list of conditions and the following disclaimer.
+%
+% - Redistributions in binary form must reproduce the above copyright
+% notice, this list of conditions and the following disclaimer in the
+% documentation and/or other materials provided with the distribution.
+%
+% - Neither the name of John MacFarlane nor the names of other
+% contributors may be used to endorse or promote products derived
+% from this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+% COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%%
+
+%%
+% This is the Eisvogel pandoc LaTeX template.
+%
+% For usage information and examples visit the official GitHub page:
+% https://github.com/Wandmalfarbe/pandoc-latex-template
+%%
+
+
+% @modified: Chuwen <chuwzhang@gmail.com>
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*,table}{xcolor}
+%
+\documentclass[
+  a4paper,
+,tablecaptionabove
+]{scrartcl}
+\usepackage{lmodern}
+\usepackage{setspace}
+\setstretch{1.2}
+\usepackage{amssymb,amsmath}
+\numberwithin{equation}{section}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\definecolor{default-linkcolor}{HTML}{A50000}
+\definecolor{default-filecolor}{HTML}{A50000}
+\definecolor{default-citecolor}{HTML}{4077C0}
+\definecolor{default-urlcolor}{HTML}{4077C0}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdfauthor={Chuwen},
+  hidelinks,
+  breaklinks=true,
+  pdfcreator={LaTeX via pandoc with the Eisvogel template}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=2.5cm,includehead=true,includefoot=true,centering,]{geometry}
+% add backlinks to footnote references, cf. https://tex.stackexchange.com/questions/302266/make-footnote-clickable-both-ways
+\usepackage{footnotebackref}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{3}
+
+% Make use of float-package and set default placement for figures to H.
+% The option H means 'PUT IT HERE' (as  opposed to the standard h option which means 'You may put it here if you like').
+\usepackage{float}
+\floatplacement{figure}{H}
+
+
+\usepackage[UTF8, heading=true]{ctex}
+\definecolor{tufeijilk}{RGB}{68,87,151}
+\hypersetup{colorlinks=true,linkcolor=tufeijilk,urlcolor=cyan}
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newenvironment{cslreferences}%
+  {\setlength{\parindent}{0pt}%
+  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces}%
+  {\par}
+
+\author{Chuwen}
+\date{\today}
+
+
+
+%%
+%% added
+%%
+
+%
+% language specification
+%
+% If no language is specified, use English as the default main document language.
+%
+
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,main=english]{babel}
+\else
+  % @update, do not use sfdefault,
+  % @chuwen, 20200711
+  %   % % Workaround for bug in Polyglossia that breaks `\familydefault` when `\setmainlanguage` is used.
+  % % See https://github.com/Wandmalfarbe/pandoc-latex-template/issues/8
+  % % See https://github.com/reutenauer/polyglossia/issues/186
+  % % See https://github.com/reutenauer/polyglossia/issues/127
+  % \renewcommand*\familydefault{\sfdefault}
+  %   % load polyglossia as late as possible as it *could* call bidi if RTL lang (e.g. Hebrew or Arabic)
+  \usepackage{polyglossia}
+  \setmainlanguage[]{english}
+\fi
+
+
+
+%
+% for the background color of the title page
+%
+
+%
+% break urls
+%
+\PassOptionsToPackage{hyphens}{url}
+
+%
+% When using babel or polyglossia with biblatex, loading csquotes is recommended
+% to ensure that quoted texts are typeset according to the rules of your main language.
+%
+\usepackage{csquotes}
+
+%
+% captions
+%
+\definecolor{caption-color}{HTML}{777777}
+\usepackage[font={stretch=1.2}, textfont={color=caption-color}, position=top, skip=4mm, labelfont=bf, singlelinecheck=false, justification=raggedright]{caption}
+\setcapindent{0em}
+
+%
+% blockquote
+%
+\definecolor{blockquote-border}{RGB}{221,221,221}
+\definecolor{blockquote-text}{RGB}{119,119,119}
+\usepackage{mdframed}
+\newmdenv[rightline=false,bottomline=false,topline=false,linewidth=3pt,linecolor=blockquote-border,skipabove=\parskip]{customblockquote}
+\renewenvironment{quote}{\begin{customblockquote}\list{}{\rightmargin=0em\leftmargin=0em}%
+\item\relax\color{blockquote-text}\ignorespaces}{\unskip\unskip\endlist\end{customblockquote}}
+
+%
+% heading color
+%
+\definecolor{heading-color}{RGB}{40,40,40}
+\addtokomafont{section}{\color{heading-color}}
+% When using the classes report, scrreprt, book,
+% scrbook or memoir, uncomment the following line.
+%\addtokomafont{chapter}{\color{heading-color}}
+
+%
+% variables for title and author
+%
+\usepackage{titling}
+\title{}
+\author{Chuwen}
+
+%
+% tables
+%
+
+%
+% remove paragraph indention
+%
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+
+%
+%
+% Listings
+%
+%
+
+
+%
+% header and footer
+%
+\usepackage{fancyhdr}
+
+\fancypagestyle{eisvogel-header-footer}{
+  \fancyhead{}
+  \fancyfoot{}
+  \lhead[\today]{}
+  \chead[]{}
+  \rhead[]{\today}
+  \lfoot[\thepage]{Chuwen}
+  \cfoot[]{}
+  \rfoot[Chuwen]{\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+\pagestyle{eisvogel-header-footer}
+
+%%
+%% end added
+%%
+
+\begin{document}
+
+%%
+%% begin titlepage
+%%
+
+%%
+%% end titlepage
+%%
+
+
+
+{
+        \setcounter{tocdepth}{3}
+    \tableofcontents
+      }
+\hypertarget{progress-summary}{%
+\section{Progress summary}\label{progress-summary}}
+
+\begin{itemize}
+\tightlist
+\item
+  Polynomial-time algorithm for deterministic problem:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    The problem can be solved with subgradient method in polynomial
+    time. If we allow tolerance \(\epsilon \ge 0\) on subgradient
+    method, the worst complexity is
+    \(O\left(\frac{1}{\epsilon^2}\cdot\tau\cdot|I|\cdot|T|^3\right)\).
+  \item
+    Converge and rate:
+
+    \begin{itemize}
+    \tightlist
+    \item
+      we can only retrieve a feasible primal solution from the simplest
+      subgradient method by Polyak (1967).
+    \item
+      Good approximation to optimal solution can be found via the volume
+      algorithm by Barahona and Anbil (2000).
+    \item
+      The rate and convergence of such class of algorithm can be found
+      in Nesterov (2009), Nedić and Ozdaglar (2009).
+    \item
+      todo: try alternative formulation:
+      \(U^\top e - d + \epsilon_+ - \epsilon_- = 0\)
+    \end{itemize}
+  \item
+    Details:
+
+    \begin{itemize}
+    \tightlist
+    \item
+      The subproblem at each subgradient iteration on dual problem can
+      be solved by dynamic programming, at the cost of
+      \(O\left(\tau\cdot|T|^3 \right)\).
+    \item
+      The dual variables can be solved \textbf{analytically}.
+    \end{itemize}
+  \item
+    Computations has been done for DP, subgradient method (volume
+    algorithm).
+  \end{itemize}
+\end{itemize}
+
+a quick look at the results (\(|I| = 10, |T| = 20, 10\) random generated
+instances)
+
+\begin{tabular}{lrrrrr}
+\toprule
+{} &      sg\_lb &     sg\_val &   bench\_lb &  bench\_sol &  primal\_gap \\
+\midrule
+0 &  14.499735 &  17.533016 &  16.000000 &         16 &    0.095814 \\
+1 &  32.631830 &  35.403596 &  31.979908 &         34 &    0.041282 \\
+2 &   9.267048 &  12.402154 &   2.999999 &         10 &    0.240215 \\
+3 &  52.727507 &  55.299756 &  49.496651 &         54 &    0.024070 \\
+4 &   0.000000 &   4.745779 &   0.000000 &          0 &         inf \\
+5 &  15.927653 &  16.950710 &  16.000000 &         16 &    0.059419 \\
+6 &  50.000000 &  52.318332 &  50.000000 &         50 &    0.046367 \\
+7 &   8.000000 &  10.682970 &   8.663961 &         10 &    0.068297 \\
+8 &  34.000000 &  35.615792 &  32.916046 &         34 &    0.047523 \\
+9 &  24.000000 &  25.193067 &  24.000000 &         24 &    0.049711 \\
+\bottomrule
+\end{tabular}
+
+\hypertarget{the-air-repair-model}{%
+\section{The air-repair model}\label{the-air-repair-model}}
+
+\begin{quote}
+Notation
+\end{quote}
+
+\begin{itemize}
+\tightlist
+\item
+  \(I, T\) - set of plane, time periods, respectively
+\item
+  \(b, h\) - demand withdraw and plane idle cost, respectively
+\item
+  \(\tau\) - lead time for maintenance
+\end{itemize}
+
+The demand is stochastic with some distribution \(f\in \mathscr F\)
+
+\begin{itemize}
+\tightlist
+\item
+  \(\mathbfit d_t\) - demand/number of planes needed at time \(t\)
+\end{itemize}
+
+\begin{quote}
+Decision
+\end{quote}
+
+\begin{itemize}
+\tightlist
+\item
+  \(x_{it}\) - 0 - 1 variable, 1 if plane \(i\) starts a maintenance at
+  time \(t\)
+\item
+  \(u_{it}\) - 0 - 1 variable, 1 if plane is working at time \(t\)
+\item
+  \(s_{it} \ge 0\) - the lifespan of plane \(i\) at time \(t\)
+\end{itemize}
+
+The DRO/SP model, the goal is to minimize unsatisfied demand and surplus
+(idle) flights, using a newsvendor-like objective function
+
+\[\begin{aligned}
+& q_t \equiv b \cdot (d_t - \sum_i u_{it})_+ + h \cdot  ( \sum_i u_{it} - d_t)_+  \\
+  & \inf \max_{f\in \mathscr F}\mathbb E_f \left[ \sum_t q_t  \right] \\
+  \mathbf{s.t.}  & \\
+  & q_t \ge b\cdot \left (d_t - \sum_i u_{it} \right) & \forall t \in T \\
+  & q_t \ge h\cdot \left (\sum_i u_{it} - d_t \right ) & \forall t \in T \\
+  &  s_{i, t+1} =  s_{i t}  - \alpha_i  u_{it} + \beta_i  x_{i, t- \tau} & \forall i \in I, t \in T\\
+  &  x_{it} +  u_{i, t} \le 1& \forall i \in I, t \in T\\
+  &  x_{it} + x_{i\rho} + u_{i, \rho} \le 1& \forall i \in I,  t\in T, \rho = t + 1, ..., t+\tau \\
+  &   s_{i t} \ge L& \forall i \in I, t \in T 
+\end{aligned}\]
+
+We define the last four sets of constraint as \(\Omega_i\), which
+describe the non-overlapping requirements during a maintenance.
+
+\hypertarget{deterministic}{%
+\section{Deterministic}\label{deterministic}}
+
+We first consider the deterministic problem.
+
+The problem can be solved with subgradient method in polynomial time and
+the solution is exact. If we allow tolerance \(\epsilon \ge 0\) on
+subgradient method, the complexity is:
+
+\[O\left(\frac{1}{\epsilon^2}\cdot\tau\cdot|I|\cdot|T|^3\right)\]
+
+\hypertarget{subgradient-method}{%
+\subsection{Subgradient method}\label{subgradient-method}}
+
+Relax binding constraints of \(q\)
+
+\[\begin{aligned}
+  z_{\mathsf{LD}}(\lambda, \mu)& = \inf_{x, s, u} \left[ \sum_t 
+      q_t (1-\lambda_t - \theta_t) + d_t(b\lambda_t -h \theta_t)
+    + \sum_i \sum_t u_{i,t}(h\theta_t - b\lambda_t) \right] \\ 
+  \mathbf {s.t. }  & \\
+  & x_{(i,\cdot)}, u_{(i,\cdot)}, s_{(i,\cdot)} \in \Omega_i
+\end{aligned}\]
+
+\(\Omega_i\) defined as the region of
+\(x_{(i,\cdot)}, u_{(i,\cdot)}, s_{(i,\cdot)}, \forall i\in I\).
+
+we notice \(z_{\mathsf{LD}}(\lambda, \theta)\) is unbounded unless:
+\[\lambda, \theta \in \{\lambda, \theta \ge 0 \big | (1-\lambda_t - \theta_t) \ge 0,\forall t\in T\}\]
+
+we have: \[\begin{aligned}
+z_{\mathsf{LD}}(\lambda, \theta) = \sum_t 
+      d_t(b\lambda_t -h \theta_t) + \inf_{x, s, u} \left[  \sum_i \sum_t u_{i,t}(h\theta_t - b\lambda_t) \right]
+\end{aligned}\]
+
+We wish to solve: \[\sup_{(\lambda, \theta)}z_{\mathsf{LD}}\]
+
+We can solve for each \(i\in I\) independently at each iteration of a
+subgradient method.
+
+Notice:
+
+\begin{itemize}
+\tightlist
+\item
+  at iteration \(k\), suppose multipliers
+  \(\lambda^k + \theta^k \le 1\), if \(( x^\star, s^\star, u^\star)\)
+  solves the relaxed minimization problem, then it is also feasible for
+  the original problem (compute \(q\) accordingly). The optimality gap
+  can easily be calculated by simple evaluations.
+\item
+  at each iteration \(k\), the sub-gradients: \(\mathcal P\) is the
+  orthogonal projection onto
+  \(\mathcal D =\left\{(\lambda, \theta) \;| \; \lambda + \theta \le 1\right\}\)
+\end{itemize}
+
+\[\begin{aligned}
+  &\nabla \lambda^k = b\cdot \left(d -  (U^k)^\top e\right) \\
+  &\nabla \theta^k = h\cdot \left((U^k)^\top e - d\right) \\
+  &\theta^{k+1} = \mathcal P (\theta^k + a^k\nabla\theta^k ) \\
+  &\lambda^{k+1} = \mathcal P (\lambda^k + a^k\nabla\lambda^k )
+\end{aligned}\]
+
+\begin{itemize}
+\tightlist
+\item
+  the projection \(\mathcal P\) can be computed very easily. Since the
+  projection \((\tilde\lambda, \tilde\theta)\) onto \(\mathcal D\) can
+  be formulated as the model
+  \(\inf_{\lambda\ge 0, \theta \ge 0, \lambda + \theta \le e} ||\tilde\lambda-\lambda||^2 + ||\tilde\theta - \theta||^2\),
+  and solved analytically.
+\end{itemize}
+
+\hypertarget{subproblem-for-each-plane}{%
+\subsection{Subproblem for each plane}\label{subproblem-for-each-plane}}
+
+The subproblem \(\forall i\in I\) is defined as follows:
+
+\[\begin{aligned}
+c_t \equiv (h\theta_t - b\lambda_t) \\
+\inf_{\Omega_i} \sum_t c_t \cdot u_{i,t}
+\end{aligned}\]
+
+The model describes a problem to maximize total utility while keeping
+the lifespan safely away from the lower bound \(L\). Define state:
+\(y_t = \left[m_t,s_t \right]^\top\), where \(m_t\) \textbf{denotes the
+remaining time of the undergoing maintenance}. \(s_t\) is the remaining
+lifespan.
+
+At each period \(t\) we decide whether the plane \(i\) is idle or
+waiting (for the maintenance), working, or starting a maintenance, i.e.:
+
+\[(u_t, x_t) \in \left\{(1, 0), (0,0), (0, 1)\right\}\]
+
+We have the optimal equation:
+\[V_n(u_t, x_t | m_t, s_t) = c_t \cdot u_t + \inf_{u,x} V_{n-1}(...)\]
+
+Complexity: let \(s_0\) be the initial lifespan and finite time horizon
+be \(|T|\), we notice the states for remaining maintenance waiting time
+is finite, \(m_t \in \{0, 1, ..., \tau\}\).
+
+Let total number of possible periods to initiate a maintenance be
+\(n_1\), and working periods be \(n_2\). If we ignore lower bound \(L\)
+on \(s\), total number of possible values of \(s\) is bounded above:
+\(|s| = \sum_i^{|T|}\sum_j^{|T| - i} 1=(|T| + 1)(\frac{1}{2}|T| + 1)\)
+since \(n_1 + n_2 \le |T|\). For each subproblem we have at most 3
+actions, thus we conclude this problem can be solved by dynamic
+programming in polynomial time, the complexity is:
+\(O\left(\tau\cdot|T|^3 \right)\)
+
+\hypertarget{stochastic}{%
+\section{Stochastic}\label{stochastic}}
+
+We use boldface notation to denote random variables. We let the vector
+\(\mathbfit q = [\mathbfit q_1, ..., \mathbfit q_{|T|}]^\top, \mathbfit d = [\mathbfit d_1,...,\mathbfit d_{|T|}]^\top\),
+\(\Xi_d\) be the support for \(\mathbfit{d}\). For simplicity, we let
+\(\mathbfit e\) be the vector of ones of corresponding dimension in
+matrix-vector calculations.
+
+The DRO/SP model, the goal is to minimize worst-case expected
+unsatisfied demand and surplus (idle) flights
+
+\[\begin{aligned}
+  & \inf \sup_{f\in \mathscr F}\mathbb E_f \left[ \sum_t \mathbfit q_t  \right] \\
+  \mathbf{s.t.}  & \\
+  & \mathbfit q \ge b\cdot \left (\mathbfit d - \mathbfit U^\top \mathbfit{e} \right) & \forall \mathbfit d \in \Xi_d\\
+  & \mathbfit q \ge h\cdot \left ( \mathbfit U^\top \mathbfit{e}  - \mathbfit d \right ) & \forall \mathbfit d \in \Xi_d \\
+  & \mathbfit x_{(i,\cdot)}, \mathbfit u_{(i,\cdot)}, \mathbfit s_{(i,\cdot)} \in \Omega_i & \forall i\in I
+\end{aligned}\]
+
+Same relaxation scheme can be used on the DRO models:
+
+\begin{itemize}
+\tightlist
+\item
+  Mean-variance, in Delage and Ye (2010).
+\item
+  Likelihood, in Wang et al. (2016)
+\end{itemize}
+
+\hypertarget{mean-variance}{%
+\subsection{Mean-variance}\label{mean-variance}}
+
+With moment uncertainty for
+\(\mathbfit d: \mathbb{E}(\mathbfit d) = \mu_0, ...\), in Delage and
+Ye (2010). The DRO model is equivalent to the following problem:
+
+\[\begin{aligned}
+\inf_{\mathbfit{x}, \mathbfit{Q}, \mathbfit{\beta}, r, s} & \left(\gamma_{2} \mathbfit{\Sigma}_{0}-\mathbfit{\mu}_{0} \mathbfit{\mu}_{0}^{\top}\right) \bullet \mathbfit{Q}+r+\left(\mathbfit{\Sigma}_{0} \bullet \mathbfit{P}\right)-2 \mathbfit{\mu}_{0}^{\top} \mathbfit{p} + \gamma_{1} s \\
+\mathbf { s.t. } & \\
+& \mathbfit{d}^{\top} \mathbfit{Q} \mathbfit{d} -\mathbfit{d^\top\beta} + r \ge \sum_t \mathbfit q_t & \forall \mathbfit d \in \Xi_d \\
+& \mathbfit{Q} \succeq 0, \mathbfit{\beta} \in \mathbb{R}^{|T|}, 
+\begin{bmatrix}
+  \mathbfit{P} & \mathbfit{p} \\
+  \mathbfit{p}^\top & s
+\end{bmatrix} \succeq 0, \; 
+\mathbfit \beta = 2 (\mathbfit p + \mathbfit{Q\mu}_0)\\
+& \mathbfit q \ge b\cdot \left (\mathbfit d - \mathbfit U^\top \mathbfit{e} \right) & \forall \mathbfit d \in \Xi_d\\
+  & \mathbfit q \ge h\cdot \left ( \mathbfit U^\top \mathbfit{e}  - \mathbfit d \right ) & \forall \mathbfit d \in \Xi_d \\
+& \mathbfit x_{(i,\cdot)}, \mathbfit u_{(i,\cdot)}, \mathbfit s_{(i,\cdot)} \in \Omega_i & \forall i\in I
+\end{aligned}\]
+
+\hypertarget{finite-support-and-likelihood-robust}{%
+\subsection{Finite support and likelihood
+robust}\label{finite-support-and-likelihood-robust}}
+
+The problem is, let
+\(\mathbfit Q = [\mathbfit{q}^1, ..., \mathbfit{q}^N]\)
+
+\[\begin{aligned}
+  & \sup_{\beta, \theta, \Omega_i, \forall i} \theta + \beta \gamma +  \beta N - \underbrace{\beta \mathbf N^\top \log(\frac{\beta \mathbf N}{\mathbfit{Q} e-\theta \mathbf 1})}_{\mathcal D_{KL}(\beta \mathbf N | \mathbfit{Q} e-\theta \mathbf 1)}  \\
+  \textbf {s.t.} \\
+  & \beta \ge 0 \\
+  & \mathbfit{Q} e \ge \theta \mathbf 1 \\ 
+  & \mathbfit q^n \ge b\cdot \left (\mathbfit d^n - \mathbfit{U}^\top e \right) & \forall n = 1, ..., N\\
+  & \mathbfit q^n \ge h\cdot \left ( \mathbfit{U}^\top e  -\mathbfit d^n  \right ) & \forall n = 1, ..., N \\
+  & \mathbfit x_{(i,\cdot)}, \mathbfit u_{(i,\cdot)}, \mathbfit s_{(i,\cdot)} \in \Omega_i & \forall i\in I
+\end{aligned}\]
+
+Relax binding constraints for \(\mathbfit Q, \mathbfit U\):
+\[\mathbfit z_{\mathsf{LD}} = \sup_{\mathbfit Q} ...+ \sum_n (b\lambda^n - h\theta^n)^\top \mathbfit{d}^n + \sum_n(\lambda^n +\theta^n)^\top q^n  \\
++ \sup_{\mathbfit U}\sum_i\sum_t(\sum_nh\theta^n_t - b\lambda^n_t)\mathbfit u_{it}\]
+
+We can optimize for \(\mathbfit Q, \mathbfit U\) separately, at each
+step, subproblems can be solved in polynomial time.
+
+\hypertarget{reference}{%
+\section*{Reference}\label{reference}}
+\addcontentsline{toc}{section}{Reference}
+
+\hypertarget{refs}{}
+\begin{cslreferences}
+\leavevmode\hypertarget{ref-barahona_volume_2000}{}%
+Barahona F, Anbil R (2000) The volume algorithm: Producing primal
+solutions with a subgradient method. \emph{Mathematical Programming}
+87(3):385--399.
+
+\leavevmode\hypertarget{ref-delage_distributionally_2010}{}%
+Delage E, Ye Y (2010) Distributionally robust optimization under moment
+uncertainty with application to data-driven problems. \emph{Operations
+Research} 58(3).
+
+\leavevmode\hypertarget{ref-nedic_approximate_2009}{}%
+Nedić A, Ozdaglar A (2009) Approximate primal solutions and rate
+analysis for dual subgradient methods. \emph{SIAM Journal on
+Optimization} 19(4):1757--1780.
+
+\leavevmode\hypertarget{ref-nesterov_primal-dual_2009}{}%
+Nesterov Y (2009) Primal-dual subgradient methods for convex problems.
+\emph{Mathematical programming} 120(1):221--259.
+
+\leavevmode\hypertarget{ref-polyak_general_nodate}{}%
+Polyak BT (1967) A general method for solving extremal problems.
+\emph{Soviet Mathematics Doklady}:5.
+
+\leavevmode\hypertarget{ref-wang_likelihood_2016}{}%
+Wang Z, Glynn PW, Ye Y (2016) Likelihood robust optimization for
+data-driven problems. \emph{Computational Management Science}
+13(2):241--261.
+\end{cslreferences}
+
+\end{document}
