@@ -28,6 +28,9 @@ def min_alp(l, lt, length=100, alp_max=0.1):
   return min(alp_max, vals[0][0])
 
 
+# ===================
+# PROJECTION METHODS
+# ===================
 def projection_box(x, lower, upper):
   """
   Args:
@@ -40,7 +43,30 @@ def projection_box(x, lower, upper):
   return np.minimum(np.maximum(x, lower), upper)
 
 
-def repair_volume(  # volume algorithm for repair model
+def alpha_method(gamma0, iteration, use_optimal, d, g):
+  """
+  alpha method update \gamma \alpha
+  at start of iteration k
+  iteration: note that iteration := k
+    you should use d of last iteration
+    and g of current
+  """
+  if not use_optimal:
+    alp_k = 1 / iteration
+    gamma_k = gamma0
+    return alp_k, gamma_k
+  
+  # the optimal alpha_k by see (Brännlund 1995),
+  #   Brännlund U (1995) A generalized subgradient method with relaxation step. Mathematical Programming 71(2):207–219.
+  gd = g.dot(d)
+  if iteration == 1 or gd > 0:
+    return 1, 1
+  dd = d.dot(d)
+  alp_k = gamma_k = dd / (dd - gd)
+  return alp_k, gamma_k
+
+
+def repair_subgradient(
     problem,
     scale,
     subproblem_method=single_dp,
@@ -51,16 +77,17 @@ def repair_volume(  # volume algorithm for repair model
     gap=0.01,
     r0=2,
     dual_option="max",
+    hyper_option="simple",
     **kwargs):
   """[summary]
-  The volume algorithm for repair problem
+  The subgradient algorithm for repair problem
   Args:
       subproblem_method (callable): the function for subproblem
       projection_method (callable): the function for projection of dual multipliers.
         Defaults to projection_box.
       **kwargs
   """
- 
+  
   h, b = problem['h'], problem['p']
   T = problem['T'][:scale]
   I = problem['I']
@@ -74,6 +101,10 @@ def repair_volume(  # volume algorithm for repair model
   sol_container.primal_k = []
   sol_container.lb = []
   
+  # algorithm options
+  _use_maximum = dual_option == 'max'
+  _use_optimal = hyper_option != 'simple'
+  
   # ==================
   # INITIALIZATION
   # ==================
@@ -81,24 +112,25 @@ def repair_volume(  # volume algorithm for repair model
   #   do nothing and thus everything is short
   x_bar = i_bar = 0
   # primal dual bound
-  z_bar = worst = b * sum(D)
-  phi_bar = -1e6
+  z_bar = b * sum(D)
+  phi_bar = -1e3
   # dual variable
   lambda_k = lambda_b = np.ones(scale) * h
   # hyper parameters
-  alp = 1
   improved = 0
   improved_eps = 30
-  
-  # dual options
-  _use_maximum = dual_option == 'max'
+  # initial direction
+  d_lambda_bar = 0
   
   # main routine
   for k in range(0, max_iteration):
+  
+    
     # ==================
-    # solve \phi(\lambda)
+    # solve \phi_k = \phi(\lambda_k)
     # ==================
     sub_v_k, x_k = np.zeros(numI), np.zeros((numI, scale, 3))
+    
     # solve decomposable subproblems
     #   can use lazy multiprocessing
     if mp:
@@ -116,26 +148,37 @@ def repair_volume(  # volume algorithm for repair model
         sub_v_k[idx] = _best_v_i
         x_k[idx, :, :] = _best_p_i
     
+    # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
     
     # =====================
-    # update current primal
+    # subgradient computation
     # =====================
     i_k = x_k.sum(0)[:, 0]
-    x_bar = (1 - alp) * x_bar + x_k * alp
-    i_bar = (1 - alp) * i_bar + i_k * alp
-    
-    # =====================
-    # subgradient
-    # =====================
-    d_lambda_bar = (i_bar - D)
     d_lambda_k = (i_k - D)
     
     # =====================
-    # lagrangian heuristic
+    # update direction params
     # =====================
+    alp_k, gamma_k = alpha_method(gamma0=r0, iteration=k + 1, use_optimal=_use_optimal, d=d_lambda_bar, g=d_lambda_k)
+    print(f'==={alp_k, gamma_k} === ')
+    
+    # =====================
+    # compute direction
+    # =====================
+    # there are many ways to do this
+    x_bar = (1 - alp_k) * x_bar + x_k * alp_k
+    i_bar = (1 - alp_k) * i_bar + i_k * alp_k
+    d_lambda_bar = (i_bar - D)
+    
+    # =====================
+    # the recovery algorithm
+    # =====================
+    #
+    # update current primal
+    #
     # This is an implied step,
-    #  by this you actually use a heuristic
+    #  by this you actually use a "heuristic"
     #  since you retrieve a primal solution
     #  using U^T e - d
     # calculate best primal
@@ -147,38 +190,26 @@ def repair_volume(  # volume algorithm for repair model
     surplus_idx_bar = d_lambda_bar > 0
     z_bar = h * d_lambda_bar[surplus_idx_bar].sum(
       0) - b * d_lambda_bar[~surplus_idx_bar].sum(0)
-    
+
     # =====================
     # update dual vars
     # =====================
-    step = 1 / (d_lambda_bar.dot(d_lambda_bar)) * (z_bar - phi_k) * r0
+    step = 1 / (d_lambda_bar.dot(d_lambda_bar)) * (z_bar - phi_k) * gamma_k
     lambda_k = lambda_b + step * d_lambda_bar
     lambda_k = projection_method(lambda_k, -b, h)
     
-    gap_k = (z_bar - phi_bar) / abs(z_bar)
     # =====================
-    # update alp:
-    #   convex combination
+    # MAIN FINISHED
     # =====================
-    # there are many ways to do this:
-    # - the volume:
-    #   alp = min_alp(partial_lambda, b * (D - i_sol), alp_max=alp_max)
-    #   if (k + 1) % 50 == 0:
-    #     alp_max *= 0.5
-    # - averaging:
-    #   alp = 1 / (k + 1)
-    alp = 1 / (k + 2)
     
-    print(
-      f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-      f"@stepsize: {step:.4f}; @norm: {np.abs(d_lambda_bar).sum():.2f}; @alp: {alp:.4f}"
-    )
-    sol_container.primal_sol = x_bar
-    sol_container.primal_val.append(z_bar)
-    sol_container.primal_k.append(z_k)
-    sol_container.lb.append(phi_bar)
-    # eval best bound
-    if phi_k > phi_bar:
+    # =====================
+    # AUXILIARY START
+    # the auxiliary steps
+    # =====================
+    #
+    # dual value evaluation
+    _bool_lb_updated = phi_k > phi_bar
+    if _bool_lb_updated:
       phi_bar = phi_k
       lambda_b = lambda_k.copy()
       improved = 0
@@ -187,10 +218,22 @@ def repair_volume(  # volume algorithm for repair model
       if improved >= improved_eps:
         r0 = r0 / 2
         improved = 0
-        
+    
     # update base "dual multipliers"
-    if not _use_maximum or phi_k > phi_bar:
+    # condition (phi_k > phi_bar) is only for the volume algorithm
+    if not _use_maximum or _bool_lb_updated:
       lambda_b = lambda_k.copy()
+    
+    gap_k = (z_bar - phi_bar) / abs(z_bar)
+    
+    print(
+      f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+      f"@stepsize: {step:.4f}; @norm: {np.abs(d_lambda_bar).sum():.2f}; @alp: {alp_k:.4f}"
+    )
+    sol_container.primal_sol = x_bar
+    sol_container.primal_val.append(z_bar)
+    sol_container.primal_k.append(z_k)
+    sol_container.lb.append(phi_bar)
     
     if gap_k < gap or step < 1e-4:
       break
@@ -200,7 +243,7 @@ def repair_volume(  # volume algorithm for repair model
   if max_iteration:
     print(
       f"@summary: @k: {k}; @dual: {phi_k}; @primal: {z_bar}; @lb: {phi_bar}; @gap: {gap_k} @sec: {total_runtime}")
-  return x_bar, i_bar, alp, z_bar, lambda_b, sol_container
+  return x_bar, i_bar, alp_k, z_bar, lambda_b, sol_container
 
 
 def main(problem, **kwargs):
@@ -217,7 +260,7 @@ def main(problem, **kwargs):
   else:
     raise ValueError("unknown method for sub problem")
   
-  _ = repair_volume(
+  _ = repair_subgradient(
     problem,
     subproblem_method=subproblem_method,
     pool=mpc.Pool(processes=8),

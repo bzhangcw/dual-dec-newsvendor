@@ -39,9 +39,10 @@ if __name__ == '__main__':
   
   methods = {
     # "normal" convex sg
+    # "optimal_sg": {"r0": 1.5, "dual_option": "normal", "hyper_option": "optimal", **kwargs},
     "normal_sg": {"r0": 1.5, "dual_option": "normal", **kwargs},
     # "volume" convex sg
-    "volume_sg": {"r0": 1.5, **kwargs}
+    # "volume_sg": {"r0": 1.5, **kwargs}
   }
   
   for i in range(instances):
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     
     model, *_ = mip.repair_mip_model(
       problem, engine='gurobi', scale=scale)
-
+    
     r['bench_lb'] = results['bench_lb'][i] = model.ObjBoundC
     r['bench_val'] = results['bench_val'][i] = model.ObjVal
     
@@ -78,7 +79,6 @@ if __name__ == '__main__':
     plt.legend(loc="lower left")
     plt.savefig(f"fig/conv_{i}_{num_i}_{num_t}.png", dpi=500)
     plt.clf()
-    
     
     # with open(f"instances/result_{instances}_{num_i}_{num_t}_{timestamp}.json",
     #           'a') as f:

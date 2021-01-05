@@ -45,19 +45,19 @@ Let $\Xi_d$ be the support for random variable $\boldsymbol{d}$. Let $\boldsymbo
 
 Define $z_{t}$ is the optimal value with $t$ periods to go. We are interested in the expected value with known initial state $y_0$, consider the following multistage stochastic optimization problem:
 
-$$z_T(y_0) = \min_{\boldsymbol\delta^-, \boldsymbol\delta^+, \boldsymbol U, \boldsymbol X}
-\mathbb{E}_f \left[ \sum_t^{|T|}h \cdot \boldsymbol \delta^-_t + b \cdot \boldsymbol \delta^+_t \;\Big|\; y_0 \right ]$$
+$$z_T(y_0) = \min_{\boldsymbol\epsilon, \boldsymbol\delta, \boldsymbol U, \boldsymbol X}
+\mathbb{E}_f \left[ \sum_t^{|T|}h \cdot \boldsymbol \epsilon_t + p \cdot \boldsymbol \delta_t \;\Big|\; y_0 \right ]$$
 
 While the decisions are taken under conditions:
-$$\sum_i \boldsymbol u_{it} - \boldsymbol\delta^-_t + \boldsymbol\delta^+_t = \boldsymbol{d}_t, \quad \\
+$$\sum_i \boldsymbol u_{it} - \boldsymbol\epsilon_t + \boldsymbol\delta_t = \boldsymbol{d}_t, \quad \\
 \boldsymbol U_{(i,\cdot)}, \boldsymbol X_{(i,\cdot)}, \boldsymbol S_{(i,\cdot)} \in \Omega_i, \forall i\in I$$
 
 Assume the data process $\boldsymbol d_1, ...,\boldsymbol d_t$ is Markovian, similar to the deterministic problem, the Bellman iteration can be written as:
 
 $$\begin{aligned}
   V_{t}(\boldsymbol y, \boldsymbol{d}_t) & = 
-\min_{\small{\boldsymbol\delta^-_t, \boldsymbol\delta^+_t, \boldsymbol u_{it}, \boldsymbol x_{it}}}  
-h \cdot \boldsymbol \delta^-_t + b \cdot \boldsymbol \delta^+_t + \mathbb E_{f} \left [ V_{t-1}(\boldsymbol y', \boldsymbol{d}'_{t-1}) \big | \boldsymbol y, \boldsymbol{d}_t\right] \\
+\min_{\small{\boldsymbol\epsilon_t, \boldsymbol\delta_t, \boldsymbol u_{it}, \boldsymbol x_{it}}}  
+h \cdot \boldsymbol \epsilon_t + p \cdot \boldsymbol \delta_t + \mathbb E_{f} \left [ V_{t-1}(\boldsymbol y', \boldsymbol{d}'_{t-1}) \big | \boldsymbol y, \boldsymbol{d}_t\right] \\
 z_t(\boldsymbol y)& = \mathbb{E}_f\left[V_{t}(\boldsymbol y, \boldsymbol{d}_t)\right ]
 \end{aligned}$$
 
@@ -65,7 +65,7 @@ z_t(\boldsymbol y)& = \mathbb{E}_f\left[V_{t}(\boldsymbol y, \boldsymbol{d}_t)\r
 We now investigate the Lagrangian relaxation. We let $z_t^\mathsf{LD}, V_t^\mathsf{LD}$ for the Lagrangian for $z, V$, respectively. The analysis is similar to existing results in @adelman_relaxations_2008, @hawkins_langrangian_2003. The difference lies in the fact that we do not enforce $\lambda_t$ to be identical across the stages $t = 1, ..., |T|$, which is convenient for infinite dimensional problems.
 
 
-**Proposition 1.** Lagrangian relaxation provides a lower bound for any multiplier $\lambda = (\lambda_1, ..., \lambda_{|T|})$ such that $\lambda_t \in [-b, h],\; \forall t=1,..., |T|$.
+**Proposition 1.** Lagrangian relaxation provides a lower bound for any multiplier $\lambda = (\lambda_1, ..., \lambda_{|T|})$ such that $\lambda_t \in [-p, h],\; \forall t=1,..., |T|$.
 $$V_{t}(\boldsymbol y, \boldsymbol d_t) \ge V_{t}^\mathsf{LD}(\boldsymbol y, \boldsymbol d_t) \equiv -\lambda_t \boldsymbol d_t + \sum_{i\in I} V_{it}(\boldsymbol y_i, \boldsymbol d_t)$$
 
 Where $V_{it}$ is the optimal equation for each $i$
@@ -76,13 +76,13 @@ $$V_{it}(\boldsymbol y, \boldsymbol d_t) = \min_{\boldsymbol u_{it}, \boldsymbol
 
 $$\begin{aligned}
   V_{t}(\boldsymbol y, \boldsymbol d_t) & \ge 
-\min_{\small{\boldsymbol\delta^-_t, \boldsymbol\delta^+_t, \boldsymbol u_{it}, \boldsymbol x_{it}}}  
-(h - \lambda_t )\cdot \boldsymbol \delta^-_t + (b + \lambda_t) \cdot \boldsymbol \delta^+_t 
+\min_{\small{\boldsymbol\epsilon_t, \boldsymbol\delta_t, \boldsymbol u_{it}, \boldsymbol x_{it}}}  
+(h - \lambda_t )\cdot \boldsymbol \epsilon_t + (p + \lambda_t) \cdot \boldsymbol \delta_t 
 + \sum_i \boldsymbol{u}_{it} \lambda_t - \lambda_t \boldsymbol d_t
 + \mathbb E_{f} \left [ V_{t-1}(\boldsymbol y', \boldsymbol{d}'_t) \big | \boldsymbol y, \boldsymbol{d}_t \right ] \\
 \end{aligned}$$
 
-We set $\lambda_t \in [-b, h]$ otherwise RHS is unbounded, we have:
+We set $\lambda_t \in [-p, h]$ otherwise RHS is unbounded, we have:
 
 $$\begin{aligned}
   V_{t}(\boldsymbol y, \boldsymbol d_t) & \ge 
@@ -125,9 +125,9 @@ $$\begin{aligned}
 For DRO model, the goal is to minimize worst-case expected unsatisfied demand and surplus (idle) flights
 
 $$\begin{aligned}
-  & \min \max_{f\in \mathscr F}\mathbb E_f  \left[e^\top( b \cdot\boldsymbol{\delta^+}  + h\cdot \boldsymbol \delta^-)\right] \\
+  & \min \max_{f\in \mathscr F}\mathbb E_f  \left[e^\top( p \cdot\boldsymbol{\delta}  + h\cdot \boldsymbol \epsilon)\right] \\
   \mathbf{s.t.}  & \\
-  & \boldsymbol{U} ^\top e + \boldsymbol \delta^+ - \boldsymbol \delta^-  = \boldsymbol d & \forall \boldsymbol d \in \Xi_d\\
+  & \boldsymbol{U} ^\top e + \boldsymbol \delta - \boldsymbol \epsilon  = \boldsymbol d & \forall \boldsymbol d \in \Xi_d\\
   & \boldsymbol U_{(i,\cdot)}, \boldsymbol X_{(i,\cdot)}, \boldsymbol S_{(i,\cdot)} \in \Omega_i & \forall i\in I
 \end{aligned}$$
 
@@ -150,16 +150,16 @@ $$\begin{aligned}
   \boldsymbol{p}^\top & s
 \end{bmatrix} \succeq 0, \; 
 \boldsymbol \beta = 2 (\boldsymbol p + \boldsymbol{Q\mu}_0)\\
-& \boldsymbol{U} ^\top e + \boldsymbol \delta^+ - \boldsymbol \delta^-  = \boldsymbol d & \forall \boldsymbol d \in \Xi_d\\
-& \boldsymbol{d}^{\top} \boldsymbol{Q} \boldsymbol{d} -\boldsymbol{d^\top\beta} + r \ge e^\top( b \cdot\boldsymbol{\delta^+}  + h\cdot \boldsymbol \delta^-) & \forall \boldsymbol d \in \Xi_d \\
+& \boldsymbol{U} ^\top e + \boldsymbol \delta - \boldsymbol \epsilon  = \boldsymbol d & \forall \boldsymbol d \in \Xi_d\\
+& \boldsymbol{d}^{\top} \boldsymbol{Q} \boldsymbol{d} -\boldsymbol{d^\top\beta} + r \ge e^\top( p \cdot\boldsymbol{\delta}  + h\cdot \boldsymbol \epsilon) & \forall \boldsymbol d \in \Xi_d \\
 & \boldsymbol X_{(i,\cdot)}, \boldsymbol U_{(i,\cdot)}, \boldsymbol S_{(i,\cdot)} \in \Omega_i & \forall i\in I
 \end{aligned}$$
 
-semi-infinite constraints are equivalent to (substitute $\boldsymbol\delta^- = \boldsymbol u + \boldsymbol \delta^+ - \boldsymbol d$，we have immediately)
+semi-infinite constraints are equivalent to (substitute $\boldsymbol\epsilon = \boldsymbol u + \boldsymbol \delta - \boldsymbol d$，we have immediately)
 
 $$\begin{bmatrix}
   \boldsymbol Q &  (he- \boldsymbol \beta)/2 \\
-  (he- \boldsymbol \beta)^\top/2 & r - (h+b)e^\top \boldsymbol \delta^+ - h e^\top   \boldsymbol U^\top e
+  (he- \boldsymbol \beta)^\top/2 & r - (h+p)e^\top \boldsymbol \delta - h e^\top   \boldsymbol U^\top e
 \end{bmatrix} \succeq 0$$
 
 wrap up:
@@ -175,7 +175,7 @@ $$\begin{aligned}
 \boldsymbol \beta = 2 (\boldsymbol p + \boldsymbol{Q\mu}_0)\\
 & \begin{bmatrix}
   \boldsymbol Q &  (he- \boldsymbol \beta)/2 \\
-  (he- \boldsymbol \beta)^\top/2 & r - (h+b)e^\top \boldsymbol \delta^+ - h e^\top   \boldsymbol U^\top e
+  (he- \boldsymbol \beta)^\top/2 & r - (h+p)e^\top \boldsymbol \delta - h e^\top   \boldsymbol U^\top e
 \end{bmatrix} \succeq 0 \\
 & \boldsymbol X_{(i,\cdot)}, \boldsymbol U_{(i,\cdot)}, \boldsymbol S_{(i,\cdot)} \in \Omega_i & \forall i\in I
 \end{aligned}$$
@@ -188,7 +188,7 @@ $$\begin{aligned}
   \textbf {s.t.} \\
   & \beta \ge 0 \\
   & \boldsymbol{Q} e \ge \theta \mathbf 1 \\ 
-  & \boldsymbol{U} ^\top e + \boldsymbol \delta^+ - \boldsymbol \delta^-  = \boldsymbol d^n & \forall n = 1, ..., N \\
+  & \boldsymbol{U} ^\top e + \boldsymbol \delta - \boldsymbol \epsilon  = \boldsymbol d^n & \forall n = 1, ..., N \\
   & \boldsymbol x_{(i,\cdot)}, \boldsymbol u_{(i,\cdot)}, \boldsymbol s_{(i,\cdot)} \in \Omega_i & \forall i\in I
 \end{aligned}$$
 
