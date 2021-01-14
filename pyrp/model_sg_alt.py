@@ -9,23 +9,10 @@
 
 import multiprocessing as mpc
 import time
-from collections import namedtuple as nt
-
+from collections import namedtuple
 from .model_single import single_mip
 from .model_single_dp import single_dp
 from .util import *
-
-
-def min_alp(l, lt, length=100, alp_max=0.1):
-  def _val(st):
-    lp = (1 - st) * l + st * lt
-    val = lp.dot(lp)
-    return val
-  
-  vals = sorted(((alp_max * al / length, _val(alp_max * al / length))
-                 for al in range(1, length)),
-                key=lambda x: x[-1])
-  return min(alp_max, vals[0][0])
 
 
 # ===================
@@ -33,20 +20,35 @@ def min_alp(l, lt, length=100, alp_max=0.1):
 # ===================
 def projection_box(x, lower, upper):
   """
+  Simple projection onto box: [lower, upper]
   Args:
-    x:
-    lower:
-    upper:
-
+    ...
   Returns:
   """
   return np.minimum(np.maximum(x, lower), upper)
 
 
+def multiplier_method(g_k, d_k, delta_k, gamma_k, lambda_b, projection_method, b, h, option='subgrad'):
+  if option == 'cvx':
+    _d = d_k
+  elif option == 'subgrad':
+    _d = g_k
+  else:
+    raise ValueError("no such method")
+  
+  step = 1 / (_d.dot(_d)) * delta_k * gamma_k
+  lambda_k = lambda_b + step * _d
+  lambda_k = projection_method(lambda_k, -b, h)
+  return step, lambda_k
+
+
+# ===================
+# PARAM METHODS
+# ===================
 def alpha_method(gamma0, iteration, use_optimal, d, g):
   """
   alpha method update \gamma \alpha
-  at start of iteration k
+    at start of iteration k
   iteration: note that iteration := k
     you should use d of last iteration
     and g of current
@@ -66,6 +68,23 @@ def alpha_method(gamma0, iteration, use_optimal, d, g):
   return alp_k, gamma_k
 
 
+# ===================
+# CONTAINERS
+# ===================
+class Sol:
+  def __init__(self):
+    self.primal_sol = []
+    self.primal_val = []
+    self.primal_k = []
+    self.lb = []
+
+
+class Param:
+  def __init__(self):
+    self.use_maximum = False
+    self.use_optimal = False
+
+
 def repair_subgradient(
     problem,
     scale,
@@ -78,16 +97,18 @@ def repair_subgradient(
     r0=2,
     dual_option="max",
     hyper_option="simple",
+    dir_option='subgrad',
+    eps_step=1e-4,
     **kwargs):
   """[summary]
-  The subgradient algorithm for repair problem
+  The subgradient algorithm for the repair problem
   Args:
       subproblem_method (callable): the function for subproblem
       projection_method (callable): the function for projection of dual multipliers.
         Defaults to projection_box.
       **kwargs
   """
-  
+  _unused_ = kwargs
   h, b = problem['h'], problem['p']
   T = problem['T'][:scale]
   I = problem['I']
@@ -95,15 +116,14 @@ def repair_subgradient(
   numI = len(problem['I'])
   
   st_sec = time.time()
-  sol_container = nt("sol", ["primal_sol", "primal_val", "primal_k", "lb"])
-  sol_container.primal_sol = []
-  sol_container.primal_val = []
-  sol_container.primal_k = []
-  sol_container.lb = []
+  # solution
+  sol = Sol()
   
   # algorithm options
-  _use_maximum = dual_option == 'max'
-  _use_optimal = hyper_option != 'simple'
+  param = Param()
+  param.use_maximum = dual_option == 'max'
+  param.use_optimal = hyper_option != 'simple'
+  param.direction = 'cvx' if dir_option == 'cvx' else 'subgrad'
   
   # ==================
   # INITIALIZATION
@@ -120,15 +140,18 @@ def repair_subgradient(
   improved = 0
   improved_eps = 30
   # initial direction
-  d_lambda_bar = 0
-  
+  d_k = 0
+  # alpha & gamma
+  alp_k = gamma_k = 1
+  # iteration #
+  k = 0
   # main routine
-  for k in range(0, max_iteration):
-  
+  while True:
     
     # ==================
     # solve \phi_k = \phi(\lambda_k)
     # ==================
+    # solution keeper
     sub_v_k, x_k = np.zeros(numI), np.zeros((numI, scale, 3))
     
     # solve decomposable subproblems
@@ -155,21 +178,19 @@ def repair_subgradient(
     # subgradient computation
     # =====================
     i_k = x_k.sum(0)[:, 0]
-    d_lambda_k = (i_k - D)
+    g_k = (i_k - D)
     
     # =====================
     # update direction params
     # =====================
-    alp_k, gamma_k = alpha_method(gamma0=r0, iteration=k + 1, use_optimal=_use_optimal, d=d_lambda_bar, g=d_lambda_k)
-    print(f'==={alp_k, gamma_k} === ')
+    # hint: use k + 1 since k start from 0
+    alp_k, gamma_k = alpha_method(gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
     
     # =====================
     # compute direction
     # =====================
     # there are many ways to do this
-    x_bar = (1 - alp_k) * x_bar + x_k * alp_k
-    i_bar = (1 - alp_k) * i_bar + i_k * alp_k
-    d_lambda_bar = (i_bar - D)
+    d_k = (1 - alp_k) * d_k + g_k * alp_k
     
     # =====================
     # the recovery algorithm
@@ -180,23 +201,22 @@ def repair_subgradient(
     # This is an implied step,
     #  by this you actually use a "heuristic"
     #  since you retrieve a primal solution
-    #  using U^T e - d
+    #  using g = U^T e - d
+    #  and max{g, 0}, max{-g, 0} which are convex
     # calculate best primal
-    surplus_idx_k = d_lambda_k > 0
-    z_k = h * d_lambda_k[surplus_idx_k].sum(
-      0) - b * d_lambda_k[~surplus_idx_k].sum(0)
+    surplus_idx_k = g_k > 0
+    z_k = h * g_k[surplus_idx_k].sum(
+      0) - b * g_k[~surplus_idx_k].sum(0)
     
     # calculate cvx (averaging primal heuristic)
-    surplus_idx_bar = d_lambda_bar > 0
-    z_bar = h * d_lambda_bar[surplus_idx_bar].sum(
-      0) - b * d_lambda_bar[~surplus_idx_bar].sum(0)
-
+    surplus_idx_bar = d_k > 0
+    z_bar = h * d_k[surplus_idx_bar].sum(
+      0) - b * d_k[~surplus_idx_bar].sum(0)
+    
     # =====================
     # update dual vars
     # =====================
-    step = 1 / (d_lambda_bar.dot(d_lambda_bar)) * (z_bar - phi_k) * gamma_k
-    lambda_k = lambda_b + step * d_lambda_bar
-    lambda_k = projection_method(lambda_k, -b, h)
+    step, lambda_k = multiplier_method(g_k, d_k, z_bar - phi_k, gamma_k, lambda_b, projection_method, b, h, option=param.direction)
     
     # =====================
     # MAIN FINISHED
@@ -221,29 +241,35 @@ def repair_subgradient(
     
     # update base "dual multipliers"
     # condition (phi_k > phi_bar) is only for the volume algorithm
-    if not _use_maximum or _bool_lb_updated:
+    if not param.use_maximum or _bool_lb_updated:
       lambda_b = lambda_k.copy()
     
     gap_k = (z_bar - phi_bar) / abs(z_bar)
     
     print(
       f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-      f"@stepsize: {step:.4f}; @norm: {np.abs(d_lambda_bar).sum():.2f}; @alp: {alp_k:.4f}"
+      f"@stepsize: {step:.4f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}"
     )
-    sol_container.primal_sol = x_bar
-    sol_container.primal_val.append(z_bar)
-    sol_container.primal_k.append(z_k)
-    sol_container.lb.append(phi_bar)
     
-    if gap_k < gap or step < 1e-4:
+    sol.primal_val.append(z_bar)
+    sol.primal_k.append(z_k)
+    sol.lb.append(phi_bar)
+    
+    if k >= max_iteration or gap_k < gap or step < eps_step:
+      x_bar = (1 - alp_k) * x_bar + x_k * alp_k
+      i_bar = (1 - alp_k) * i_bar + i_k * alp_k
+      sol.primal_sol = x_bar
       break
+    
+    # increment iteration
+    k += 1
   
   finish_sec = time.time()
   total_runtime = finish_sec - st_sec
   if max_iteration:
     print(
       f"@summary: @k: {k}; @dual: {phi_k}; @primal: {z_bar}; @lb: {phi_bar}; @gap: {gap_k} @sec: {total_runtime}")
-  return x_bar, i_bar, alp_k, z_bar, lambda_b, sol_container
+  return x_bar, i_bar, alp_k, z_bar, lambda_b, sol
 
 
 def main(problem, **kwargs):

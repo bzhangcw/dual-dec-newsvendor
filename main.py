@@ -6,7 +6,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import pyrp.model as mip
 import pyrp.model_sg_alt as sg_alt
-from pyrp.util import create_instance
+from pyrp.util import *
 
 plt.rcParams["font.size"] = 9
 plt.rcParams["font.weight"] = 400
@@ -17,7 +17,7 @@ plt.rcParams["legend.fontsize"] = "small"
 
 if __name__ == '__main__':
   print(sys.argv)
-  # np.random.seed(1)
+  np.random.seed(1)
   instances, ni, nt = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
   timestamp = int(time.time())
   kwargs = {  # kwargs
@@ -25,8 +25,10 @@ if __name__ == '__main__':
     "t": nt,
     "subproblem_alg": 'dp',
     "mp": True,
+    "gap": 0.005,
     "scale": nt,
-    "max_iteration": 400
+    "max_iteration": 400,
+    "eps_step": 1e-5
   }
   scale = kwargs.get('scale')
   num_i = kwargs.get('i')
@@ -39,8 +41,9 @@ if __name__ == '__main__':
   
   methods = {
     # "normal" convex sg
-    # "optimal_sg": {"r0": 1.5, "dual_option": "normal", "hyper_option": "optimal", **kwargs},
-    "normal_sg": {"r0": 1.5, "dual_option": "normal", **kwargs},
+    # "bran95_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", "hyper_option": "optimal", **kwargs},
+    "normal_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "subgrad", **kwargs},
+    "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
     # "volume" convex sg
     # "volume_sg": {"r0": 1.5, **kwargs}
   }
