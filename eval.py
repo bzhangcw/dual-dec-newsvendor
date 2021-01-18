@@ -8,10 +8,10 @@ INSTANCE_DIR = './instances'
 
 dfs = []
 methods = [
-    # "normal" convex sg
+    # "normal" regular sg
     "normal_sg",
-    # "volume" convex sg
-    "volume_sg"
+    # "avg" convex sg
+    "convex_sg"
 ]
 
 
@@ -28,7 +28,7 @@ for fname in os.listdir(INSTANCE_DIR):
   df = pd.DataFrame(data)
   method_vals = {}
   for method in methods:
-    for who in ['lb', 'val', 'primal_k']:
+    for who in ['lb', 'val']:
       method_vals[f"{method}_{who}"] = get_last(df, f"{method}_{who}")
 
   df = df.assign(I=i, T=t, **method_vals)
@@ -45,6 +45,13 @@ for method in methods:
     group_vals[f"{method}_{who}_gap"] = df_out.eval(
         f"({method}_{who} - bench_{who}) / bench_{who}").apply("{:.2%}".format)
 df_out = df_out.assign(**group_vals).sort_values(list(group_vals.keys()))
+
+# sorted colums
+cols = ['I', 'T', 'bench_lb', 'bench_val']
+for method in methods:
+  cols += [f'{method}_lb', f'{method}_val', f'{method}_lb_gap', f'{method}_val_gap']
+
+df_out = df_out[cols]
 
 latex_string = df_out.to_latex()
 df_out.to_csv("eval.all.csv")

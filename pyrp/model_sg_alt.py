@@ -145,7 +145,9 @@ def repair_subgradient(
   alp_k = gamma_k = 1
   # iteration #
   k = 0
-  # main routine
+  # ==================
+  # MAIN ROUTINE
+  # ==================
   while True:
     
     # ==================
@@ -248,7 +250,7 @@ def repair_subgradient(
     
     print(
       f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-      f"@stepsize: {step:.4f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}"
+      f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}"
     )
     
     sol.primal_val.append(z_bar)

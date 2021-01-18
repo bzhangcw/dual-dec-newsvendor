@@ -256,8 +256,7 @@ viewpoint while adopting \(\hat \lambda_{k}\) instead of \(\lambda_k\) from the 
 \[\lambda_{k+1} = \mathbf{P}(\hat\lambda_{k} + s_{k}d_{k})\]
 
 \emph{There is no existing proof of convergence} for the volume
-algorithm, and our experiments show that the algorithm converges to
-non-optimal solutions occasionally.
+algorithm.
 
 \textbf{(Remark / Difference for our method)}
 
@@ -341,40 +340,20 @@ parameters for convexity \(\alpha_k\) and stepsize \(\gamma_k\). Part
 also consider a slower scheme that is widely used and simple to
 implement.
 
-\begin{theorem} Choices of parameters.
-
-  \begin{enumerate}
-    \def\labelenumi{(\alph{enumi})}
-    \tightlist
-    \item
-          The choice of stepsize and direction in the subgradient method defined
-          by
-  \end{enumerate}
-
-  \[\alpha_{k}=\gamma_{k}=\begin{cases}\|d_{k-1}\|^2 /(\|d_{k-1}\|^2- g_{k}^\mathsf{T} d_{k-1}), & \text { if } g_{k}^\mathsf{T} d_{k-1} <0 \\ 1, & \text { otherwise }\end{cases}\]
-
-  generates the fastest convergence speed with respect to
-
-  \[\|\lambda_{k+1}-\lambda^\star\|^{2} \leqslant\|\lambda_{k}-\lambda^\star\|^{2}-F(\gamma_{k}, \alpha_{k})(\phi_k-\phi^\star)^{2}\]
-
-  where
-
-  \[F(\gamma_{k}, \alpha_{k})=\begin{cases}
-      \frac{\|d_k\|^2}{\|d_k\|^2 \|g_k\|^2-(g_k^\mathsf{T} d_k)^{2}}, & \textrm { if } g_k^\mathsf{T} d_k <0 \\
-      1/\|g_k\|^2,                                                    & \text { otherwise }\end{cases}\]
+\begin{corollary} Choices of parameters.
 
   \begin{enumerate}
     \def\labelenumi{(\alph{enumi})}
     \setcounter{enumi}{1}
     \tightlist
     \item
-          to show the following is also convergent?
+          to show the following is convergent?
   \end{enumerate}
 
   \[\alpha_k = \frac{1}{k}, \gamma_k = \gamma \in [1, 2]\]
 
 
-\end{theorem}
+\end{corollary}
 
 \begin{theorem} \label{lemma:recovery}  Recovery Algorithm \eqref{eq:recovery}
   \begin{enumerate}
@@ -395,38 +374,18 @@ implement.
   \end{enumerate}
 
   \[\bar z_k \le \sum^i_k \alpha^i_k z^i\]
+  \begin{enumerate}
+    \def\labelenumi{(\alph{enumi})}
+    \setcounter{enumi}{2}
+    \tightlist
+    \item
+  \end{enumerate}
+  \[\bar z_k \ge d_k^\mathsf{T} \lambda_k\]
+
 \end{theorem}
 
 \begin{proof}
-  By convexity.
-\end{proof}
-
-Now we visit properties for primal solutions.
-
-\textbf{Proposition 3} Primal solution bounds \(|\bar z_k - z^\star|\) ?
-
-\begin{proof} we notice:
-  \begin{itemize}
-    \tightlist
-    \item
-          \(- \delta_k + \epsilon_k = g_k = y_k -d\) is bounded, suppose
-          \(\|g_k - g^\star\|\le L_g\)
-    \item
-          \(f, z\) is Lipschitz continuous with \(L_z\)
-    \item
-          \(\phi^\star - \phi_k \le g_k^\mathsf{T} (\lambda^\star - \lambda_k)\le \|g_k\|\|\lambda^\star - \lambda_k\|\Rightarrow \phi_k -\phi^\star\)
-          by boundedness of \(g_k\)
-    \item
-          \(\epsilon_k \le \frac{1}{2}(2 - \gamma_k) ( \phi^\star - \phi_k) \to 0\)
-    \item
-          \(\epsilon_k = d_k^\mathsf{T} \lambda_k - \phi_k \to 0\) (converge
-          from above)
-    \item
-          \(d_k^\mathsf{T} \lambda_k = (\bar y_k - b)^\mathsf{T} \lambda_k \to \phi^\star\)
-  \end{itemize}
-
-  \textbf{(affine case)}
-
+  (a) straight-forward. (b) by convexity of \(z(\cdot)\). (c)
   we notice a strong duality pair with fixed \(d_k\) at each iteration
   \(k\).
 
@@ -447,9 +406,9 @@ Now we visit properties for primal solutions.
     \end{aligned}
   \end{equation}
 
-  by \ref{lemma:recovery}, \((\bar \epsilon_k, \bar \delta_k)\) minimizes the primal
+  by \ref{lemma:recovery}(a), \((\bar \epsilon_k, \bar \delta_k)\) minimizes the primal
   problem. Since \textbf{(P)} is well-defined,
-  \(\exists\; \mu_k \in [-p, h]\) such that \(\mu_k \in \arg\max_{\lambda} d_k^\top \lambda \).
+  \(\exists\; \mu_k \in [-p, h]\) such that \(\mu_k \in \arg\max_{\lambda} d_k^\mathsf{T} \lambda \).
 
   \[\begin{aligned}
        & d_k^\mathsf{T} \mu_k = \bar z_k = p^\mathsf{T} \bar \delta_k + h^\mathsf{T} \bar \epsilon_k \\
@@ -458,6 +417,69 @@ Now we visit properties for primal solutions.
 
 
 \end{proof}
+
+Now we visit properties for primal solutions.
+
+\begin{theorem} \label{theorem:primal}
+
+  Suppose the subgradient is bounded, that is, \(\exists L > 0\) such that
+
+  \begin{equation}\label{eq:bounded_subgrad}
+    \|g_k\| \le L
+  \end{equation}
+
+  and
+  \begin{equation}\label{eq:non_orthogonal_direction}
+    d_k^\mathsf{T} d_{k+1} \ge 0
+  \end{equation}
+  holds for all iteration \(k\) in the subgradient algorithm.
+  Then the primal-dual bound by the recovery algorithm \eqref{eq:recovery} converges to \(0\), specifically:
+
+  \[\bar z_k - \phi^\star \to 0\]
+
+\end{theorem}
+
+\begin{proof}
+  We first notice
+
+  \[
+    \phi^\star - \phi_k \le g_k^\mathsf{T} (\lambda^\star - \lambda_k)\le \|g_k\|\|\lambda^\star - \lambda_k\| \Rightarrow \phi_k -\phi^\star
+  \]
+
+  This immediately follows:
+  \begin{subequations}
+    \begin{align}\label{eq:eps_subgrad_to_subgrad}
+                        & \epsilon_k \le \frac{1}{2}(2 - \gamma_k) ( \phi^\star - \phi_k) \to 0 \\
+      \Rightarrow \quad & \epsilon_k = d_k^\mathsf{T} \lambda_k - \phi_k \to 0                  \\
+      \Rightarrow \quad & d_k^\mathsf{T} \lambda_k \to \phi^\star
+    \end{align}
+  \end{subequations}
+
+  We now show the convergence from \(\bar z\) to \(\lambda_k ^ \mathsf{T} d_k\).
+
+  \begin{equation}
+    \begin{aligned}\label{eq:bar_z_to_lambda_d}
+      \bar z_{k+1} - \lambda_{k+1}^\mathsf{T} d_{k+1}
+       & = z\left(\alpha g_k + (1-\alpha) d_k\right) - (\lambda_k + s_k d_k ) \left ((1-\alpha) d_k + \alpha g_k \right ) \\
+       & \le \alpha \cdot z(g_k) + (1-\alpha) \cdot z(d_k)
+      - (1-\alpha)\lambda_k^\mathsf{T} d_k - (1-\alpha) s_k \|d_k\|^2
+      - \alpha \lambda_k ^\mathsf{T} g_k - \alpha s_k d_k^\mathsf{T} g_k                                                              \\
+       & = (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k) - s_k d_k \Big [ \alpha  g_k + (1-\alpha) d_k \Big]                \\
+       & = (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k) - s_k d_k^\mathsf{T} d_{k+1} \\
+       & \le (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k)
+    \end{aligned}
+  \end{equation}
+
+  We combine \eqref{eq:bar_z_to_lambda_d}, \eqref{eq:eps_subgrad_to_subgrad} to $\bar z^k \to \phi^\star$
+\end{proof}
+
+\emph{Remark}
+
+The boundedness of subgradient can be easily verified by \eqref{eq:direction}. As for \eqref{eq:non_orthogonal_direction},
+\cite{brannlund1995generalized} suggests the orthogonality \(d_k^\mathsf{T} d_{k+1} = 0\) if the optimal stepsize is implemented.
+Our results show that the angle between two consecutive search directions should be acute to achieve better duality gaps.
+
+
 \hypertarget{computational-results}{%
   \subsection{Computational Results}\label{computational-results}}
 
