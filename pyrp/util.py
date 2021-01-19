@@ -15,15 +15,15 @@ import numpy as np
 def create_instance(nI: int, nT: int):
   I = [f"fl_{i}" for i in range(nI)]
   T = range(nT)
-  L = 0.2  # np.random.random() * 0.3
-  U = np.random.random() * 0.5 + 1.2
+  L = 2  # np.random.random() * 0.3
+  U = np.random.randint(1, 10) + 12
   D = np.random.randint(nI // 2, nI, size=nT)
-  # D = np.ones(nT) * nI * 0.9
-  a = np.random.uniform(0.2, 0.3, nI)
-  b = np.random.uniform(0.5, 1, nI)
-  h = 1
-  p = 2
-  s0 = 0.5
+  tau = 2 # np.random.randint(2, 4)
+  a = np.random.randint(3, 5, nI)
+  b = np.random.randint(5, 10, nI)
+  h = 11
+  p = 18
+  s0 = 6
   return dict(
     D=D.astype(float).tolist(),
     a=a.tolist(),
@@ -32,7 +32,7 @@ def create_instance(nI: int, nT: int):
     T=T,
     L=L,
     U=U,
-    tau=2,
+    tau=tau,
     s0=s0,
     h=h,
     p=p)

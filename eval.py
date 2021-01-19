@@ -16,8 +16,10 @@ methods = [
 
 
 def get_last(df, serie):
-  return df[serie].apply(lambda x: x[-1])
-
+  try:
+    return df[serie].apply(lambda x: x[-1])
+  except:
+    return df[serie]
 
 for fname in os.listdir(INSTANCE_DIR):
   if not fname.endswith("pk"):
@@ -28,7 +30,7 @@ for fname in os.listdir(INSTANCE_DIR):
   df = pd.DataFrame(data)
   method_vals = {}
   for method in methods:
-    for who in ['lb', 'val']:
+    for who in ['lb', 'val', 'time']:
       method_vals[f"{method}_{who}"] = get_last(df, f"{method}_{who}")
 
   df = df.assign(I=i, T=t, **method_vals)
@@ -37,7 +39,7 @@ for fname in os.listdir(INSTANCE_DIR):
 
 df_all = pd.concat(dfs, sort=False).reset_index(drop=True)
 
-df_out = df_all[['I', 'T', 'bench_lb', 'bench_val'] +
+df_out = df_all[['I', 'T', 'bench_lb', 'bench_val', 'bench_time'] +
                 list(method_vals.keys())].query("bench_lb > 0")
 group_vals = {}
 for method in methods:
@@ -47,9 +49,9 @@ for method in methods:
 df_out = df_out.assign(**group_vals).sort_values(list(group_vals.keys()))
 
 # sorted colums
-cols = ['I', 'T', 'bench_lb', 'bench_val']
+cols = ['I', 'T', 'bench_lb', 'bench_val', 'bench_time']
 for method in methods:
-  cols += [f'{method}_lb', f'{method}_val', f'{method}_lb_gap', f'{method}_val_gap']
+  cols += [f'{method}_lb', f'{method}_val', f'{method}_time', f'{method}_lb_gap', f'{method}_val_gap']
 
 df_out = df_out[cols]
 

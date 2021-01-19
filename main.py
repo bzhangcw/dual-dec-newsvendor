@@ -1,9 +1,10 @@
-import json
+import pickle as pk
 import sys
 import time
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
+
 import pyrp.model as mip
 import pyrp.model_sg_alt as sg_alt
 from pyrp.util import *
@@ -17,7 +18,7 @@ plt.rcParams["legend.fontsize"] = "small"
 
 if __name__ == '__main__':
   print(sys.argv)
-  np.random.seed(1)
+  # np.random.seed(1)
   instances, ni, nt = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
   timestamp = int(time.time())
   kwargs = {  # kwargs
@@ -25,6 +26,7 @@ if __name__ == '__main__':
     "t": nt,
     "subproblem_alg": 'dp',
     "mp": True,
+    "mp_num": 8,
     "gap": 0.005,
     "scale": nt,
     "max_iteration": 400,
@@ -33,7 +35,8 @@ if __name__ == '__main__':
   scale = kwargs.get('scale')
   num_i = kwargs.get('i')
   num_t = kwargs.get('t')
-  
+  mp_num = kwargs.get('mp_num')
+  gap = kwargs.get('gap')
   bench_lb = {}
   bench_sol = {}
   
@@ -58,18 +61,20 @@ if __name__ == '__main__':
     
     for method, kw in methods.items():
       # run the method wrapper
-      sol, i_sol, alp, z_primal, l_b, sol_container = sg_alt.main(
+      sol, i_sol, alp, z_primal, l_b, sol_container, total_runtime = sg_alt.main(
         problem, **kw)
       r[f"{method}_lb"] = results[f"{method}_lb"][i] = sol_container.lb[1:]
       r[f"{method}_val"] = results[f"{method}_val"][i] = sol_container.primal_val[1:]
       r[f"{method}_sol"] = results[f"{method}_sol"][i] = sol_container.primal_sol[1:]
       r[f"{method}_primal_k"] = results[f"{method}_primal_k"][i] = sol_container.primal_k[1:]
+      r[f'{method}_time'] = results[f'{method}_time'][i] = total_runtime
     
     model, *_ = mip.repair_mip_model(
-      problem, engine='gurobi', scale=scale)
+      problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=gap)
     
     r['bench_lb'] = results['bench_lb'][i] = model.ObjBoundC
     r['bench_val'] = results['bench_val'][i] = model.ObjVal
+    r['bench_time'] = results['bench_time'][i] = model.Runtime
     
     for method in methods:
       for who in ['lb', 'val', 'primal_k']:
@@ -83,11 +88,9 @@ if __name__ == '__main__':
     plt.savefig(f"fig/conv_{i}_{num_i}_{num_t}.png", dpi=500)
     plt.clf()
     
-    # with open(f"instances/result_{instances}_{num_i}_{num_t}_{timestamp}.json",
-    #           'a') as f:
-    #   f.write(json.dumps(r))
-  
-  import pickle as pk
+    with open(f"instances_pr/{instances}_{num_i}_{num_t}_{timestamp}_{i}.json",
+              'wb') as f:
+      pk.dump(problem, f)
   
   with open(f"instances/result_{instances}_{num_i}_{num_t}_{timestamp}.pk",
             'wb') as f:

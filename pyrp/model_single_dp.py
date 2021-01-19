@@ -130,12 +130,12 @@ def single_dp(problem, nT, c, idx, u_target=None, x_target=None):
 
 
 if __name__ == '__main__':
-  _logger.setLevel(logging.DEBUG)
-  np.random.seed(1)
-  scale = int(sys.argv[1])
+  import pickle
   
-  idx = 2
-  problem = create_instance(20, 50)
+  problem = pickle.load(open("/Users/brent/Archiver/Workspace/repair/instances_pr/1_5_10_1611064221_0.json", 'rb'))
+  c = -np.random.random(10)
+  problem['tau'] = 2
+  best_v1, best_p1, *_ = single_dp(problem, 10, c, 0)
+  from pyrp.model_single import single_mip
   
-  c = -np.random.random(scale)
-  best_v, best_p, *_ = single_dp(problem, scale, c, idx)
+  best_v, best_p, *_ = single_mip(problem, 10, c, 0)

@@ -43,9 +43,10 @@ def repair_model(problem, **kwargs):
 
 def repair_mip_model(problem, **kwargs):
   time_limit = kwargs.get("timelimit", 300)
-  mip_gap = kwargs.get("mipgap", 0.1)
   engine = kwargs.get("engine", "gurobi").lower()
+  mp_num = kwargs.get("mp_num", 8)
   scale = kwargs.get("scale", 5)
+  mipgap = kwargs.get("gap", 5e-3)
   if engine.lower() == 'copt':
     import coptpy as cp
     env = cp.Envr()
@@ -54,8 +55,9 @@ def repair_mip_model(problem, **kwargs):
     quicksum = cp.quicksum
     ENGINE = cp.COPT
     PREFIX = "nameprefix"
-    MIPGAP = cp.COPT.param.RelGap
-    TIMELIMIT = cp.COPT.param.TimeLimit
+    MIPGAP = cp.COPT.Param.RelGap
+    TIMELIMIT = cp.COPT.Param.TimeLimit
+    VERBOSE = "Logging"
     # raise ValueError("need more dev")
   else:
     import gurobipy as gr
@@ -63,8 +65,9 @@ def repair_mip_model(problem, **kwargs):
     quicksum = gr.quicksum
     ENGINE = gr.GRB
     PREFIX = "name"
-    MIPGAP = ENGINE.param.MIPGap
-    TIMELIMIT = ENGINE.param.TimeLimit
+    MIPGAP = gr.GRB.Param.MIPGap
+    TIMELIMIT = gr.GRB.Param.TimeLimit
+    VERBOSE = gr.GRB.Param.OutputFlag
   
   # vars
   I = problem['I']
@@ -106,7 +109,13 @@ def repair_mip_model(problem, **kwargs):
   obj = quicksum(v for v in q.values())
   model.setObjective(obj)
   model.setParam(TIMELIMIT, time_limit)
-  model.setParam("Logging", 1)
+  model.setParam(VERBOSE, 1)
+  model.setParam(MIPGAP, mipgap)
+  try:
+    model.setParam("Threads", mp_num)
+  except:
+    print(f'{engine} do not have mp options')
+    return -1
   
   if engine == 'copt':
     model.solve()

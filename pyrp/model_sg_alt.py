@@ -271,13 +271,13 @@ def repair_subgradient(
   if max_iteration:
     print(
       f"@summary: @k: {k}; @dual: {phi_k}; @primal: {z_bar}; @lb: {phi_bar}; @gap: {gap_k} @sec: {total_runtime}")
-  return x_bar, i_bar, alp_k, z_bar, lambda_b, sol
+  return x_bar, i_bar, alp_k, z_bar, lambda_b, sol, total_runtime
 
 
 def main(problem, **kwargs):
   print(kwargs)
   subproblem_alg = kwargs.get('subproblem_alg', 'dp')
-  
+  mp_num = kwargs.get('mp_num', 8)
   # query subproblem algorithm
   if subproblem_alg == 'mip':
     # use mip
@@ -291,7 +291,7 @@ def main(problem, **kwargs):
   _ = repair_subgradient(
     problem,
     subproblem_method=subproblem_method,
-    pool=mpc.Pool(processes=8),
+    pool=mpc.Pool(processes=mp_num),
     **kwargs)
   return _
 
