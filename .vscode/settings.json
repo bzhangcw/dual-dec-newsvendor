@@ -89,7 +89,7 @@
             "command": "latexmk",
             "args": [
                 "-synctex=1",
-                "-f",
+                // "-f",
                 "-interaction=nonstopmode",
                 "-file-line-error",
                 "-xelatex",

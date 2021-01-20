@@ -1,0 +1,111 @@
+\documentclass[../main]{subfiles}
+
+\begin{document}
+\maketitle
+{
+  \setcounter{tocdepth}{3}
+  \tableofcontents
+}
+
+
+\section{Introduction}\label{introduction}
+
+This paper is concerned with minimizing a newsvendor-like objective \(f: \mathbb R^n \to \mathbb R\),
+
+\begin{equation}\label{eq:primal}
+  \begin{aligned}
+                  & \min f(\delta, \epsilon)                                                                       \\
+    \mathbf{s.t.} &                                                                                                \\
+                  & y + \delta - \epsilon = b                                                                      \\
+                  & y \in \Omega_y \subseteq \mathbb{R}^n, \delta \in \mathbb{R}^n_+ , \epsilon \in \mathbb{R}^n_+
+  \end{aligned}
+\end{equation}
+
+where \(f\) is a convex function of \(\delta, \epsilon\). The
+right-hand-side on the binding constraints is in the positive orthant:
+\(b \in \mathbb R_+^n\).  In the basic
+settings, let \(y\) be the ordering quantity quantities in a multi-item multi-period
+newsvendor problem, one minimizes the total expected cost:
+
+\[\min_{y \in \mathbb R_+} \mathbf E\left(h\cdot e^\mathsf{T} \max\{y - b,  0\} + p \cdot e^\mathsf{T} \max\{b - y,  0\}\right)\]
+
+Once the expectation operator is dropped, it is easy to verify the equivalence of such deterministic version
+to the problem \eqref{eq:primal} above. This problem is motivated from applications
+in device maintenance, inventory management, crew scheduling and so on.
+
+
+
+Let \(\lambda\in\mathbb{R}^n\) be the Lagrangian multiplier, we have the Lagrangian dual function,
+
+\begin{equation}\label{eq:dual}
+  \begin{aligned}
+    \phi(\lambda) = & \min_{\delta, \epsilon} f(\delta, \epsilon) + \lambda^\mathsf{T}\delta - \lambda^\mathsf{T} \epsilon+ \min_y \lambda^\mathsf{T} y - \lambda^\mathsf{T} b \\
+    \mathbf{s.t.}   &                                                                                                                                                          \\
+                    & y \in \Omega_y                                                                                                                                           \\
+                    & \delta \in \mathbb{R}^n_+ , \epsilon \in \mathbb{R}^n_+
+  \end{aligned}
+\end{equation}
+
+with two independent subproblems.
+For \(\delta, \epsilon\) we have a convex optimization problem in the positive orthant.
+We also assume minimizing the linear objective under \(y\in \Omega_y\) can be well-solved.
+In later sections we show some special cases where \(\Omega_y\) may be further decomposed into smaller problems.
+
+Denote $f^\star, \phi^\star$ be the optimal objective for primal and dual problem, respectively.
+
+
+\subsection{Affine case}\label{affine-case}
+
+Let \(f=p^\mathsf{T}\delta + h^\mathsf{T} \epsilon, p, h \in \mathbb R_+^n\), we have
+
+\[\phi(\lambda) = \min_{\delta, \epsilon} (p+ \lambda)^\mathsf{T}\delta + (h - \lambda)^\mathsf{T} \epsilon+ \min_y \lambda^\mathsf{T} y - \lambda^\mathsf{T} b\]
+
+Then \(\phi\) is unbounded unless \(\lambda \in \Lambda\) where
+\(\Lambda = \{\lambda: \lambda \in [-p, h]\}\), in which case
+
+\[\phi(\lambda) = \min_{y\in \Omega_y} \lambda^\mathsf{T} y - \lambda^\mathsf{T} b,\; \lambda\in \Lambda\]
+
+and \(\delta^\star(\lambda), \epsilon^\star(\lambda)= 0\) are corresponding optimizers
+for any \(\lambda \in \Lambda\)
+
+\subsection{Conditions for strong
+  duality}\label{conditions-for-strong-duality}
+
+It's well known that strong duality does not hold in general. We review
+some of the cases here. The Lagrangian duality theory can be found in
+any standard text.
+
+\begin{theorem}
+  if \(\Omega_y\) is convex then the strong duality holds ...,
+  i.e.~\(\phi^\star = f^\star\)
+\end{theorem}
+
+add justifications here (slater, ...)
+
+A more interesting result is devoted to mixed integer problems.
+We know Lagrangian relaxation produces a bound up to
+linear relaxation of a problem with the "easy" constraints
+and the convex hull of relaxed constraints.
+
+\textbf{(Review Here)}.
+
+\begin{lemma}
+  if \(\Omega_y = \{y \in \mathbb R^n: y \in \Omega, y\in \mathbb Z^n\}\).
+  Then we have the following relation for dual function,
+  \[ \phi^\star = \min_{\delta, \epsilon} f(\delta, \epsilon)\quad \textbf{ s.t. }  y + \delta - \epsilon = b,\; y \in \textrm{conv}(\Omega_y)\]
+\end{lemma}
+
+This immediately allows us to have strong duality by definition of perfect formulation,
+in which case the linear relaxation solves the original problem.
+
+\begin{corollary}\label{strong-ip}
+  We conclude the strong duality holds since
+  \(Y = \{(y, \delta, \epsilon): y + \delta - \epsilon = b,\; y \in \textsf{conv}(\Omega_y)\}\)
+  is already \emph{a perfect formulation} in the sense that
+  \(Y = \textsf{conv}(Y)\)
+\end{corollary}
+
+\textbf{show this or add more conditions to
+  justify}
+
+\end{document}

@@ -1,13 +1,13 @@
-This is BibTeX, Version 0.99d (TeX Live 2019)
-Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
-The top-level auxiliary file: repair-lag.aux
+This is BibTeX, Version 0.99d (TeX Live 2020)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
 The style file: informs2014.bst
 Database file #1: repair.bib
 Warning--empty year in kiwiel_lagrangian_2007; set to ????
 Warning--empty journal in kiwiel_lagrangian_2007
 You've used 6 entries,
             2869 wiz_defined-function locations,
-            638 strings with 5668 characters,
+            638 strings with 5656 characters,
 and the built_in function-call counts, 5425 in all, are:
 = -- 554
 > -- 112

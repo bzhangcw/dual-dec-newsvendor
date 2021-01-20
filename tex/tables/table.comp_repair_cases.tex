@@ -1,22 +1,12 @@
-% \documentclass[
-%   a4paper,
-% ,tablecaptionabove
-% ]{scrartcl}
-% \usepackage{amssymb,amsmath}
-% \usepackage{float}
-% \usepackage{booktabs}
-% \usepackage[table]{xcolor}
-% \usepackage[margin=2.5cm,includehead=true,includefoot=true,centering,]{geometry}
-% \usepackage{array}
-% \usepackage{multirow}
-% \usepackage{longtable}
-% \begin{document}
+\documentclass[../main]{subfiles}
+
+\begin{document}
 
 \scriptsize
 \setlength{\tabcolsep}{6pt}
 \begin{longtable}{l|ll|lll|lllll|lllll}
    \caption[Computational results]{Computational results from the repair model
-      \label{tab:comp_repair_cases}}                                                                                                                                                                                            \\
+   \label{tab:comp_repair_cases}}                                                                                                                                                                                               \\
    \toprule
    {} & \multirow{2}{*}{$|I|$}     & \multirow{2}{*}{$|T|$}     & \multicolumn{3}{c}{bench}
       & \multicolumn{5}{c}{normal} & \multicolumn{5}{c}{convex}                                                                                                                                                                 \\
@@ -116,3 +106,7 @@ the averaged primal solution,
 $\hat \phi$ is the best lower bound at termination.
 
 \normalsize
+
+\end{document}
+
+

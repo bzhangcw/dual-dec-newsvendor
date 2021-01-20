@@ -10,15 +10,17 @@
 *.raw
 
 # projects
-repair/fig
+fig
+instances
+instances_pr
+draft/*.pdf
+tex/*/*.pdf
+tex/*/*.pdf
 
 # mathematical programming
 *.lp
 *.mps
 *.tmp
-
-# repair
-repair/instances
 
 # reference
 ref/*.pdf
