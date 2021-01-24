@@ -204,34 +204,13 @@ Notice \(\epsilon_k\) can be further simplified by the definition of
     \end{aligned}\end{equation}
 
   Notice: \begin{equation}\begin{aligned}
-          & 2  \cdot d_k^\mathsf{T}(\lambda_k - \lambda^\star) + \gamma_{k}(\phi^\star - \phi_{k}) \\
+          & 2  \cdot d_k^\mathsf{T}(\lambda_k - \lambda^\star) + \gamma_{k}(\phi^\star - \phi_{k})
       \le & 2 (\phi_{k} - \phi^\star + \epsilon_k) + \gamma_k(\phi^\star -\phi_k)                  \\
       =   & (2 - \gamma_k) (\phi_{k} - \phi^\star)  + 2\epsilon_k \le 0
     \end{aligned}\end{equation}
 
   and we have the convergence.
 \end{proof}
-
-The next proposition states several convergence-guaranteed choices on
-parameters for convexity \(\alpha_k\) and stepsize \(\gamma_k\). Part
-(a) originally appears in \cite{brannlund1995generalized}. Besides, we
-also consider a slower scheme that is widely used and simple to
-implement.
-
-\begin{corollary} Choices of parameters.
-
-  \begin{enumerate}
-    \def\labelenumi{(\alph{enumi})}
-    \setcounter{enumi}{1}
-
-    \item
-          to show the following is convergent?
-  \end{enumerate}
-
-  \[\alpha_k = \frac{1}{k}, \gamma_k = \gamma \in [1, 2]\]
-
-
-\end{corollary}
 
 \begin{theorem} \label{lemma:recovery}  Recovery Algorithm \eqref{eq:recovery}
   \begin{enumerate}
@@ -335,64 +314,73 @@ Now we visit properties for primal solutions.
 
   We now show the convergence from \(\bar z\) to \(\lambda_k ^ \mathsf{T} d_k\).
 
-  \begin{equation}
-    \begin{aligned}\label{eq:bar_z_to_lambda_d}
-      \bar z_{k+1} - \lambda_{k+1}^\mathsf{T} d_{k+1}
-       & = z\left(\alpha g_k + (1-\alpha) d_k\right) - (\lambda_k + s_k d_k ) \left ((1-\alpha) d_k + \alpha g_k \right ) \\
-       & \le \alpha \cdot z(g_k) + (1-\alpha) \cdot z(d_k)
-      - (1-\alpha)\lambda_k^\mathsf{T} d_k - (1-\alpha) s_k \|d_k\|^2
-      - \alpha \lambda_k ^\mathsf{T} g_k - \alpha s_k d_k^\mathsf{T} g_k                                                  \\
-       & = (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k) - s_k d_k \Big [ \alpha  g_k + (1-\alpha) d_k \Big]          \\
-       & = (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k) - s_k d_k^\mathsf{T} d_{k+1}                                 \\
-       & \le (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k)
-    \end{aligned}
-  \end{equation}
+  % \begin{equation}
+  %   \begin{aligned}\label{eq:bar_z_to_lambda_d}
+  %     \bar z_{k+1} - \lambda_{k+1}^\mathsf{T} d_{k+1}
+  %      & = z\left(\alpha g_k + (1-\alpha) d_k\right) - (\lambda_k + s_k d_k ) \left ((1-\alpha) d_k + \alpha g_k \right ) \\
+  %      & \le \alpha \cdot z(g_k) + (1-\alpha) \cdot z(d_k)
+  %     - (1-\alpha)\lambda_k^\mathsf{T} d_k - (1-\alpha) s_k \|d_k\|^2
+  %     - \alpha \lambda_k ^\mathsf{T} g_k - \alpha s_k d_k^\mathsf{T} g_k                                                  \\
+  %      & = (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k) - s_k d_k \Big [ \alpha  g_k + (1-\alpha) d_k \Big]          \\
+  %      & = (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k) - s_k d_k^\mathsf{T} d_{k+1}                                 \\
+  %      & \le (1-\alpha)(\bar z_k - \lambda_k ^ \mathsf{T} d_k)
+  %   \end{aligned}
+  % \end{equation}
 
-  We combine \eqref{eq:bar_z_to_lambda_d}, \eqref{eq:eps_subgrad_to_subgrad} to $\bar z^k \to \phi^\star$
+  % We combine \eqref{eq:bar_z_to_lambda_d}, \eqref{eq:eps_subgrad_to_subgrad} to $\bar z^k \to \phi^\star$
 \end{proof}
 
-\emph{Remark}
+% \emph{Remark}
 
-The boundedness of subgradient can be easily verified by \eqref{eq:direction}. As for \eqref{eq:non_orthogonal_direction},
-\cite{brannlund1995generalized} suggests the orthogonality \(d_k^\mathsf{T} d_{k+1} = 0\) if the optimal stepsize is implemented.
-Our results show that the angle between two consecutive search directions should be acute to achieve better duality gaps.
-
-% \hypertarget{Applications}{%
-%   \section{Applications}\label{applications}}
+% The boundedness of subgradient can be easily verified by \eqref{eq:direction}. As for \eqref{eq:non_orthogonal_direction},
+% \cite{brannlund1995generalized} suggests the orthogonality \(d_k^\mathsf{T} d_{k+1} = 0\) if the optimal stepsize is implemented.
+% Our results show that the angle between two consecutive search directions should be acute to achieve better duality gaps.
 
 
+The next proposition states several convergence-guaranteed choices on
+parameters for convexity \(\alpha_k\) and stepsize \(\gamma_k\). Part
+(a) originally appears in \cite{brannlund1995generalized}. Besides, we
+also consider a slower scheme that is widely used and simple to
+implement.
 
-\subsection{Flight Engine Maintenance Problem}\label{repair}
 
+\begin{corollary} Choices of parameters. to show the following is convergent?
+
+  \[\alpha_k = \frac{1}{k}, \gamma_k = \gamma \in [1, 2]\]
+
+\end{corollary}
 
 
 \subsection{Computational Results}\label{computational-results}
 
+We present our computational results to validate the convergence analysis on subgradient method
+as shown in Figure \ref{fig:divergent_volume}.
+The experiments are done on the Fleet Maintenance Problem.
+Our results show that averaged solution by recovery algorithm \eqref{eq:recovery} converges to the best lower bound.
+The baseline is set by MILP modeled in Gurobi 9.1 to provide lower bound and best integral solution.
+We implement subgradient methods mentioned in our paper in Python 3.7. Specifically, ...
+
+\begin{figure}
+  \subfloat[][Normal subgradient method using \(g_k\)]{
+    \includegraphics[width=.49\linewidth]{../imgs/conv_0_normal_sg_10_10.png}
+  }
+  \subfloat[][Convex subgradient method using \(d_k\)]{
+    \includegraphics[width=.49\linewidth]{../imgs/conv_0_convex_sg_10_10.png}
+  }
+
+  \caption{
+    An instance illustrating the convergence of the subgradient methods
+    and the recovery algorithm \eqref{eq:recovery}.
+    \textsf{sg\_lb} and \textsf{sb\_val}  are lower bound for the subgradient method
+    and averaged primal value from the recovery algorithm, respectively.
+    \textsf{primal\_k} is the primal value at iteration \(k\) without averaging.
+  }
+
+  \label{fig:divergent_volume}
+\end{figure}
 
 
-The volume algorithm uses \(\hat \lambda_{k}\), instead we use\(\lambda_{k}\) which actually is better.
-Figure \ref{fig:divergent_volume} is a typical case of divergence of volume algorithm.
-\texttt{normal\_x} means the values are computed from subgradient
-method by using \(\lambda_{k}\). \texttt{volume\_x} is from the volume
-algorithm with \(\hat \lambda_{k} = \arg\max_k \hat \phi_{k}\)
-
-We compare computational results on variants of subgradient method mentioned in our paper.
-
-0. bench: by MILP solver: GUROBI 9.1
-
-1. normal: here we are using \(\alpha_k = 1/k\) and a diminishing \(\gamma\)
-
-2. volume: the volume algorithm
-
-3. to-be-added: the \(\alpha_k\) choices in \cite{brannlund1995generalized} \textbf{this should be a much quicker choice}
-
-We summarize all \(60\) test cases randomly generated for the repair model.
-
-
-
-\includegraphics{../imgs/conv_0_15_15.png}
-\label{fig:divergent_volume}
-
+We summarize all test cases in Table \ref{tab:comp_repair_cases}.
 
 
 \end{document}

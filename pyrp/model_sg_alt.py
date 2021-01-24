@@ -13,7 +13,7 @@ from collections import namedtuple
 from .model_single import single_mip
 from .model_single_dp import single_dp
 from .util import *
-
+from .test import eval
 
 # ===================
 # PROJECTION METHODS
@@ -77,6 +77,7 @@ class Sol:
     self.primal_val = []
     self.primal_k = []
     self.lb = []
+    self.fc = {}
 
 
 class Param:
@@ -115,6 +116,9 @@ def repair_subgradient(
   D = problem['D'][:scale]
   numI = len(problem['I'])
   
+  # extra evaluations
+  funcs = kwargs.get('evals', [])
+  
   st_sec = time.time()
   # solution
   sol = Sol()
@@ -145,6 +149,9 @@ def repair_subgradient(
   alp_k = gamma_k = 1
   # iteration #
   k = 0
+  fc_vals = {}
+  for fc in funcs:
+    fc_vals[fc] = []
   # ==================
   # MAIN ROUTINE
   # ==================
@@ -214,6 +221,21 @@ def repair_subgradient(
     surplus_idx_bar = d_k > 0
     z_bar = h * d_k[surplus_idx_bar].sum(
       0) - b * d_k[~surplus_idx_bar].sum(0)
+
+    # ================
+    # test evaluations
+    # ================
+    _args = z_bar, lambda_k, d_k, g_k
+    for fc in funcs:
+      try:
+        _func = getattr(eval, fc)
+        _val = _func(*_args)
+        print(f"{fc}@{k}: {_val}")
+        fc_vals[fc].append(_val)
+      except:
+        print(f"no such method in {eval.__name__}")
+        
+  
     
     # =====================
     # update dual vars
@@ -256,6 +278,7 @@ def repair_subgradient(
     sol.primal_val.append(z_bar)
     sol.primal_k.append(z_k)
     sol.lb.append(phi_bar)
+    sol.fc = fc_vals
     
     if k >= max_iteration or gap_k < gap or step < eps_step:
       x_bar = (1 - alp_k) * x_bar + x_k * alp_k

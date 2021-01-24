@@ -21,6 +21,9 @@ if __name__ == '__main__':
   # np.random.seed(1)
   instances, ni, nt = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
   timestamp = int(time.time())
+  # test evals
+  evals = ['cv_func2']
+  
   kwargs = {  # kwargs
     "i": ni,
     "t": nt,
@@ -30,8 +33,12 @@ if __name__ == '__main__':
     "gap": 0.005,
     "scale": nt,
     "max_iteration": 400,
-    "eps_step": 1e-5
+    "eps_step": 1e-5,
+    "evals": evals
   }
+  
+  
+  
   scale = kwargs.get('scale')
   num_i = kwargs.get('i')
   num_t = kwargs.get('t')
@@ -68,7 +75,24 @@ if __name__ == '__main__':
       r[f"{method}_sol"] = results[f"{method}_sol"][i] = sol_container.primal_sol[1:]
       r[f"{method}_primal_k"] = results[f"{method}_primal_k"][i] = sol_container.primal_k[1:]
       r[f'{method}_time'] = results[f'{method}_time'][i] = total_runtime
-    
+      for fc, v in sol_container.fc.items():
+        plt.plot(v[1:], label=f"{method}_{fc}", linestyle='dashed')
+      # save evaluations
+      plt.legend(loc="lower left")
+      plt.savefig(f"fig/evals_{i}_{method}_{num_i}_{num_t}.png", dpi=500)
+      plt.clf()
+      # save vals
+      for who in ['lb', 'val', 'primal_k']:
+        length = len(r[f"{method}_{who}"])
+        if who == 'primal_k':
+          plt.plot(range(length), r[f"{method}_{who}"], label=f"{method}_{who}", linestyle='dashed')
+        else:
+          plt.plot(range(length), r[f"{method}_{who}"], label=f"{method}_{who}")
+      
+      plt.legend(loc="lower left")
+      plt.savefig(f"fig/conv_{i}_{method}_{num_i}_{num_t}.png", dpi=500)
+      plt.clf()
+      
     model, *_ = mip.repair_mip_model(
       problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=gap)
     
@@ -76,17 +100,9 @@ if __name__ == '__main__':
     r['bench_val'] = results['bench_val'][i] = model.ObjVal
     r['bench_time'] = results['bench_time'][i] = model.Runtime
     
-    for method in methods:
-      for who in ['lb', 'val', 'primal_k']:
-        length = len(r[f"{method}_{who}"])
-        if who == 'primal_k':
-          plt.plot(range(length), r[f"{method}_{who}"], label=f"{method}_{who}", linestyle='dashed')
-        else:
-          plt.plot(range(length), r[f"{method}_{who}"], label=f"{method}_{who}")
     
-    plt.legend(loc="lower left")
-    plt.savefig(f"fig/conv_{i}_{num_i}_{num_t}.png", dpi=500)
-    plt.clf()
+    
+    
     
     with open(f"instances_pr/{instances}_{num_i}_{num_t}_{timestamp}_{i}.json",
               'wb') as f:
