@@ -51,7 +51,7 @@ df_out = df_out.assign(**group_vals).sort_values(list(group_vals.keys()))
 # sorted colums
 cols = ['I', 'T', 'bench_lb', 'bench_val', 'bench_time']
 for method in methods:
-  cols += [f'{method}_lb', f'{method}_val', f'{method}_time', f'{method}_lb_gap', f'{method}_val_gap']
+  cols += [f'{method}_time', f'{method}_lb_gap', f'{method}_val_gap']
 
 df_out = df_out[cols]
 

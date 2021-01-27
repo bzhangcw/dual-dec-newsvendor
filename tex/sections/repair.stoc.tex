@@ -254,19 +254,19 @@
 
 
 {
-        \setcounter{tocdepth}{3}
-    \tableofcontents
-      }
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
 this file is dedicated to some thoughts on stochastic properties。
 
 We want to show the same algorithm works for both dynamic and static
 models.
 
 \hypertarget{stochastic}{%
-\section{Stochastic}\label{stochastic}}
+  \section{Stochastic}\label{stochastic}}
 
 \hypertarget{dynamic-multistage-model}{%
-\subsection{Dynamic / Multistage model}\label{dynamic-multistage-model}}
+  \subsection{Dynamic / Multistage model}\label{dynamic-multistage-model}}
 
 We now consider the optimization model under uncertainty. Suppose demand
 \(\mathbfit{d}\) is random with respect to some unknown distribution
@@ -293,7 +293,7 @@ decomposed into a set of independent subproblems by relaxing linking
 constraints. The idea regarding Lagrangian relaxation to dynamic
 optimization models is not new. Hawkins (2003) develops the theory of
 Lagrangian relaxation on so-called \emph{weakly coupled Markov decision
-process} with applications to queueing networks, supply-chain management
+  process} with applications to queueing networks, supply-chain management
 problems, and multiarmed bandits, et cetera. It provides analysis of
 both infinite and finite horizon versions of the problem. Adelman and
 Mersereau (2008) later contributes to the bound and optimality gap for
@@ -311,23 +311,23 @@ Define \(V_{t}\) is the optimal value with \(t\) periods to go. Consider
 the following multistage stochastic optimization problem:
 
 \[z = \min_{\small{\mathbfit\delta^-_t, \mathbfit\delta^+_t, \mathbfit u_{it}, \mathbfit x_{it}}}
-\mathbb{E}_f \left[ \sum_t^{|T|}h \cdot \mathbfit \delta^-_t + b \cdot \mathbfit \delta^+_t \right ]\]
+  \mathbb{E}_f \left[ \sum_t^{|T|}h \cdot \mathbfit \delta^-_t + b \cdot \mathbfit \delta^+_t \right ]\]
 
 While the decisions are taken under conditions:
 \[\sum_i \mathbfit u_{it} - \mathbfit\delta^-_t + \mathbfit\delta^+_t = \mathbfit{d}_t, \quad \\
-\mathbfit s_{it}, \mathbfit u_{it}, \mathbfit x_{it}\in \Omega_i\]
+  \mathbfit s_{it}, \mathbfit u_{it}, \mathbfit x_{it}\in \Omega_i\]
 
 Now limit the scope to the finite horizon. We are interested in the
 expected value with known initial state \(\mathbfit y_0\): \[
-z_T(y_0) = \mathbb{E}_f ()
+  z_T(y_0) = \mathbb{E}_f ()
 \]
 
 Similar to the deterministic problem, the Bellman iteration can be
 written as:
 
-\[V_{t}(\mathbfit y, \mathbfit{d}_t) = 
-\min_{\small{\mathbfit\delta^-_t, \mathbfit\delta^+_t, \mathbfit u_{it}, \mathbfit x_{it}}}  
-h \cdot \mathbfit \delta^-_t + b \cdot \mathbfit \delta^+_t + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_{t-1}) \big | \mathbfit y, \mathbfit{d}_t\right]\]
+\[V_{t}(\mathbfit y, \mathbfit{d}_t) =
+  \min_{\small{\mathbfit\delta^-_t, \mathbfit\delta^+_t, \mathbfit u_{it}, \mathbfit x_{it}}}
+  h \cdot \mathbfit \delta^-_t + b \cdot \mathbfit \delta^+_t + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_{t-1}) \big | \mathbfit y, \mathbfit{d}_t\right]\]
 
 We now investigate the Lagrangian relaxation. The analysis is similar to
 existing results in Adelman and Mersereau (2008), Hawkins (2003). The
@@ -348,22 +348,22 @@ Where \(V_{it}\) is the optimal equation for each \(i\)
 the solution to the relaxed problem, we have:
 
 \[\begin{aligned}
-  V_{t}(\mathbfit y, \mathbfit d_t) & \ge 
-\min_{\small{\mathbfit\delta^-_t, \mathbfit\delta^+_t, \mathbfit u_{it}, \mathbfit x_{it}}}  
-(h - \lambda_t )\cdot \mathbfit \delta^-_t + (b + \lambda_t) \cdot \mathbfit \delta^+_t 
-+ \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
-+ \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t \right ] \\
-\end{aligned}\]
+    V_{t}(\mathbfit y, \mathbfit d_t) & \ge
+    \min_{\small{\mathbfit\delta^-_t, \mathbfit\delta^+_t, \mathbfit u_{it}, \mathbfit x_{it}}}
+    (h - \lambda_t )\cdot \mathbfit \delta^-_t + (b + \lambda_t) \cdot \mathbfit \delta^+_t
+    + \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
+    + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t \right ] \\
+  \end{aligned}\]
 
 The RHS is unbounded unless \(\lambda_t \in [-b, h]\), we have:
 
 \[\begin{aligned}
-  V_{t}(\mathbfit y, \mathbfit d_t) & \ge 
-\min_{\small{\mathbfit u_{it}, \mathbfit x_{it}}}  
- \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
-+ \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t\right] \\
-& = - \lambda_t \mathbfit d_t + \sum_{i\in I} V_{it}(\mathbfit y_i, \mathbfit d_t)
-\end{aligned}\]
+    V_{t}(\mathbfit y, \mathbfit d_t) & \ge
+    \min_{\small{\mathbfit u_{it}, \mathbfit x_{it}}}
+    \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
+    + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t\right]             \\
+                                      & = - \lambda_t \mathbfit d_t + \sum_{i\in I} V_{it}(\mathbfit y_i, \mathbfit d_t)
+  \end{aligned}\]
 
 \emph{The last line can be verified by induction similar to} Hawkins
 (2003). This completes the proof. \(\quad\blacksquare\)
@@ -371,123 +371,123 @@ The RHS is unbounded unless \(\lambda_t \in [-b, h]\), we have:
 \textbf{Proposition 2.} subgradient of \(\lambda\).
 
 \hypertarget{static-distributionally-robust-model}{%
-\subsection{Static Distributionally Robust
-Model}\label{static-distributionally-robust-model}}
+  \subsection{Static Distributionally Robust
+    Model}\label{static-distributionally-robust-model}}
 
 The DRO/SP model, the goal is to minimize worst-case expected
 unsatisfied demand and surplus (idle) flights
 
 \[\begin{aligned}
-  & \min \max_{f\in \mathscr F}\mathbb E_f  \left[e^\top( b \cdot\mathbfit{\delta^+}  + h\cdot \mathbfit \delta^-)\right] \\
-  \mathbf{s.t.}  & \\
-  & \mathbfit{U} ^\top e + \mathbfit \delta^+ - \mathbfit \delta^-  = \mathbfit d & \forall \mathbfit d \in \Xi_d\\
-  & \mathbfit U_{(i,\cdot)}, \mathbfit X_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i & \forall i\in I
-\end{aligned}\]
+                  & \min \max_{f\in \mathscr F}\mathbb E_f  \left[e^\top( b \cdot\mathbfit{\delta^+}  + h\cdot \mathbfit \delta^-)\right]                                 \\
+    \mathbf{s.t.} &                                                                                                                                                       \\
+                  & \mathbfit{U} ^\top e + \mathbfit \delta^+ - \mathbfit \delta^-  = \mathbfit d                                         & \forall \mathbfit d \in \Xi_d \\
+                  & \mathbfit U_{(i,\cdot)}, \mathbfit X_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i                                & \forall i\in I
+  \end{aligned}\]
 
 Same relaxation scheme can be used on the DRO models:
 
 \begin{itemize}
-\tightlist
-\item
-  Mean-variance, in Delage and Ye (2010).
-\item
-  Likelihood, in Wang et al. (2016)
+  \tightlist
+  \item
+        Mean-variance, in Delage and Ye (2010).
+  \item
+        Likelihood, in Wang et al. (2016)
 \end{itemize}
 
 \hypertarget{moment-uncertainty}{%
-\subsubsection{Moment Uncertainty}\label{moment-uncertainty}}
+  \subsubsection{Moment Uncertainty}\label{moment-uncertainty}}
 
 With moment uncertainty for
 \(\mathbfit d: \mathbb{E}(\mathbfit d) = \mu_0, ...\), in Delage and
 Ye (2010). The DRO model is equivalent to the following problem:
 
 \[\begin{aligned}
-\min_{\mathbfit{U}, \mathbfit{Q}, \mathbfit{\beta}, r, s} & \left(\gamma_{2} \mathbfit{\Sigma}_{0}-\mathbfit{\mu}_{0} \mathbfit{\mu}_{0}^{\top}\right) \bullet \mathbfit{Q}+r+\left(\mathbfit{\Sigma}_{0} \bullet \mathbfit{P}\right)-2 \mathbfit{\mu}_{0}^{\top} \mathbfit{p} + \gamma_{1} s \\
-\mathbf { s.t. } & \\
-& \mathbfit{Q} \succeq 0, \mathbfit{\beta} \in \mathbb{R}^{|T|}, 
-\begin{bmatrix}
-  \mathbfit{P} & \mathbfit{p} \\
-  \mathbfit{p}^\top & s
-\end{bmatrix} \succeq 0, \; 
-\mathbfit \beta = 2 (\mathbfit p + \mathbfit{Q\mu}_0)\\
-& \mathbfit{U} ^\top e + \mathbfit \delta^+ - \mathbfit \delta^-  = \mathbfit d & \forall \mathbfit d \in \Xi_d\\
-& \mathbfit{d}^{\top} \mathbfit{Q} \mathbfit{d} -\mathbfit{d^\top\beta} + r \ge e^\top( b \cdot\mathbfit{\delta^+}  + h\cdot \mathbfit \delta^-) & \forall \mathbfit d \in \Xi_d \\
-& \mathbfit X_{(i,\cdot)}, \mathbfit U_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i & \forall i\in I
-\end{aligned}\]
+    \min_{\mathbfit{U}, \mathbfit{Q}, \mathbfit{\beta}, r, s} & \left(\gamma_{2} \mathbfit{\Sigma}_{0}-\mathbfit{\mu}_{0} \mathbfit{\mu}_{0}^{\top}\right) \bullet \mathbfit{Q}+r+\left(\mathbfit{\Sigma}_{0} \bullet \mathbfit{P}\right)-2 \mathbfit{\mu}_{0}^{\top} \mathbfit{p} + \gamma_{1} s                                 \\
+    \mathbf { s.t. }                                          &                                                                                                                                                                                                                                                                   \\
+                                                              & \mathbfit{Q} \succeq 0, \mathbfit{\beta} \in \mathbb{R}^{|T|},
+    \begin{bmatrix}
+      \mathbfit{P}      & \mathbfit{p} \\
+      \mathbfit{p}^\top & s
+    \end{bmatrix} \succeq 0, \;
+    \mathbfit \beta = 2 (\mathbfit p + \mathbfit{Q\mu}_0)                                                                                                                                                                                                                                                                         \\
+                                                              & \mathbfit{U} ^\top e + \mathbfit \delta^+ - \mathbfit \delta^-  = \mathbfit d                                                                                                                                                     & \forall \mathbfit d \in \Xi_d \\
+                                                              & \mathbfit{d}^{\top} \mathbfit{Q} \mathbfit{d} -\mathbfit{d^\top\beta} + r \ge e^\top( b \cdot\mathbfit{\delta^+}  + h\cdot \mathbfit \delta^-)                                                                                    & \forall \mathbfit d \in \Xi_d \\
+                                                              & \mathbfit X_{(i,\cdot)}, \mathbfit U_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i                                                                                                                                            & \forall i\in I
+  \end{aligned}\]
 
 semi-infinite constraints are equivalent to (substitute
 \(\mathbfit\delta^- = \mathbfit u + \mathbfit \delta^+ - \mathbfit d\)，we
 have immediately)
 
 \[\begin{bmatrix}
-  \mathbfit Q &  (he- \mathbfit \beta)/2 \\
-  (he- \mathbfit \beta)^\top/2 & r - (h+b)e^\top \mathbfit \delta^+ - h e^\top   \mathbfit U^\top e
-\end{bmatrix} \succeq 0\]
+    \mathbfit Q                  & (he- \mathbfit \beta)/2                                            \\
+    (he- \mathbfit \beta)^\top/2 & r - (h+b)e^\top \mathbfit \delta^+ - h e^\top   \mathbfit U^\top e
+  \end{bmatrix} \succeq 0\]
 
 wrap up:
 
 \[\begin{aligned}
-\min_{\mathbfit{x}, \mathbfit{Q}, \mathbfit{\beta}, r, s} & \left(\gamma_{2} \mathbfit{\Sigma}_{0}-\mathbfit{\mu}_{0} \mathbfit{\mu}_{0}^{\top}\right) \bullet \mathbfit{Q}+r+\left(\mathbfit{\Sigma}_{0} \bullet \mathbfit{P}\right)-2 \mathbfit{\mu}_{0}^{\top} \mathbfit{p} + \gamma_{1} s \\
-\mathbf { s.t. } & \\
-& \mathbfit{Q} \succeq 0, \mathbfit{\beta} \in \mathbb{R}^{|T|}, 
-\begin{bmatrix}
-  \mathbfit{P} & \mathbfit{p} \\
-  \mathbfit{p}^\top & s
-\end{bmatrix} \succeq 0, \; 
-\mathbfit \beta = 2 (\mathbfit p + \mathbfit{Q\mu}_0)\\
-& \begin{bmatrix}
-  \mathbfit Q &  (he- \mathbfit \beta)/2 \\
-  (he- \mathbfit \beta)^\top/2 & r - (h+b)e^\top \mathbfit \delta^+ - h e^\top   \mathbfit U^\top e
-\end{bmatrix} \succeq 0 \\
-& \mathbfit X_{(i,\cdot)}, \mathbfit U_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i & \forall i\in I
-\end{aligned}\]
+    \min_{\mathbfit{x}, \mathbfit{Q}, \mathbfit{\beta}, r, s} & \left(\gamma_{2} \mathbfit{\Sigma}_{0}-\mathbfit{\mu}_{0} \mathbfit{\mu}_{0}^{\top}\right) \bullet \mathbfit{Q}+r+\left(\mathbfit{\Sigma}_{0} \bullet \mathbfit{P}\right)-2 \mathbfit{\mu}_{0}^{\top} \mathbfit{p} + \gamma_{1} s                  \\
+    \mathbf { s.t. }                                          &                                                                                                                                                                                                                                                    \\
+                                                              & \mathbfit{Q} \succeq 0, \mathbfit{\beta} \in \mathbb{R}^{|T|},
+    \begin{bmatrix}
+      \mathbfit{P}      & \mathbfit{p} \\
+      \mathbfit{p}^\top & s
+    \end{bmatrix} \succeq 0, \;
+    \mathbfit \beta = 2 (\mathbfit p + \mathbfit{Q\mu}_0)                                                                                                                                                                                                                                                          \\
+                                                              & \begin{bmatrix}
+      \mathbfit Q                  & (he- \mathbfit \beta)/2                                            \\
+      (he- \mathbfit \beta)^\top/2 & r - (h+b)e^\top \mathbfit \delta^+ - h e^\top   \mathbfit U^\top e
+    \end{bmatrix} \succeq 0                                                                                                                                                                                                                \\
+                                                              & \mathbfit X_{(i,\cdot)}, \mathbfit U_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i                                                                                                                                            & \forall i\in I
+  \end{aligned}\]
 
 is this too complex?
 
 \hypertarget{finite-support-and-likelihood-robust}{%
-\subsubsection{Finite support and likelihood
-robust}\label{finite-support-and-likelihood-robust}}
+  \subsubsection{Finite support and likelihood
+    robust}\label{finite-support-and-likelihood-robust}}
 
 The problem is, let
 \(\mathbfit Q = [\mathbfit{q}^1, ..., \mathbfit{q}^N]\)
 
 \[\begin{aligned}
-  & \max_{\beta, \theta, \Omega_i, \forall i} \theta + \beta \gamma +  \beta N - \underbrace{\beta \mathbf N^\top \log(\frac{\beta \mathbf N}{\mathbfit{Q} e-\theta \mathbf 1})}_{\mathcal D_{KL}(\beta \mathbf N | \mathbfit{Q} e-\theta \mathbf 1)}  \\
-  \textbf {s.t.} \\
-  & \beta \ge 0 \\
-  & \mathbfit{Q} e \ge \theta \mathbf 1 \\ 
-  & \mathbfit{U} ^\top e + \mathbfit \delta^+ - \mathbfit \delta^-  = \mathbfit d^n & \forall n = 1, ..., N \\
-  & \mathbfit x_{(i,\cdot)}, \mathbfit u_{(i,\cdot)}, \mathbfit s_{(i,\cdot)} \in \Omega_i & \forall i\in I
-\end{aligned}\]
+     & \max_{\beta, \theta, \Omega_i, \forall i} \theta + \beta \gamma +  \beta N - \underbrace{\beta \mathbf N^\top \log(\frac{\beta \mathbf N}{\mathbfit{Q} e-\theta \mathbf 1})}_{\mathcal D_{KL}(\beta \mathbf N | \mathbfit{Q} e-\theta \mathbf 1)}                         \\
+    \textbf {s.t.}                                                                                                                                                                                                                                                               \\
+     & \beta \ge 0                                                                                                                                                                                                                                                               \\
+     & \mathbfit{Q} e \ge \theta \mathbf 1                                                                                                                                                                                                                                       \\
+     & \mathbfit{U} ^\top e + \mathbfit \delta^+ - \mathbfit \delta^-  = \mathbfit d^n                                                                                                                                                                   & \forall n = 1, ..., N \\
+     & \mathbfit x_{(i,\cdot)}, \mathbfit u_{(i,\cdot)}, \mathbfit s_{(i,\cdot)} \in \Omega_i                                                                                                                                                            & \forall i\in I
+  \end{aligned}\]
 
 \hypertarget{reference}{%
-\section*{Reference}\label{reference}}
+  \section*{Reference}\label{reference}}
 \addcontentsline{toc}{section}{Reference}
 
 \hypertarget{refs}{}
 \begin{cslreferences}
-\leavevmode\hypertarget{ref-adelman_relaxations_2008}{}%
-Adelman D, Mersereau AJ (2008) Relaxations of weakly coupled stochastic
-dynamic programs. \emph{Operations Research} 56(3):712--727.
+  \leavevmode\hypertarget{ref-adelman_relaxations_2008}{}%
+  Adelman D, Mersereau AJ (2008) Relaxations of weakly coupled stochastic
+  dynamic programs. \emph{Operations Research} 56(3):712--727.
 
-\leavevmode\hypertarget{ref-bertsimas_adaptive_2019}{}%
-Bertsimas D, Sim M, Zhang M (2019) Adaptive distributionally robust
-optimization. \emph{Management Science}.
+  \leavevmode\hypertarget{ref-bertsimas_adaptive_2019}{}%
+  Bertsimas D, Sim M, Zhang M (2019) Adaptive distributionally robust
+  optimization. \emph{Management Science}.
 
-\leavevmode\hypertarget{ref-delage_distributionally_2010}{}%
-Delage E, Ye Y (2010) Distributionally robust optimization under moment
-uncertainty with application to data-driven problems. \emph{Operations
-Research} 58(3).
+  \leavevmode\hypertarget{ref-delage_distributionally_2010}{}%
+  Delage E, Ye Y (2010) Distributionally robust optimization under moment
+  uncertainty with application to data-driven problems. \emph{Operations
+    Research} 58(3).
 
-\leavevmode\hypertarget{ref-hawkins_langrangian_2003}{}%
-Hawkins JT (2003) \emph{A langrangian decomposition approach to weakly
-coupled dynamic optimization problems and its applications}. PhD thesis.
-(Massachusetts Institute of Technology).
+  \leavevmode\hypertarget{ref-hawkins_langrangian_2003}{}%
+  Hawkins JT (2003) \emph{A langrangian decomposition approach to weakly
+    coupled dynamic optimization problems and its applications}. PhD thesis.
+  (Massachusetts Institute of Technology).
 
-\leavevmode\hypertarget{ref-wang_likelihood_2016}{}%
-Wang Z, Glynn PW, Ye Y (2016) Likelihood robust optimization for
-data-driven problems. \emph{Computational Management Science}
-13(2):241--261.
+  \leavevmode\hypertarget{ref-wang_likelihood_2016}{}%
+  Wang Z, Glynn PW, Ye Y (2016) Likelihood robust optimization for
+  data-driven problems. \emph{Computational Management Science}
+  13(2):241--261.
 \end{cslreferences}
 
 \end{document}

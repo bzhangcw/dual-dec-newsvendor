@@ -3,47 +3,47 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
 The style file: informs2014.bst
 Database file #1: repair.bib
-Warning--empty year in kiwiel_lagrangian_2007; set to ????
-Warning--empty journal in kiwiel_lagrangian_2007
-You've used 6 entries,
+Warning--I didn't find a database entry for "camerini1975improving"
+Warning--I didn't find a database entry for "brannlund1995generalized"
+You've used 4 entries,
             2869 wiz_defined-function locations,
-            638 strings with 5656 characters,
-and the built_in function-call counts, 5425 in all, are:
-= -- 554
-> -- 112
-< -- 4
-+ -- 48
-- -- 37
-* -- 384
-:= -- 676
-add.period$ -- 11
-call.type$ -- 6
-change.case$ -- 45
-chr.to.int$ -- 7
-cite$ -- 8
-duplicate$ -- 535
-empty$ -- 437
-format.name$ -- 54
-if$ -- 1119
+            629 strings with 5437 characters,
+and the built_in function-call counts, 3525 in all, are:
+= -- 359
+> -- 75
+< -- 3
++ -- 32
+- -- 25
+* -- 252
+:= -- 446
+add.period$ -- 8
+call.type$ -- 4
+change.case$ -- 31
+chr.to.int$ -- 5
+cite$ -- 4
+duplicate$ -- 345
+empty$ -- 279
+format.name$ -- 38
+if$ -- 721
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 62
-newline$ -- 24
-num.names$ -- 24
-pop$ -- 251
+missing$ -- 42
+newline$ -- 18
+num.names$ -- 16
+pop$ -- 155
 preamble$ -- 1
-purify$ -- 36
+purify$ -- 24
 quote$ -- 0
-skip$ -- 106
+skip$ -- 67
 stack$ -- 0
-substring$ -- 561
-swap$ -- 149
+substring$ -- 356
+swap$ -- 102
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 54
-warning$ -- 2
-while$ -- 42
+type$ -- 36
+warning$ -- 0
+while$ -- 27
 width$ -- 0
-write$ -- 74
+write$ -- 52
 (There were 2 warnings)

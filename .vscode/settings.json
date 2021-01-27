@@ -81,7 +81,7 @@
         "chromium"
     ],
     "python.pythonPath": "/Users/brent/anaconda3/bin/python",
-    "window.zoomLevel": -1,
+    "window.zoomLevel": 0,
     "workbench.editor.tabSizing": "shrink",
     "latex-workshop.latex.tools": [
         {
@@ -129,5 +129,6 @@
     ],
     "latex-workshop.latex.autoBuild.run": "onSave",
     "debug.console.fontFamily": "hack",
+    "files.autoSaveDelay": 40000,
     "jupyter.jupyterServerType": "local"
 }

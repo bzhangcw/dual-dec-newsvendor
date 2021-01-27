@@ -135,15 +135,10 @@ viewpoint while adopting \(\hat \lambda_{k}\) instead of \(\lambda_k\) from the 
 
 \[\lambda_{k+1} = \mathbf{P}(\hat\lambda_{k} + s_{k}d_{k})\]
 
-\emph{There is no existing proof of convergence} for the volume
-algorithm.
-
-\textbf{(Remark / Difference for our method)}
-
 Since the solution is strictly feasible by implementation of the
-recovery algorithm \ref{eq:recovery}, i.e., there is no need to bound for feasibility gap
+recovery algorithm \eqref{eq:recovery}, i.e., there is no need to bound for feasibility gap
 as has been done in most of literature covering the \textbf{primal
-  recovery}. Instead, we have analyze the quality of the heuristic, i.e.:
+  recovery}. Instead, we focus on the quality of the recovery, i.e.:
 
 \[
   |\bar z_k - \phi_k| \textrm { or } |\bar z_k - z^\star|
@@ -212,6 +207,9 @@ Notice \(\epsilon_k\) can be further simplified by the definition of
   and we have the convergence.
 \end{proof}
 
+
+Now we visit properties for primal solutions.
+
 \begin{theorem} \label{lemma:recovery}  Recovery Algorithm \eqref{eq:recovery}
   \begin{enumerate}
     \def\labelenumi{(\alph{enumi})}
@@ -223,17 +221,17 @@ Notice \(\epsilon_k\) can be further simplified by the definition of
 
   \[f(\epsilon_k, \delta_k) \le f(\epsilon, \delta), \quad \forall \delta\ge 0, \epsilon\ge 0, y= y_k\]
 
+  % \begin{enumerate}
+  %   \def\labelenumi{(\alph{enumi})}
+  %   \setcounter{enumi}{1}
+
+  %   \item
+  % \end{enumerate}
+
+  % \[\bar z_k \le \sum^i_k \alpha^i_k z^i\]
   \begin{enumerate}
     \def\labelenumi{(\alph{enumi})}
     \setcounter{enumi}{1}
-
-    \item
-  \end{enumerate}
-
-  \[\bar z_k \le \sum^i_k \alpha^i_k z^i\]
-  \begin{enumerate}
-    \def\labelenumi{(\alph{enumi})}
-    \setcounter{enumi}{2}
 
     \item
   \end{enumerate}
@@ -242,40 +240,48 @@ Notice \(\epsilon_k\) can be further simplified by the definition of
 \end{theorem}
 
 \begin{proof}
-  (a) straight-forward. (b) by convexity of \(z(\cdot)\). (c)
-  we notice a strong duality pair with fixed \(d_k\) at each iteration
-  \(k\).
+  We first notice a strong duality pair with \emph{fixed} \(t \in \Omega_y\), for example,
+  \(t\) may take values in \(y_k, \bar y_k, k=1, 2, ...\) in the subgradient iterations.
 
-  \begin{equation}
+  \begin{equation}\label{eq:recovery_primal}
     \begin{aligned}
       \mathbf{(P)}  \quad & \min_{\delta, \epsilon} p^\mathsf{T} \delta + h^\mathsf{T} \epsilon \\
-      \mathbf{s.t.} \quad & d_k + \delta - \epsilon = 0                                         \\
+      \mathbf{s.t.} \quad & t + \delta - \epsilon = 0                                           \\
                           & \delta \in \mathbb{R}_+^n, \epsilon \in \mathbb{R}_+^n
     \end{aligned}
   \end{equation}
 
   and
 
-  \begin{equation}
+  \begin{equation}\label{eq:recovery_dual}
     \begin{aligned}
-      \mathbf{(D)}  \quad & \max_{\lambda} d_k^\mathsf{T} \lambda          \\
+      \mathbf{(D)}  \quad & \max_{\lambda} t^\mathsf{T} \lambda            \\
       \mathbf{s.t.} \quad & -p \le \lambda \le h, \lambda \in \mathbb{R}^n
     \end{aligned}
   \end{equation}
 
-  by \ref{lemma:recovery}(a), \((\bar \epsilon_k, \bar \delta_k)\) minimizes the primal
-  problem. Since \textbf{(P)} is well-defined,
-  \(\exists\; \mu_k \in [-p, h]\) such that \(\mu_k \in \arg\max_{\lambda} d_k^\mathsf{T} \lambda \).
+  Since \textbf{P} is well-defined.
+  The dual problem \textbf{D} is straight-forward to solve by comparing \(t\) to \(0\) for each dimension:
+
+  \[\mu_j^\star =
+    \begin{cases}
+      h_j & \text{if } t_j > 0 \\
+      p_j & \text{else}
+    \end{cases}
+    \quad \forall j = 1, ..., n\]
+
+  This corresponds to the part (a) and recovery algorithm \eqref{eq:recovery} by taking \(t = g_k\).
+
+  Similarly, take \(t = d_k\) we can show part (b).
+
 
   \[\begin{aligned}
-       & d_k^\mathsf{T} \mu_k = \bar z_k = p^\mathsf{T} \bar \delta_k + h^\mathsf{T} \bar \epsilon_k \\
-       & d_k^\mathsf{T} \mu_k \ge  d_k^\mathsf{T} \lambda_k
+       & \bar z_k = p^\mathsf{T} \bar \delta_k + h^\mathsf{T} \bar \epsilon_k
+      \ge  d_k^\mathsf{T} \lambda_k
     \end{aligned}\]
-
 
 \end{proof}
 
-Now we visit properties for primal solutions.
 
 \begin{theorem} \label{theorem:primal}
 
@@ -286,10 +292,12 @@ Now we visit properties for primal solutions.
   \end{equation}
 
   and
-  \begin{equation}\label{eq:non_orthogonal_direction}
-    d_k^\mathsf{T} d_{k+1} \ge 0
-  \end{equation}
-  holds for all iteration \(k\) in the subgradient algorithm.
+  % \begin{equation}\label{eq:non_orthogonal_direction}
+  %   d_k^\mathsf{T} d_{k+1} \ge 0
+  % \end{equation}
+  % holds for all iteration \(k\) in the subgradient algorithm.
+  ???
+
   Then the primal-dual bound by the recovery algorithm \eqref{eq:recovery} converges to \(0\), specifically:
 
   \[\bar z_k - \phi^\star \to 0\]
@@ -300,19 +308,28 @@ Now we visit properties for primal solutions.
   We first notice
 
   \[
-    \phi^\star - \phi_k \le g_k^\mathsf{T} (\lambda^\star - \lambda_k)\le \|g_k\|\|\lambda^\star - \lambda_k\| \Rightarrow \phi_k -\phi^\star
+    \phi^\star - \phi_k \le g_k^\mathsf{T} (\lambda^\star - \lambda_k)\le \|g_k\|\|\lambda^\star - \lambda_k\| \Rightarrow \phi_k \to \phi^\star
   \]
 
   This immediately follows:
   \begin{subequations}
     \begin{align}\label{eq:eps_subgrad_to_subgrad}
-                        & \epsilon_k \le \frac{1}{2}(2 - \gamma_k) ( \phi^\star - \phi_k) \to 0 \\
-      \Rightarrow \quad & \epsilon_k = d_k^\mathsf{T} \lambda_k - \phi_k \to 0                  \\
+                        & \epsilon_k = d_k^\mathsf{T} \lambda_k - \phi_k\le \frac{1}{2}(2 - \gamma_k) ( \phi^\star - \phi_k) \to 0 \\
       \Rightarrow \quad & d_k^\mathsf{T} \lambda_k \to \phi^\star
     \end{align}
   \end{subequations}
 
-  We now show the convergence from \(\bar z\) to \(\lambda_k ^ \mathsf{T} d_k\).
+  We now show the convergence from \(\bar z\) to \(\lambda_k ^ \mathsf{T} d_k\) ?
+
+  As shown in \ref{lemma:recovery}, by \eqref{eq:recovery_primal}, \eqref{eq:recovery_dual},
+  suppose \(\exists\; \mu_k \in [-p, h]\) such that \(\mu_k \in \arg\max_{\lambda} d_k^\mathsf{T} \lambda \)
+
+  It's equivalent to show:
+
+  \begin{equation}\label{eq:mu_d_to_lambda_d}
+    \mu_k^\top d_k - \lambda_k^\top d_k \to 0
+  \end{equation}
+
 
   % \begin{equation}
   %   \begin{aligned}\label{eq:bar_z_to_lambda_d}
@@ -337,28 +354,36 @@ Now we visit properties for primal solutions.
 % Our results show that the angle between two consecutive search directions should be acute to achieve better duality gaps.
 
 
-The next proposition states several convergence-guaranteed choices on
-parameters for convexity \(\alpha_k\) and stepsize \(\gamma_k\). Part
-(a) originally appears in \cite{brannlund1995generalized}. Besides, we
-also consider a slower scheme that is widely used and simple to
-implement.
+% The next proposition states several convergence-guaranteed choices on
+% parameters for convexity \(\alpha_k\) and stepsize \(\gamma_k\). Part
+% (a) originally appears in \cite{brannlund1995generalized}. Besides, we
+% also consider a slower scheme that is widely used and simple to
+% implement.
 
 
-\begin{corollary} Choices of parameters. to show the following is convergent?
+% \begin{corollary} Choices of parameters. to show the following is convergent?
 
-  \[\alpha_k = \frac{1}{k}, \gamma_k = \gamma \in [1, 2]\]
+%   \[\alpha_k = \frac{1}{k}, \gamma_k = \gamma \in [1, 2]\]
 
-\end{corollary}
+% \end{corollary}
 
 
 \subsection{Computational Results}\label{computational-results}
 
-We present our computational results to validate the convergence analysis on subgradient method
-as shown in Figure \ref{fig:divergent_volume}.
+We present our computational results to validate the convergence analysis on subgradient method.
 The experiments are done on the Fleet Maintenance Problem.
-Our results show that averaged solution by recovery algorithm \eqref{eq:recovery} converges to the best lower bound.
 The baseline is set by MILP modeled in Gurobi 9.1 to provide lower bound and best integral solution.
-We implement subgradient methods mentioned in our paper in Python 3.7. Specifically, ...
+We implement subgradient methods mentioned in our paper in Python 3.7. Specifically, we test on two specific subgradient variants:
+
+\begin{enumerate}
+  \item Normal subgradient, labelled as \textsf{normal\_sg}. This is the simplest subgradient method using iteration:
+        \[\lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}g_{k})\]
+  \item Convex subgradient, \textsf{convex\_sg}, using:
+        \[\lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}d_{k})\]
+        where \(d_k\) is averaged over past iterations, cf. \eqref{eq:direction}
+\end{enumerate}
+
+As shown in Figure \ref{fig:divergent_volume}, our results show that averaged solution by recovery algorithm \eqref{eq:recovery} converges to the best lower bound.
 
 \begin{figure}
   \subfloat[][Normal subgradient method using \(g_k\)]{
