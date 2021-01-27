@@ -111,8 +111,8 @@ parameters \(\gamma_k, \alpha_k\) and search direction \(d_k\) produced from con
 
 The target based rule are well-known as the Polyak rule \cite{polyak_general_1967}.
 The idea of using previous searching directions is introduced to accelerate the subgradient method and provide a better stopping criterion,
-see \cite{camerini1975improving}, \cite{brannlund1995generalized}, \cite{barahona_volume_2000}.
-\cite{brannlund1995generalized} showed that with convex combinations the optimal choice of stepsize is
+see \cite{camerini_improving_1975}, \cite{brannlund_generalized_1995}, \cite{barahona_volume_2000}.
+\cite{brannlund_generalized_1995} showed that with convex combinations the optimal choice of stepsize is
 equivalent to the Camerini-Fratta-Maffioli modification, it also provides an analysis on its linear convergence rate.
 
 From the primal perspective, our method is close to \emph{primal
@@ -129,7 +129,7 @@ that involve the primal violation, norm of the subgradient, etc. Furthermore, th
 stepsize \(s_k = s, s\ge 0\) and the search direction defined solely by
 the subgradient. We refer to \cite{kiwiel_lagrangian_2007} for target based
 stepsizes. The volume algorithm proposed by \cite{barahona_volume_2000} is close to the
-case mentioned in \cite{brannlund1995generalized} in a dual
+case mentioned in \cite{brannlund_generalized_1995} in a dual
 viewpoint while adopting \(\hat \lambda_{k}\) instead of \(\lambda_k\) from the best dual bound
 \(\hat \phi_k = \max_{i=1, ..., k} \phi(\lambda_i)\):
 
@@ -371,7 +371,7 @@ Now we visit properties for primal solutions.
 \subsection{Computational Results}\label{computational-results}
 
 We present our computational results to validate the convergence analysis on subgradient method.
-The experiments are done on the Fleet Maintenance Problem.
+The experiments are done on the Fleet Maintenance Problem (see \ref{}).
 The baseline is set by MILP modeled in Gurobi 9.1 to provide lower bound and best integral solution.
 We implement subgradient methods mentioned in our paper in Python 3.7. Specifically, we test on two specific subgradient variants:
 
@@ -399,6 +399,7 @@ As shown in Figure \ref{fig:divergent_volume}, our results show that averaged so
     \textsf{sg\_lb} and \textsf{sb\_val}  are lower bound for the subgradient method
     and averaged primal value from the recovery algorithm, respectively.
     \textsf{primal\_k} is the primal value at iteration \(k\) without averaging.
+    We find that averaged solution avoids the zig-zag behavior of \textsf{primal\_k}.
   }
 
   \label{fig:divergent_volume}

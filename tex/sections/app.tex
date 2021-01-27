@@ -5,5 +5,225 @@
 \hypertarget{Applications}{%
   \section{Applications}\label{applications}}
 
-\subsection{Flight Maintenance Problem}\label{repair}
+\subsection{Flight Maintenance Problem}\label{app:fmp}
+
+Consider a fleet where recurrent maintenance is needed for each airplane to ensure safety.
+At each time \(t \in T\) there is a demand of quantity \(d_t \ge 0\) associated with withdraw cost \(b \ge 0\).
+If the size of the fleet at current time is greater than demand, then it incurs the idle cost \(h > 0\).
+Each airplane \(i \in I\) deteriorates with rate \(\alpha_i\) and there is a lower bound \(L\) on the lifespan representing the current condition. If the airplane approaches to the worst-allowed-condition then it cannot be assigned to any flights.
+A maintenance plan should be scheduled to improve the current condition for plane \(i\) by rate \(\beta_i\). Once scheduled, a plane comes back after \(\tau\) time periods.
+
+The goal is to minimize the total cost by uncovered demand and surplus flights. We summarize the notation as follows:
+
+\begin{quote}
+  Notation
+\end{quote}
+
+\begin{itemize}
+  \tightlist
+  \item
+        \(I, T\) - set of plane, time periods, respectively
+  \item
+        \(b, h\) - demand withdraw and plane idle cost, respectively
+  \item
+        \(\tau\) - lead time for maintenance
+\end{itemize}
+
+% The demand is stochastic with some distribution \(f\in \mathscr F\).
+We first assume the demand is deterministic.
+
+\begin{itemize}
+  \tightlist
+  \item
+        \(\mathbfit d_t\) - demand, number of planes needed at time \(t\)
+\end{itemize}
+
+We make a plan to define work and maintenance schedules.
+
+\begin{quote}
+  Decision
+\end{quote}
+
+\begin{itemize}
+  \tightlist
+  \item
+        \(x_{it}\) - 0 - 1 variable, 1 if plane \(i\) starts a maintenance at
+        time \(t\)
+  \item
+        \(u_{it}\) - 0 - 1 variable, 1 if plane is working at time \(t\)
+  \item
+        \(s_{it} \ge 0\) - the lifespan of plane \(i\) at time \(t\)
+\end{itemize}
+
+
+The objective can be written in the Newsvendor style:
+
+\[\min_{u,x,s} b \cdot (d_t - \sum_i u_{it})_+ + h \cdot  ( \sum_i u_{it} - d_t)_+ \]
+
+Alternatively, we use the following objective function with
+\(\delta_t, \epsilon_t\) indicating unsatisfied demand and surplus,
+respectively. Let \(z\) be the objective function
+
+\[\begin{aligned}
+    z =           & \min_{x_{it}, u_{it}, \delta_t, \epsilon_t} \sum_t (b\cdot  \delta_t + h \cdot \epsilon_t)                                                       \\
+    \mathbf{s.t.} &                                                                                                                                                  \\
+                  & \sum_i u_{it} + \delta_t - \epsilon_t = d_t                                                & \forall t \in T                                     \\
+                  & s_{i, t+1} =  s_{i t}  - \alpha_i  u_{it} + \beta_i  x_{i, t- \tau}                        & \forall i \in I, t \in T                            \\
+                  & x_{it} +  u_{i, t} \le 1                                                                   & \forall i \in I, t \in T                            \\
+                  & x_{it} + x_{i\rho} + u_{i, \rho} \le 1                                                     & \forall i \in I,  t\in T, \rho = t + 1, ..., t+\tau \\
+                  & s_{i t} \ge L                                                                              & \forall i \in I, t \in T
+  \end{aligned}\]
+
+We define the last four sets of constraint as \(\Omega_i\), which
+describe the non-overlapping requirements during a maintenance for each
+\(i\).
+
+Let \(U, X, S \in \mathbb R^{|I|\times |T|}_+\) be the matrix of
+\(u_{it}, x_{it}\) and \(s_{it}\), \(U_{(i,.)}\) be the \(i\)th row of
+\(U\). Let \(\delta, \epsilon\) be the vector of
+\(\delta_t, \epsilon_t\), respectively. It allows a more compact
+formulation.
+
+\[\begin{aligned}
+                  & \min_{U, X, S}  e^\top (b\cdot  \delta + h \cdot \epsilon)                   \\
+    \mathbf{s.t.} &                                                                              \\
+                  & U^\top e + \delta - \epsilon = d                           & \forall t \in T \\
+                  & X_{(i,\cdot)}, U_{(i,\cdot)}, S_{(i,\cdot)} \in \Omega_i   & \forall i \in I
+  \end{aligned}\]
+
+
+% If we allow a tolerance \(\epsilon \ge 0\) on subgradient method, the
+% worst overall complexity is
+% \(O\left(\frac{1}{\epsilon^2}\cdot\tau\cdot|I|\cdot|T|^3\right)\).
+
+\hypertarget{lagrangian-relaxation}{%
+  \subsubsection{Lagrangian Relaxation}\label{lagrangian-relaxation}}
+
+The Lagrangian is introduced by relaxing the equality constraint, so we
+have:
+
+\[\begin{aligned}
+    \phi(\lambda) & = - \sum_t \lambda_t d_t + \min_{\delta_t, \epsilon_t, U} \sum_t \left [ (b + \lambda_t) \cdot \delta_t + (h-\lambda_t)\cdot \epsilon_t \right ] + \sum_i \sum_t\lambda_t u_{it} \\
+  \end{aligned}\]
+
+\(\phi(\lambda)(\lambda)\) is unbounded unless
+\(-b \le \lambda_t \le h\), it reduces to a set of low dimensional
+minimization problems for each \(i\):
+
+\[\begin{aligned}
+    \phi(\lambda)   & = - \sum_t \lambda_t d_t  + \min_{U}\sum_i \sum_t\lambda_t u_{it} \\
+    \mathbf {s.t. } &                                                                   \\
+                    & X_{(i,\cdot)}, U_{(i,\cdot)}, S_{(i,\cdot)} \in \Omega_i          \\
+                    & -b \le \lambda_t \le h
+  \end{aligned}\]
+
+Next we provide analysis on properties of the subproblem.
+
+\hypertarget{subproblem-for-each-plane}{%
+  \subsubsection{Subproblem for each
+    plane}\label{subproblem-for-each-plane}}
+
+In the dual search process, one should solve a set of subproblems
+\(\forall i\in I\) defined as follows:
+
+\[\begin{aligned}
+    \min_{\Omega_i} \sum_t \lambda_t \cdot u_{i,t}
+  \end{aligned}\]
+
+The model describes a problem to minimize total cost while keeping the
+lifespan safely away from the lower bound \(L\). We solve this by
+dynamic programming.
+
+Define state: \(y_t = \left[m_t,s_t \right]^\top\), where \(m_t\)
+\textbf{denotes the remaining time of the undergoing maintenance}.
+\(s_t\) is the remaining lifespan. At each period \(t\) we decide
+whether the plane \(i\) is idle or waiting (for the maintenance),
+working, or starting a maintenance, i.e.:
+
+\[(u_t, x_t) \in \left\{(1, 0), (0,0), (0, 1)\right\}\]
+
+We have the Bellman equation:
+\[V_n(u_t, x_t | m_t, s_t) = \lambda_t \cdot u_t + \min_{u,x} V_{n-1}(...)\]
+
+Complexity: let \(s_0\) be the initial lifespan and finite time horizon
+be \(|T|\), we notice the states for remaining maintenance waiting time
+is finite, \(m_t \in \{0, 1, ..., \tau\}\).
+
+Let total number of possible periods to initiate a maintenance be
+\(n_1\), and working periods be \(n_2\). If we ignore lower bound \(L\)
+on \(s\), total number of possible values of \(s\) is bounded above:
+\(|s| = \sum_i^{|T|}\sum_j^{|T| - i} 1=(|T| + 1)(\frac{1}{2}|T| + 1)\)
+since \(n_1 + n_2 \le |T|\). For each subproblem we have at most 3
+actions, thus we conclude this problem can be solved by dynamic
+programming in polynomial time, the complexity is:
+\(O\left(\tau\cdot|T|^3 \right)\)
+
+\hypertarget{subgradient-method}{%
+  \subsubsection{Subgradient Method}\label{subgradient-method}}
+
+Lagrange multipliers is updated by a subgradient method. (volume
+algorithm, etc.)
+
+\textbf{The Volume Algorithm HERE}
+
+Notice:
+
+\begin{itemize}
+  \item
+        At iteration \(k\), suppose
+        \(-b \le \lambda^k_t \le h, \forall t \in T\), we use dynamic
+        programming to solve the relaxed minimization problem, then the
+        (integral) solution \(( X^k, S^k, U^k)\) is also feasible for the
+        original problem (compute \(\delta, \epsilon\) accordingly). The
+        primal value \(z^k\) is the upper bound for optimal solution
+        \(z^\star\): \(z^k\ge z^\star\).
+  \item
+        In the volume algorithm, we consider the convex combination \(\bar X\)
+        of past iterations \(\{X^1, ..., X^k\}\). We update
+        \(\bar X \leftarrow \alpha X^k + (1-\alpha) \bar X\). It's easy to
+        verify \(\bar z \ge z^\star \ge z_{\textsf{LD}}^k\), where \(\bar z\)
+        is the primal objective value for \(\bar X\) and \(z_{\textsf{LD}}^k\)
+        is the dual value for \(X^k\). By the termination criterion
+        \(|\bar z - z_{\textsf{LD}}^k| \le \epsilon_z\) for some small value
+        \(\epsilon_z >0\), we conclude the \(\bar z\) converges to the optimal
+        value \(z^\star\).
+  \item
+        While \(\bar z \to z^\star\), there is no guarantee for the solution
+        \(\bar X, \bar U\) being integral via the volume algorithm;
+        \(\bar X, \bar U\) is feasible only to the linear relaxation.
+  \item
+        Remark:
+
+        \begin{itemize}
+          \tightlist
+          \item
+                The projection for dual variables is simple since there is only a
+                box constraint. More computation would be needed if we use the
+                minimax objective function, i.e.,
+                \(q \ge h\cdot (U^\top e - d), q\ge b\cdot (d-U^\top e)\), in which
+                case two set of multipliers are needed, say \(\lambda, \mu \ge 0\),
+                and the projection should be done onto:
+                \[\{(\lambda,\mu)|\lambda +\mu \le 1\}\]
+        \end{itemize}
+\end{itemize}
+
+\hypertarget{rounding}{%
+  \subsubsection{Rounding}\label{rounding}}
+
+\begin{itemize}
+  \tightlist
+  \item
+        *compute \(\min c ^\top | x - x^\star|\) where \(x^\star\) is the
+        (possibly) fractional solution achieving the best bound, using DP.
+\end{itemize}
+
+still working on this.
+
+\hypertarget{numerical-experiments}{%
+  \subsubsection{Numerical Experiments}\label{numerical-experiments}}
+
+In this section, In this section, we report numerical results to
+demonstrate the efficiency and effectiveness of our proposed algorithms
+for solving the repair problem (\textbf{ref here}). We parallelize the
+subproblems to available cores solved by dynamic programming.
 \end{document}

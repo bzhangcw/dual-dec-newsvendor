@@ -3,47 +3,46 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
 The style file: informs2014.bst
 Database file #1: repair.bib
-Warning--I didn't find a database entry for "camerini1975improving"
 Warning--I didn't find a database entry for "brannlund1995generalized"
-You've used 4 entries,
+You've used 6 entries,
             2869 wiz_defined-function locations,
-            629 strings with 5437 characters,
-and the built_in function-call counts, 3525 in all, are:
-= -- 359
-> -- 75
-< -- 3
-+ -- 32
-- -- 25
-* -- 252
-:= -- 446
-add.period$ -- 8
-call.type$ -- 4
-change.case$ -- 31
-chr.to.int$ -- 5
-cite$ -- 4
-duplicate$ -- 345
-empty$ -- 279
-format.name$ -- 38
-if$ -- 721
+            644 strings with 5779 characters,
+and the built_in function-call counts, 5407 in all, are:
+= -- 553
+> -- 112
+< -- 4
++ -- 48
+- -- 37
+* -- 385
+:= -- 677
+add.period$ -- 12
+call.type$ -- 6
+change.case$ -- 45
+chr.to.int$ -- 7
+cite$ -- 6
+duplicate$ -- 532
+empty$ -- 437
+format.name$ -- 54
+if$ -- 1118
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 42
-newline$ -- 18
-num.names$ -- 16
-pop$ -- 155
+missing$ -- 62
+newline$ -- 24
+num.names$ -- 24
+pop$ -- 237
 preamble$ -- 1
-purify$ -- 24
+purify$ -- 36
 quote$ -- 0
-skip$ -- 67
+skip$ -- 108
 stack$ -- 0
-substring$ -- 356
-swap$ -- 102
+substring$ -- 552
+swap$ -- 155
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 36
+type$ -- 54
 warning$ -- 0
-while$ -- 27
+while$ -- 42
 width$ -- 0
-write$ -- 52
-(There were 2 warnings)
+write$ -- 77
+(There was 1 warning)
