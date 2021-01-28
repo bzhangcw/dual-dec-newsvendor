@@ -256,7 +256,7 @@
 \setcounter{tocdepth}{3}
 \tableofcontents
 }
-\hypertarget{progress-summary}{%
+\hypertarget{sec:progress-summary}{%
   \section{Progress summary}\label{progress-summary}}
 
 \begin{itemize}
@@ -327,7 +327,7 @@ instances)
   \bottomrule
 \end{tabular}
 
-\hypertarget{the-air-repair-model}{%
+\hypertarget{sec:the-air-repair-model}{%
   \section{The air-repair model}\label{the-air-repair-model}}
 
 \begin{quote}
@@ -385,7 +385,7 @@ The DRO/SP model, the goal is to minimize unsatisfied demand and surplus
 We define the last four sets of constraint as \(\Omega_i\), which
 describe the non-overlapping requirements during a maintenance.
 
-\hypertarget{deterministic}{%
+\hypertarget{sec:deterministic}{%
   \section{Deterministic}\label{deterministic}}
 
 We first consider the deterministic problem.
@@ -396,7 +396,7 @@ subgradient method, the complexity is:
 
 \[O\left(\frac{1}{\epsilon^2}\cdot\tau\cdot|I|\cdot|T|^3\right)\]
 
-\hypertarget{subgradient-method}{%
+\hypertarget{sec:subgradient-method}{%
   \subsection{Subgradient method}\label{subgradient-method}}
 
 Relax binding constraints of \(q\)
@@ -458,7 +458,7 @@ Notice:
         and solved analytically.
 \end{itemize}
 
-\hypertarget{subproblem-for-each-plane}{%
+\hypertarget{sec:subproblem-for-each-plane}{%
   \subsection{Subproblem for each plane}\label{subproblem-for-each-plane}}
 
 The subproblem \(\forall i\in I\) is defined as follows:
@@ -495,7 +495,7 @@ actions, thus we conclude this problem can be solved by dynamic
 programming in polynomial time, the complexity is:
 \(O\left(\tau\cdot|T|^3 \right)\)
 
-\hypertarget{stochastic}{%
+\hypertarget{sec:stochastic}{%
   \section{Stochastic}\label{stochastic}}
 
 We use boldface notation to denote random variables. We let the vector
@@ -525,7 +525,7 @@ Same relaxation scheme can be used on the DRO models:
         Likelihood, in Wang et al. (2016)
 \end{itemize}
 
-\hypertarget{mean-variance}{%
+\hypertarget{sec:mean-variance}{%
   \subsection{Mean-variance}\label{mean-variance}}
 
 With moment uncertainty for
@@ -547,7 +547,7 @@ Ye (2010). The DRO model is equivalent to the following problem:
                                                               & \mathbfit x_{(i,\cdot)}, \mathbfit u_{(i,\cdot)}, \mathbfit s_{(i,\cdot)} \in \Omega_i                                                                                                                                            & \forall i\in I
   \end{aligned}\]
 
-\hypertarget{finite-support-and-likelihood-robust}{%
+\hypertarget{sec:finite-support-and-likelihood-robust}{%
   \subsection{Finite support and likelihood
     robust}\label{finite-support-and-likelihood-robust}}
 
@@ -571,36 +571,36 @@ Relax binding constraints for \(\mathbfit Q, \mathbfit U\):
 We can optimize for \(\mathbfit Q, \mathbfit U\) separately, at each
 step, subproblems can be solved in polynomial time.
 
-\hypertarget{reference}{%
+\hypertarget{sec:reference}{%
   \section*{Reference}\label{reference}}
 \addcontentsline{toc}{section}{Reference}
 
-\hypertarget{refs}{}
+\hypertarget{sec:refs}{}
 \begin{cslreferences}
-  \leavevmode\hypertarget{ref-barahona_volume_2000}{}%
+  \leavevmode\hypertarget{sec:ref-barahona_volume_2000}{}%
   Barahona F, Anbil R (2000) The volume algorithm: Producing primal
   solutions with a subgradient method. \emph{Mathematical Programming}
   87(3):385--399.
 
-  \leavevmode\hypertarget{ref-delage_distributionally_2010}{}%
+  \leavevmode\hypertarget{sec:ref-delage_distributionally_2010}{}%
   Delage E, Ye Y (2010) Distributionally robust optimization under moment
   uncertainty with application to data-driven problems. \emph{Operations
     Research} 58(3).
 
-  \leavevmode\hypertarget{ref-nedic_approximate_2009}{}%
+  \leavevmode\hypertarget{sec:ref-nedic_approximate_2009}{}%
   Nedić A, Ozdaglar A (2009) Approximate primal solutions and rate
   analysis for dual subgradient methods. \emph{SIAM Journal on
     Optimization} 19(4):1757--1780.
 
-  \leavevmode\hypertarget{ref-nesterov_primal-dual_2009}{}%
+  \leavevmode\hypertarget{sec:ref-nesterov_primal-dual_2009}{}%
   Nesterov Y (2009) Primal-dual subgradient methods for convex problems.
   \emph{Mathematical programming} 120(1):221--259.
 
-  \leavevmode\hypertarget{ref-polyak_general_nodate}{}%
+  \leavevmode\hypertarget{sec:ref-polyak_general_nodate}{}%
   Polyak BT (1967) A general method for solving extremal problems.
   \emph{Soviet Mathematics Doklady}:5.
 
-  \leavevmode\hypertarget{ref-wang_likelihood_2016}{}%
+  \leavevmode\hypertarget{sec:ref-wang_likelihood_2016}{}%
   Wang Z, Glynn PW, Ye Y (2016) Likelihood robust optimization for
   data-driven problems. \emph{Computational Management Science}
   13(2):241--261.

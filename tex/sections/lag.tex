@@ -2,74 +2,115 @@
 
 \begin{document}
 
-\section{Subgradient method}\label{subgradient-method}
+\section{Dual Optimization}\label{sec:dual}
 
+
+\subsection{Conditions for strong
+  duality}\label{sec:dual.conditions-for-strong-duality}
+
+It's well known that strong duality does not hold in general. We review
+some of the cases here. The Lagrangian duality theory can be found in
+any standard text.
+
+\begin{theorem}
+  if \(\Omega_y\) is convex then the strong duality holds ...,
+  i.e.~\(\phi^\star = f^\star\)
+\end{theorem}
+
+add justifications here (slater, ...)
+
+A more interesting result is devoted to mixed integer problems.
+We know Lagrangian relaxation produces a bound up to
+linear relaxation of a problem with the "easy" constraints
+and the convex hull of relaxed constraints.
+
+\textbf{(Review Here)}.
+
+\begin{lemma}
+  if \(\Omega_y = \{y \in \mathbb R^n: y \in \Omega, y\in \mathbb Z^n\}\).
+  Then we have the following relation for dual function,
+  \[ \phi^\star = \min_{\delta, \epsilon} f(\delta, \epsilon)\quad \textbf{ s.t. }  y + \delta - \epsilon = b,\; y \in \textrm{conv}(\Omega_y)\]
+\end{lemma}
+
+This immediately allows us to have strong duality by definition of perfect formulation,
+in which case the linear relaxation solves the original problem.
+
+\begin{corollary}\label{strong-ip}
+  We conclude the strong duality holds since
+  \(Y = \{(y, \delta, \epsilon): y + \delta - \epsilon = b,\; y \in \textsf{conv}(\Omega_y)\}\)
+  is already \emph{a perfect formulation} in the sense that
+  \(Y = \textsf{conv}(Y)\)
+\end{corollary}
+
+\textbf{show this or add more conditions to
+  justify}
+
+
+
+\subsection{Subgradient Method}\label{sec:dual.subgradient}
 To solve the reduced problem for $\lambda$, we consider a class of subgradient
 methods:
 
-\begin{equation}\lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}d_{k})\end{equation}
+\begin{equation}\label{eq:main_subgrad}
+  \lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}d_{k})
+\end{equation}
 
 where \(\mathbf P\) is the projection onto dual space \(\Lambda\).
 \(d_k\) is the update direction for current iteration and \(s_{k}\) is
 the step size using target-based rule:
 
 \begin{equation}\label{eq:step_size}
-  s_{k} = \gamma_k\frac{\phi^\star - \phi(\lambda_k)}{||d_{k}||^2}
+  s_{k} = \gamma_k\frac{\phi^\star - \phi(\lambda_k)}{\|d_{k}\|^2}
 \end{equation}
 
-Note the direction \(d_k\) computed by
 
-\begin{equation}\label{eq:direction}
-  d_k = \bar y_k - b
-\end{equation}
+During the progress on dual problem,
+we compute an weighted average solution \(\bar y_k\) from the convex combination of previous iterations:
+\(\{y_i\}_{i=1,...k}\) and each \(y_i\) solves \(\phi_i = \phi(\lambda_i)\).
 
-where \(\bar y_k\) is the convex combination of previous iterations
-\(\{y_i\}_{i=1,...k}\) and each \(y_i\) solves
-\(\phi_i = \phi(\lambda_i)\):
+\begin{align}
+  \label{eq:bar_y_average} \bar y_k & = \sum^i_k \alpha^i_k y_i,\quad  \sum^i_k \alpha^i_k = 1, \alpha^i_k \ge 0 \\
+  \label{eq:bar_y_recursive}        & = (1-\alpha_k)\cdot\bar y_{k-1} + \alpha_k \cdot y_k
+\end{align}
 
-\begin{equation}\bar y_k = \sum^i_k \alpha^i_k y_i,\quad  \sum^i_k \alpha^i_k = 1, \alpha^i_k \ge 0\end{equation}
-
-Alternatively, one can express the convexity in a recursive manner:
-
-\begin{equation}\bar y_k = (1-\alpha_k)\cdot\bar y_{k-1} + \alpha_k \cdot y_k \end{equation}
-
-For we simplicity take \(g_k= y_k - b\), then \(g_k\) is a subgradient
+The second equation \eqref{eq:bar_y_recursive} rephrases the convexity in a recursive manner that may help in programming.
+By taking \(g_k= y_k - b\), then \(g_k\) is a subgradient
 of \(\phi\) at \(\lambda_k\):
 
 \begin{equation}g_k \in \partial \phi_k\end{equation}
 
-The direction can be rewritten as the combination of the subgradient and
-previous directions:
 
+The search direction is computed from subgradient.
+We can use a convex alternative such that \(d_k = \bar y_k - b\).
+Similarly, it can be expressed as convex combinations.
 \begin{equation}\label{eq:direction_recursive}
   d_k = (1-\alpha_k) \cdot d_{k-1} + \alpha_k\cdot g_k
 \end{equation}
 
+As a comparison, there is a choice solely involves the subgradient itself,
+\begin{equation}\label{eq:simple_subgrad}
+  \begin{aligned}
+     & \lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}g_{k})             \\
+     & s_{k} = \gamma_k\frac{\phi^\star - \phi(\lambda_k)}{\|g_{k}\|^2}
+  \end{aligned}
+\end{equation}
+
+For simplicity, we refer to the convex choice \eqref{eq:main_subgrad} whenever term \(d_k\) is used.
 
 The dual subgradient algorithm can be summarized as follows.
 \(\varepsilon,\varepsilon_s\) are the tolerance parameter for objective gap and stepsize, respectively.
-\(\varepsilon > 0 ,\varepsilon_s > 0\).
+\(\varepsilon > 0 ,\varepsilon_s > 0\). At each iteration \(k\), let \(\gamma_k < 2, \alpha_k = \frac{1}{k}\).
 
 \begin{algorithm}[H]
   \SetAlgoLined
   Initialization. \(\alpha_0 = 1, \lambda_0 = e, \gamma_0 = 1\)  \\
-  \While{\(\bar z_k - \phi_k \ge \varepsilon\) \textbf{and} \(s_k \ge \varepsilon_s\)}
+  \While{\(\phi^\star - \phi_k \ge \varepsilon\) \textbf{and} \(s_k \ge \varepsilon_s\)}
   {
     Let current iteration be \(k\)\\
-    Update the multipliers by
-    \[\lambda_{k} = \mathbf{P}(\lambda_{k-1} + s_{k-1}d_{k-1})\]
+    Update the multipliers by direction and stepsize, either by \eqref{eq:main_subgrad}, \eqref{eq:step_size} or \eqref{eq:simple_subgrad}.
 
     Solve dual problem \(\phi_k\) by \eqref{eq:dual}
     and compute subgradient \(g_k\) respectively.
-
-    Compute \(\gamma_k, \alpha_k\) properly.
-
-    Compute current direction by \eqref{eq:direction} or \eqref{eq:direction_recursive}
-
-    Update \(\epsilon_k,\delta_k ,\bar \epsilon_k ,\bar \delta_k, z_k, \bar z_k \)
-    by the \underline{Recovery Algorithm} \ref{alg:recovery}
-
-    Stepsize is updated by \eqref{eq:step_size}
   }
   \caption{The Subgradient Algorithm}
 \end{algorithm}
@@ -101,9 +142,7 @@ not be calculated as running averages:
 \(\bar z_k = z(\bar y_k)\). We later find the recovery algorithm achieves
 at the optimal objective.
 
-
-
-\section{Convergence}\label{convergence}
+\subsection{Overview}\label{sec:dual.overview}
 
 
 We first review several features for the subgradient method regarding
@@ -130,10 +169,10 @@ stepsize \(s_k = s, s\ge 0\) and the search direction defined solely by
 the subgradient. We refer to \cite{kiwiel_lagrangian_2007} for target based
 stepsizes. The volume algorithm proposed by \cite{barahona_volume_2000} is close to the
 case mentioned in \cite{brannlund_generalized_1995} in a dual
-viewpoint while adopting \(\hat \lambda_{k}\) instead of \(\lambda_k\) from the best dual bound
-\(\hat \phi_k = \max_{i=1, ..., k} \phi(\lambda_i)\):
+viewpoint while adopting \(\tilde \lambda_{k}\) instead of \(\lambda_k\) from the best dual bound
+\(\tilde \phi_k = \max_{i=1, ..., k} \phi(\lambda_i)\):
 
-\[\lambda_{k+1} = \mathbf{P}(\hat\lambda_{k} + s_{k}d_{k})\]
+\[\lambda_{k+1} = \mathbf{P}(\tilde\lambda_{k} + s_{k}d_{k})\]
 
 Since the solution is strictly feasible by implementation of the
 recovery algorithm \eqref{eq:recovery}, i.e., there is no need to bound for feasibility gap
@@ -148,7 +187,7 @@ We found its convergence is closely related to strong duality of the problem. Ac
 we suggest several specific choices of parameters regarding the subgradient method \((\gamma, \alpha, d)\).
 
 
-\subsection{Analysis outline}\label{analysis-outline}
+\subsection{Convergence Analysis}\label{dual.analysis}
 
 \begin{itemize}
 
@@ -368,10 +407,10 @@ Now we visit properties for primal solutions.
 % \end{corollary}
 
 
-\subsection{Computational Results}\label{computational-results}
+\subsection{Computational Results}\label{dual.computational-results}
 
 We present our computational results to validate the convergence analysis on subgradient method.
-The experiments are done on the Fleet Maintenance Problem (see \ref{}).
+The experiments are done on the Fleet Maintenance Problem (see \ref{sec:fmp}).
 The baseline is set by MILP modeled in Gurobi 9.1 to provide lower bound and best integral solution.
 We implement subgradient methods mentioned in our paper in Python 3.7. Specifically, we test on two specific subgradient variants:
 
