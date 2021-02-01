@@ -1,0 +1,1 @@
+add_library(mip mip.cpp mosek_mip.cpp)

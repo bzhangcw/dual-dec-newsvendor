@@ -5,9 +5,9 @@ from collections import defaultdict
 
 import matplotlib.pyplot as plt
 
-import pyrp.model as mip
-import pyrp.model_sg_alt as sg_alt
-from pyrp.util import *
+import src.pyrp.model as mip
+import src.pyrp.model_sg_alt as sg_alt
+from src.pyrp import *
 
 plt.rcParams["font.size"] = 9
 plt.rcParams["font.weight"] = 400

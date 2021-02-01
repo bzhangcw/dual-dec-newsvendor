@@ -82,7 +82,7 @@ def repair_mip_model(problem, **kwargs):
   x = model.addVars(I, T, **{PREFIX: 'x', "vtype": ENGINE.BINARY})
   u = model.addVars(I, T, **{PREFIX: 'u', "vtype": ENGINE.BINARY})
   s = model.addVars(I, T, **{PREFIX: 's', "lb": problem['L']})
-  q = model.addVars(T, **{PREFIX: "q"})
+  q = model.addVars(T, **{PREFIX: "aq"})
   
   # constrs
   for idx, i in enumerate(I):
