@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libmip.a  CMakeFiles/mip.dir/mip.cpp.o CMakeFiles/mip.dir/mosek_mip.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libmip.a

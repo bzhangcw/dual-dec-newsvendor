@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/brent/Archiver/Workspace/repair/src/cpp/aq/aq.cpp
+iostream
+-
+aq.h
+/Users/brent/Archiver/Workspace/repair/src/cpp/aq/aq.h
+
+/Users/brent/Archiver/Workspace/repair/src/cpp/aq/aq.h
+

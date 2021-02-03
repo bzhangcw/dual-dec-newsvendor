@@ -132,10 +132,10 @@ def single_dp(problem, nT, c, idx, u_target=None, x_target=None):
 if __name__ == '__main__':
   import pickle
   
-  problem = pickle.load(open("/Users/brent/Archiver/Workspace/repair/instances_pr/1_5_10_1611064221_0.json", 'rb'))
+  problem = pickle.load(open("/instances_pr/1_5_10_1611064221_0.json", 'rb'))
   c = -np.random.random(10)
   problem['tau'] = 2
   best_v1, best_p1, *_ = single_dp(problem, 10, c, 0)
-  from pyrp.model_single import single_mip
+  from src.pyrp import single_mip
   
   best_v, best_p, *_ = single_mip(problem, 10, c, 0)
