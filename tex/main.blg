@@ -4,45 +4,45 @@ The top-level auxiliary file: main.aux
 The style file: informs2014.bst
 Database file #1: repair.bib
 Warning--I didn't find a database entry for "brannlund1995generalized"
-You've used 6 entries,
+You've used 8 entries,
             2869 wiz_defined-function locations,
-            644 strings with 5779 characters,
-and the built_in function-call counts, 5407 in all, are:
-= -- 553
-> -- 112
-< -- 4
-+ -- 48
-- -- 37
-* -- 385
-:= -- 677
-add.period$ -- 12
-call.type$ -- 6
-change.case$ -- 45
-chr.to.int$ -- 7
-cite$ -- 6
-duplicate$ -- 532
-empty$ -- 437
-format.name$ -- 54
-if$ -- 1118
+            657 strings with 6140 characters,
+and the built_in function-call counts, 6881 in all, are:
+= -- 706
+> -- 141
+< -- 6
++ -- 61
+- -- 46
+* -- 486
+:= -- 869
+add.period$ -- 16
+call.type$ -- 8
+change.case$ -- 59
+chr.to.int$ -- 9
+cite$ -- 8
+duplicate$ -- 678
+empty$ -- 553
+format.name$ -- 69
+if$ -- 1418
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 62
-newline$ -- 24
-num.names$ -- 24
-pop$ -- 237
+missing$ -- 79
+newline$ -- 30
+num.names$ -- 32
+pop$ -- 303
 preamble$ -- 1
-purify$ -- 36
+purify$ -- 47
 quote$ -- 0
-skip$ -- 108
+skip$ -- 136
 stack$ -- 0
-substring$ -- 552
-swap$ -- 155
+substring$ -- 696
+swap$ -- 197
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 54
+type$ -- 72
 warning$ -- 0
-while$ -- 42
+while$ -- 53
 width$ -- 0
-write$ -- 77
+write$ -- 100
 (There was 1 warning)

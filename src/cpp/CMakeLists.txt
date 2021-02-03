@@ -6,6 +6,7 @@ project(repaircpp)
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".dylib" ".a")
 
 # third party
 find_package(Eigen3 REQUIRED)
@@ -24,10 +25,11 @@ list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/aq" "${PROJECT_SOURCE_DIR}/mip
 target_link_libraries(try PUBLIC ${EXTRA_LIBS})
 
 # add include
-target_include_directories(try PUBLIC
+target_include_directories(
+        try PUBLIC
         "${PROJECT_BINARY_DIR}"
         ${EXTRA_INCLUDES}
-        )
+)
 
 # testing
 enable_testing()

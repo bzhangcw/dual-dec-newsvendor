@@ -1,7 +1,11 @@
-\begin{thebibliography}{6}
+\begin{thebibliography}{8}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\urlprefix}{URL }
+
+\bibitem[{Adelman \protect\BIBand{} Mersereau(2008)}]{adelman_relaxations_2008}
+Adelman D, Mersereau AJ (2008) Relaxations of weakly coupled stochastic dynamic
+  programs. \emph{Operations Research} 56(3):712--727, publisher: INFORMS.
 
 \bibitem[{Barahona \protect\BIBand{} Anbil(2000)}]{barahona_volume_2000}
 Barahona F, Anbil R (2000) The volume algorithm: producing primal solutions
@@ -18,6 +22,11 @@ Brännlund U (1995) A generalized subgradient method with relaxation step.
 Camerini PM, Fratta L, Maffioli F (1975) On improving relaxation methods by
   modified gradient techniques. \emph{Nondifferentiable optimization}, 26--34
   (Springer).
+
+\bibitem[{Hawkins(2003)}]{hawkins_langrangian_2003}
+Hawkins JT (2003) \emph{A {Langrangian} decomposition approach to weakly
+  coupled dynamic optimization problems and its applications}. {PhD} {Thesis},
+  Massachusetts Institute of Technology.
 
 \bibitem[{Kiwiel et~al.(2007)Kiwiel, Larsson, \protect\BIBand{}
   Lindberg}]{kiwiel_lagrangian_2007}
