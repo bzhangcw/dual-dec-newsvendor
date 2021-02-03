@@ -7,9 +7,11 @@ project(repaircpp)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# third party
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 # add the executable
 add_executable(try try.cpp)
-
 
 # add subdirectories
 # == null object: for fun ===
@@ -21,9 +23,7 @@ list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/aq" "${PROJECT_SOURCE_DIR}/mip
 
 target_link_libraries(try PUBLIC ${EXTRA_LIBS})
 
-
-
-# add the binary tree to the search path for include files
+# add include
 target_include_directories(try PUBLIC
         "${PROJECT_BINARY_DIR}"
         ${EXTRA_INCLUDES}
