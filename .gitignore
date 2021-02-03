@@ -15,7 +15,6 @@ instances
 instances_pr
 draft/*.pdf
 tex/*/*.pdf
-tex/*/*.pdf
 
 # mathematical programming
 *.lp
@@ -187,3 +186,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/src/cpp/cmake-build-debug/
+CMakeFiles
+/src/cpp/Makefile
+/src/cpp/*.cmake
