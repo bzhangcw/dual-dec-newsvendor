@@ -189,4 +189,3 @@ dmypy.json
 /src/cpp/cmake-build-debug/
 CMakeFiles
 /src/cpp/Makefile
-/src/cpp/*.cmake

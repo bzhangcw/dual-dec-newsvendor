@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name
-project(repaircpp)
-
+project(repaircpp VERSION 0.0.1 LANGUAGES C)
+option(CXX "enable C++" ON)
+enable_language(CXX)
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".dylib" ".a")
-
-# third party
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
+
 # add the executable
 add_executable(try try.cpp)
 
@@ -19,8 +18,13 @@ add_executable(try try.cpp)
 add_subdirectory(aq)
 # == mip ===
 add_subdirectory(mip)
+# == dp ===
+add_subdirectory(dp)
+# thirdparty
+add_subdirectory(thirdparty)
+
 list(APPEND EXTRA_LIBS aq mip)
-list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/aq" "${PROJECT_SOURCE_DIR}/mip")
+list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/aq;${PROJECT_SOURCE_DIR}/mip")
 
 target_link_libraries(try PUBLIC ${EXTRA_LIBS})
 
