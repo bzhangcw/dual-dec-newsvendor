@@ -25,3 +25,13 @@ double state::evaluate() {
     return 0;
 }
 
+std::pair<int, state> state::apply(const action& ac, double a, double b, int repair_lead_time = 2) {
+    int lead_time = ac.is_work == 1 ? 1 : repair_lead_time;
+    state s1 = *this;
+    s1.stage += lead_time;
+    s1.s += b * (1 - ac.is_work) - a * (ac.is_work);
+    return std::pair<int, state>{lead_time, s1};
+}
+
+
+

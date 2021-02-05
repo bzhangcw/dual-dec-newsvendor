@@ -24,6 +24,12 @@ int main(int argc, char *argv[]) {
     s1.s = 2.0;
     tail tl1 = tail(s1, ac);
     cout << s0.to_string() << endl;
+    cout << s1.to_string() << endl;
+    // test action apply
+    auto a1 = s1.apply(action(1), 0.4, 0.8, 2);
+    cout << a1.second.to_string() << endl;
+    auto a2 = s1.apply(action(0), 0.4, 0.8, 2);
+    cout << a2.second.to_string() << endl;
     cout << tl.key << endl;
     problem_queue queue = problem_queue();
     action_map action_dict = action_map();

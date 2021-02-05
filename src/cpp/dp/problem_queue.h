@@ -19,8 +19,9 @@ using state_map = std::unordered_map<std::string, state>;
 using value_map = std::unordered_map<std::string, double>;
 using action_vec = std::vector<action>;
 using tail_vec = std::vector<tail>;
-using action_map = std::unordered_map<std::string, std::vector<action>>;
-using tail_map = std::unordered_map<std::string, std::vector<tail>>;
+using action_map = std::unordered_map<std::string, action_vec>;
+using tail_map = std::unordered_map<std::string, tail_vec>;
+using best_tail_map = std::unordered_map<std::string, tail>;
 
 
 class problem_queue {
@@ -35,7 +36,7 @@ public:
 
     int insert(state &state);
 
-    bool is_empty();
+    bool is_empty() const;
 
     problem_kv_pair get_last();
 

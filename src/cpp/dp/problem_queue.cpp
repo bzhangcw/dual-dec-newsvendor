@@ -7,7 +7,7 @@
 int problem_queue::insert(state &tail) {
     std::string tail_key = tail.to_string();
 
-    std::unordered_set<std::string>::const_iterator got = this->_set.find(tail_key);
+    auto got = this->_set.find(tail_key);
     if (got == this->_set.end()) {
         // insert
         this->_queue.push(tail);
@@ -17,7 +17,7 @@ int problem_queue::insert(state &tail) {
     return 0;
 }
 
-bool problem_queue::is_empty() {
+bool problem_queue::is_empty() const {
     return this->_queue.empty();
 }
 
