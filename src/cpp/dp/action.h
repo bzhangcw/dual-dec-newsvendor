@@ -9,14 +9,14 @@
 
 class action {
 public:
-    int is_work;
+    int is_work{};
 
     action() { this->is_work = 1; };
 
-    action(int action);
+    explicit action(int action);
 
     action(action const &action);
-    std::string to_string() ;
+    std::string to_string() const ;
     ~action();
     double evaluate(double multiplier);
 };

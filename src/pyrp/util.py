@@ -75,4 +75,5 @@ def create_instance_vec(nI: int, nT: int, nIns: int = 100):
 
 
 if __name__ == '__main__':
-  m = create_instance(10, 20)
+  m = create_instance(10, 50)
+

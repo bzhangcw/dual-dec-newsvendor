@@ -21,11 +21,11 @@ public:
 
     state(state const &s);
 
-    std::string to_string();
+    std::string to_string() const;
 
     static double evaluate();
 
-    double evaluate(action &action);
+    static double evaluate(action &action);
 
     std::pair<int, state> apply(const action& ac, double a, double b, int repair_lead_time);
 };
