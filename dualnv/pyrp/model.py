@@ -28,7 +28,7 @@ def repair_msk_model(problem, **kwargs):
   p = problem['p']
   tau = problem['tau']
   s0 = problem['s0']
-  pass
+  raise ValueError("not finished yet")
 
 
 def repair_model(problem, **kwargs):

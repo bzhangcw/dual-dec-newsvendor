@@ -2,7 +2,7 @@
 #
 cmake_minimum_required(VERSION 3.7)
 
-option(ANACONDA_PYTHON_VERBOSE "Anaconda dependency info" OFF)
+option(ANACONDA_PYTHON_VERBOSE "Anaconda dependency info" ON)
 set(ROOT_NAME "base")
 
 if(NOT CMAKE_FIND_ANACONDA_PYTHON_INCLUDED)

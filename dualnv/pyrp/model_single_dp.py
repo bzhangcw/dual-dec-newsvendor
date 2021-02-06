@@ -129,7 +129,7 @@ def single_dp(problem, nT, c, idx, u_target=None, x_target=None):
     return best_v, best_p
 
 
-if __name__ == '__main__':
+def test():
     import time
 
     TEST_DIR = 'test'
@@ -173,3 +173,7 @@ if __name__ == '__main__':
             best_v1, best_p1, *_ = single_dp(problem, n, c, 0)
         end = time.time()
         print(f"finished large sample size := {n} in {end - start} seconds")
+
+
+if __name__ == '__main__':
+    test()

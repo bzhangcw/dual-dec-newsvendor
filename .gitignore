@@ -186,6 +186,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/src/cpp/cmake-build-debug/
+/dualnv/cpp/cmake-build-debug/
 CMakeFiles
-/src/cpp/Makefile
+/dualnv/cpp/Makefile

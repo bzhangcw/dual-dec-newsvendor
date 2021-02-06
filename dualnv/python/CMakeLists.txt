@@ -27,7 +27,6 @@ set_property(SOURCE dp.i PROPERTY SWIG_MODULE_NAME pydp)
 swig_add_library(pydp
         TYPE SHARED
         LANGUAGE python
-        OUTPUT_DIR ${CMAKE_BINARY_DIR}/python/pydp
         SOURCES dp.i)
 
 target_include_directories(
@@ -48,6 +47,20 @@ target_link_libraries(
 
 set_property(TARGET pydp PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON)
 
+# note: macOS is APPLE and also UNIX !
+if(APPLE)
+    set_target_properties(pydp PROPERTIES
+            SUFFIX ".so"
+            INSTALL_RPATH "@loader_path;@loader_path./"
+            )
+    set_property(TARGET pydp APPEND PROPERTY
+            LINK_FLAGS "-flat_namespace -undefined suppress"
+            )
+elseif(UNIX)
+#    set_target_properties(pyFoo PROPERTIES
+#            INSTALL_RPATH "$ORIGIN:$ORIGIN/../../${PROJECT_NAME}/.libs"
+#            )
+endif()
 
 
 # Variable PYTHON_LIBRARIES can contains keyword `optimized`

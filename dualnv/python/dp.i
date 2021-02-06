@@ -1,12 +1,14 @@
 /* File: dp.i */
 %module dp
-
+%include "carrays.i"
+%array_class(double , double_array);
 %{
 #define SWIG_FILE_WITH_INIT
 
 #include "dp.h"
 
 %}
+
 
 // int fact(int n);
 int run_dp_single(

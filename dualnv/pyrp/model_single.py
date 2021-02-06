@@ -17,7 +17,6 @@ _logger.setLevel(logging.DEBUG)
 
 
 def single_mip(problem, nT, c, idx, target=None):
-
   import gurobipy as grb
   s0 = problem['s0']
   a = problem['a'][idx]
@@ -46,7 +45,7 @@ def single_mip(problem, nT, c, idx, target=None):
         model.addConstr(x[t] + u.get((rho), 0) <= 1)
       else:
         model.addConstr(x[t] + x.get((rho), 0) + u.get((rho), 0) <= 1)
-  
+
   if target is None:
     obj = grb.quicksum(v * c[t] for t, v in u.items())
     model.setObjective(obj)
@@ -55,8 +54,8 @@ def single_mip(problem, nT, c, idx, target=None):
     for t in T:
       model.addConstr(deltas[t] >= c[t] * (u[t] - target[t]))
       model.addConstr(deltas[t] >= c[t] * (target[t] - u[t]))
-      obj = grb.quicksum(deltas[t] for t in T)
-  
+    obj = grb.quicksum(deltas[t] for t in T)
+
   model.setObjective(obj)
   model.setParam("TimeLimit", 20)
   model.setParam("OutputFlag", 0)

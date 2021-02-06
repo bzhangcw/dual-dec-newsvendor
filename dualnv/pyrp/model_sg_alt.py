@@ -10,10 +10,12 @@
 import multiprocessing as mpc
 import time
 from collections import namedtuple
+from .pydp import run_dp_single, double_array
 from .model_single import single_mip
 from .model_single_dp import single_dp
 from .util import *
 from .test import eval
+
 
 # ===================
 # PROJECTION METHODS
@@ -35,7 +37,7 @@ def multiplier_method(g_k, d_k, delta_k, gamma_k, lambda_b, projection_method, b
     _d = g_k
   else:
     raise ValueError("no such method")
-  
+
   step = 1 / (_d.dot(_d)) * delta_k * gamma_k
   lambda_k = lambda_b + step * _d
   lambda_k = projection_method(lambda_k, -b, h)
@@ -57,7 +59,7 @@ def alpha_method(gamma0, iteration, use_optimal, d, g):
     alp_k = 1 / iteration
     gamma_k = gamma0
     return alp_k, gamma_k
-  
+
   # the optimal alpha_k by see (Brännlund 1995),
   #   Brännlund U (1995) A generalized subgradient method with relaxation step. Mathematical Programming 71(2):207–219.
   gd = g.dot(d)
@@ -86,7 +88,16 @@ class Param:
     self.use_optimal = False
 
 
-def repair_subgradient(
+def convert_to_c_arr(size, lambda_k):
+  print(lambda_k)
+  c_arr = double_array(size)
+  for i in range(size):
+    c_arr[i] = lambda_k[i]
+
+  return c_arr
+
+
+def dualnv_subgradient(
     problem,
     scale,
     subproblem_method=single_dp,
@@ -115,20 +126,21 @@ def repair_subgradient(
   I = problem['I']
   D = problem['D'][:scale]
   numI = len(problem['I'])
-  
+
   # extra evaluations
   funcs = kwargs.get('evals', [])
-  
+
   st_sec = time.time()
   # solution
   sol = Sol()
-  
+
   # algorithm options
   param = Param()
   param.use_maximum = dual_option == 'max'
   param.use_optimal = hyper_option != 'simple'
+  param.use_cpp_dp = subproblem_method.__name__ == 'run_dp_single'
   param.direction = 'cvx' if dir_option == 'cvx' else 'subgrad'
-  
+
   # ==================
   # INITIALIZATION
   # ==================
@@ -156,51 +168,78 @@ def repair_subgradient(
   # MAIN ROUTINE
   # ==================
   while True:
-    
+
     # ==================
     # solve \phi_k = \phi(\lambda_k)
     # ==================
     # solution keeper
     sub_v_k, x_k = np.zeros(numI), np.zeros((numI, scale, 3))
-    
+
     # solve decomposable subproblems
     #   can use lazy multiprocessing
-    if mp:
-      results = [
-        pool.apply_async(subproblem_method, (problem, scale, lambda_k, idx))
-        for idx, i in enumerate(I)
-      ]
-      for idx, r in enumerate(results):
-        _best_v_i, _best_p_i, *_ = r.get()
-        sub_v_k[idx] = _best_v_i
-        x_k[idx, :, :] = _best_p_i
+    if param.use_cpp_dp:
+      c_arr = convert_to_c_arr(scale, lambda_k.astype(float))
+      _s0 = problem['s0']
+      _L = problem['L']
+      _tau = problem['tau']
+      if mp:
+        results = []
+        for idx, i in enumerate(I):
+          _a = problem['a'][idx]
+          _b = problem['b'][idx]
+          r = pool.apply_async(
+            subproblem_method,
+            (c_arr, scale, _a, _b, _L, _tau, _s0, True, True)
+          )
+          results.append(r)
+        for idx, r in enumerate(results):
+          _best_v_i, _best_p_i, *_ = r.get()
+          sub_v_k[idx] = _best_v_i
+          x_k[idx, :, :] = _best_p_i
+      else:
+        for idx, i in enumerate(I):
+          _a = problem['a'][idx]
+          _b = problem['b'][idx]
+          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, True, True)
+          sub_v_k[idx] = _best_v_i
+          x_k[idx, :, :] = _best_p_i
     else:
-      for idx, i in enumerate(I):
-        _best_v_i, _best_p_i, *_ = subproblem_method(problem, scale, lambda_k, idx)
-        sub_v_k[idx] = _best_v_i
-        x_k[idx, :, :] = _best_p_i
-    
+      if mp:
+        results = [
+          pool.apply_async(subproblem_method, (problem, scale, lambda_k, idx))
+          for idx, i in enumerate(I)
+        ]
+        for idx, r in enumerate(results):
+          _best_v_i, _best_p_i, *_ = r.get()
+          sub_v_k[idx] = _best_v_i
+          x_k[idx, :, :] = _best_p_i
+      else:
+        for idx, i in enumerate(I):
+          _best_v_i, _best_p_i, *_ = subproblem_method(problem, scale, lambda_k, idx)
+          sub_v_k[idx] = _best_v_i
+          x_k[idx, :, :] = _best_p_i
+
     # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
-    
+
     # =====================
     # subgradient computation
     # =====================
     i_k = x_k.sum(0)[:, 0]
     g_k = (i_k - D)
-    
+
     # =====================
     # update direction params
     # =====================
     # hint: use k + 1 since k start from 0
     alp_k, gamma_k = alpha_method(gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
-    
+
     # =====================
     # compute direction
     # =====================
     # there are many ways to do this
     d_k = (1 - alp_k) * d_k + g_k * alp_k
-    
+
     # =====================
     # the recovery algorithm
     # =====================
@@ -216,7 +255,7 @@ def repair_subgradient(
     surplus_idx_k = g_k > 0
     z_k = h * g_k[surplus_idx_k].sum(
       0) - b * g_k[~surplus_idx_k].sum(0)
-    
+
     # calculate cvx (averaging primal heuristic)
     surplus_idx_bar = d_k > 0
     z_bar = h * d_k[surplus_idx_bar].sum(
@@ -234,18 +273,17 @@ def repair_subgradient(
         fc_vals[fc].append(_val)
       except:
         print(f"no such method in {eval.__name__}")
-        
-  
-    
+
     # =====================
     # update dual vars
     # =====================
-    step, lambda_k = multiplier_method(g_k, d_k, z_bar - phi_k, gamma_k, lambda_b, projection_method, b, h, option=param.direction)
-    
+    step, lambda_k = multiplier_method(g_k, d_k, z_bar - phi_k, gamma_k, lambda_b, projection_method, b, h,
+                                       option=param.direction)
+
     # =====================
     # MAIN FINISHED
     # =====================
-    
+
     # =====================
     # AUXILIARY START
     # the auxiliary steps
@@ -262,33 +300,33 @@ def repair_subgradient(
       if improved >= improved_eps:
         r0 = r0 / 2
         improved = 0
-    
+
     # update base "dual multipliers"
     # condition (phi_k > phi_bar) is only for the volume algorithm
     if not param.use_maximum or _bool_lb_updated:
       lambda_b = lambda_k.copy()
-    
+
     gap_k = (z_bar - phi_bar) / abs(z_bar)
-    
+
     print(
       f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
       f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}"
     )
-    
+
     sol.primal_val.append(z_bar)
     sol.primal_k.append(z_k)
     sol.lb.append(phi_bar)
     sol.fc = fc_vals
-    
+
     if k >= max_iteration or gap_k < gap or step < eps_step:
       x_bar = (1 - alp_k) * x_bar + x_k * alp_k
       i_bar = (1 - alp_k) * i_bar + i_k * alp_k
       sol.primal_sol = x_bar
       break
-    
+
     # increment iteration
     k += 1
-  
+
   finish_sec = time.time()
   total_runtime = finish_sec - st_sec
   if max_iteration:
@@ -298,20 +336,28 @@ def repair_subgradient(
 
 
 def main(problem, **kwargs):
-  print(kwargs)
-  subproblem_alg = kwargs.get('subproblem_alg', 'dp')
+  print(f"THE SUBGRADIENT OPTIMIZATION ARGUMENTS:\n{kwargs}")
   mp_num = kwargs.get('mp_num', 8)
-  # query subproblem algorithm
-  if subproblem_alg == 'mip':
-    # use mip
-    subproblem_method = single_mip
-  elif subproblem_alg == 'dp':
-    # use dp
-    subproblem_method = single_dp
+  subproblem_alg = kwargs.get('subproblem_alg')
+  if subproblem_alg is not None:
+    print(subproblem_alg.__name__)
+    subproblem_method = subproblem_alg
   else:
-    raise ValueError("unknown method for sub problem")
-  
-  _ = repair_subgradient(
+    subproblem_alg_name = kwargs.get('subproblem_alg_name', 'dp')
+    # query subproblem algorithm
+    if subproblem_alg_name == 'mip':
+      # use mip
+      subproblem_method = single_mip
+    elif subproblem_alg_name == 'purepydp':
+      # use dp
+      subproblem_method = single_dp
+    elif subproblem_alg_name == 'cppdp':
+      # use dp
+      subproblem_method = run_dp_single
+    else:
+      raise ValueError("unknown method for sub problem")
+
+  _ = dualnv_subgradient(
     problem,
     subproblem_method=subproblem_method,
     pool=mpc.Pool(processes=mp_num),
