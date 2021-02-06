@@ -1,15 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <array>
-#include <random>
-#include "Eigen/Dense"
-#include "Eigen/Core"
-#include "nlohmann/json.hpp"
-#include "problem_queue.h"
-
-using json = nlohmann::json;
-using array = Eigen::ArrayXd;
-using int_array = Eigen::ArrayXi;
+#include "dp.h"
 
 /*
  * Universal functions
@@ -257,11 +246,3 @@ int run_test(char *fp, bool bool_speed_test = false) {
          << endl;
     return 1;
 }
-
-int main(int argc, char *argv[]) {
-    using namespace std;
-    bool bool_option = (string(argv[2]) == "T");
-    run_test(argv[1], bool_option);
-    return 1;
-}
-
