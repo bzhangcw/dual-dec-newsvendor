@@ -8,7 +8,7 @@ double evaluate(state &s, action &ac, double multiplier) {
     return int(ac.is_work == 1) * multiplier;
 }
 
-int run_dp_single(
+std::vector<double> run_dp_single(
         double *c,
         int N,
         double a,
@@ -124,26 +124,28 @@ int run_dp_single(
     while (true) {
         state s = state_dict[current_k];
         if (s.stage >= N) break;
-        output.col(2)[s.stage] = s.s;
+        output.col(3)[s.stage] = s.s;
         auto got = tail_star_dict.find(current_k);
         if (got == tail_star_dict.end())
             break;
         current_k = got->second.st.to_string();
         auto is_work = got->second.ac.is_work;
-        output.col(0)[s.stage] = is_work == 1;
-        output.col(1)[s.stage] = is_work == -1;
-        output.col(3)[s.stage] = (is_work == 1) * c[s.stage];
+        output.col(0)[s.stage] = (is_work == 1) * c[s.stage];
+        output.col(1)[s.stage] = float(is_work == -1);
+        output.col(2)[s.stage] = float(is_work == 1);
 
     }
     if (print) {
         cout << "@best value:" << value_dict[k_init] << endl;
         cout << "@best policy: \n"
-                "run repair lifespan reward\n"
+                "reward repair work lifespan\n"
              << output
              << endl;
     }
 
-    return 0;
+    auto solStruct = Solution(output, value_dict[k_init]);
+    auto sol = get_solutions(solStruct, N, print);
+    return sol;
 
 }
 
@@ -208,11 +210,11 @@ int run_test(char *fp, bool bool_speed_test = false) {
                            -0.22512148925156905, -0.3217034035286185, -0.5818429443491299, -0.6022893435405621,
                            -0.89940023010885, -0.6361390464933777}; // 4.01
 
-            __unused int status0 = run_dp_single(c0, N, a, b, L, tau, s0);
-            __unused int status1 = run_dp_single(c1, N, a, b, L, tau, s0);
-            __unused int status2 = run_dp_single(c2, N, a, b, L, tau, s0);
-            __unused int status3 = run_dp_single(c3, N, a, b, L, tau, s0);
-            __unused int status4 = run_dp_single(c4, N, a, b, L, tau, s0);
+            __unused auto status0 = run_dp_single(c0, N, a, b, L, tau, s0);
+            __unused auto status1 = run_dp_single(c1, N, a, b, L, tau, s0);
+            __unused auto status2 = run_dp_single(c2, N, a, b, L, tau, s0);
+            __unused auto status3 = run_dp_single(c3, N, a, b, L, tau, s0);
+            __unused auto status4 = run_dp_single(c4, N, a, b, L, tau, s0);
             return 1;
         }
         if (N == 20) {
@@ -220,7 +222,7 @@ int run_test(char *fp, bool bool_speed_test = false) {
                            -5.37123, -9.23084,
                            -8.02637, -2.56384, -6.17786, -2.06662, -1.6506, -6.34907, -9.173, -4.36922,
                            -6.49543}; // 40.34791
-            __unused int status0 = run_dp_single(c0, N, a, b, L, tau, s0);
+            __unused auto status0 = run_dp_single(c0, N, a, b, L, tau, s0);
             return 1;
         }
     }

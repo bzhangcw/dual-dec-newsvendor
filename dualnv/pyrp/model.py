@@ -6,14 +6,13 @@
 # @modified: C. Zhang (chuwzhang@gmail.com>)
 #    Sunday, 1st November 2020 9:56:16 pm
 # @description:
-
-from coptpy import *
-import pandas as pd
-from .util import *
+try:
+  from coptpy import *
+except:
+  print('no COPTPY FOUND')
 import argparse
-from .model_single_dp import single_dp
-from .model_single import single_mip
-import multiprocessing as mpc
+
+from .util import *
 
 
 def repair_msk_model(problem, **kwargs):
@@ -68,7 +67,7 @@ def repair_mip_model(problem, **kwargs):
     MIPGAP = gr.GRB.Param.MIPGap
     TIMELIMIT = gr.GRB.Param.TimeLimit
     VERBOSE = gr.GRB.Param.OutputFlag
-  
+
   # vars
   I = problem['I']
   T = problem['T'][:scale]
@@ -77,13 +76,13 @@ def repair_mip_model(problem, **kwargs):
   p = problem['p']
   tau = problem['tau']
   s0 = problem['s0']
-  
+
   # add model vars
   x = model.addVars(I, T, **{PREFIX: 'x', "vtype": ENGINE.BINARY})
   u = model.addVars(I, T, **{PREFIX: 'u', "vtype": ENGINE.BINARY})
   s = model.addVars(I, T, **{PREFIX: 's', "lb": problem['L']})
   q = model.addVars(T, **{PREFIX: "aq"})
-  
+
   # constrs
   for idx, i in enumerate(I):
     a, b = problem['a'][idx], problem['b'][idx]
@@ -91,7 +90,7 @@ def repair_mip_model(problem, **kwargs):
     for t in T[:-1]:
       model.addConstr(s[i, t + 1] == s[i, t] - a * u[i, t + 1] +
                       b * x.get((i, t - tau + 1), 0))
-  
+
   for idx, i in enumerate(I):
     for t in T:
       for rho in range(t, t + tau):
@@ -105,7 +104,7 @@ def repair_mip_model(problem, **kwargs):
     i_sum = quicksum(u[i, t] for i in I)
     ql[t] = model.addConstr(q[t] >= h * i_sum - h * D[t])
     qt[t] = model.addConstr(q[t] >= p * D[t] - p * i_sum)
-  
+
   obj = quicksum(v for v in q.values())
   model.setObjective(obj)
   model.setParam(TIMELIMIT, time_limit)
@@ -116,7 +115,7 @@ def repair_mip_model(problem, **kwargs):
   except:
     print(f'{engine} do not have mp options')
     return -1
-  
+
   if engine == 'copt':
     model.solve()
     ssol = model.getInfo(ENGINE.Info.Value, s)
@@ -129,12 +128,12 @@ def repair_mip_model(problem, **kwargs):
     usol = model.getAttr(ENGINE.Attr.X, u)
     xsol = model.getAttr(ENGINE.Attr.X, x)
     qsol = model.getAttr(ENGINE.Attr.X, q)
-  
+
   sol = np.zeros(shape=(len(I), len(T), 3))
   for idx, i in enumerate(I):
     for t in T:
       sol[idx, t] = [usol[i, t], xsol[i, t], ssol[i, t]]
-  
+
   return model, sol, xsol, usol, ssol, qsol, ql, qt
 
 

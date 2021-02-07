@@ -10,7 +10,7 @@
 import multiprocessing as mpc
 import time
 from collections import namedtuple
-from .pydp import run_dp_single, double_array
+from .pydp import cppdp_single, double_array
 from .model_single import single_mip
 from .model_single_dp import single_dp
 from .util import *
@@ -89,7 +89,7 @@ class Param:
 
 
 def convert_to_c_arr(size, lambda_k):
-  print(lambda_k)
+
   c_arr = double_array(size)
   for i in range(size):
     c_arr[i] = lambda_k[i]
@@ -100,7 +100,7 @@ def convert_to_c_arr(size, lambda_k):
 def dualnv_subgradient(
     problem,
     scale,
-    subproblem_method=single_dp,
+    subproblem_method=cppdp_single,
     projection_method=projection_box,
     mp=True,
     pool=None,
@@ -138,7 +138,7 @@ def dualnv_subgradient(
   param = Param()
   param.use_maximum = dual_option == 'max'
   param.use_optimal = hyper_option != 'simple'
-  param.use_cpp_dp = subproblem_method.__name__ == 'run_dp_single'
+  param.use_cpp_dp = subproblem_method.__name__ == 'cppdp_single'
   param.direction = 'cvx' if dir_option == 'cvx' else 'subgrad'
 
   # ==================
@@ -189,7 +189,7 @@ def dualnv_subgradient(
           _b = problem['b'][idx]
           r = pool.apply_async(
             subproblem_method,
-            (c_arr, scale, _a, _b, _L, _tau, _s0, True, True)
+            (c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
           )
           results.append(r)
         for idx, r in enumerate(results):
@@ -200,7 +200,7 @@ def dualnv_subgradient(
         for idx, i in enumerate(I):
           _a = problem['a'][idx]
           _b = problem['b'][idx]
-          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, True, True)
+          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
           sub_v_k[idx] = _best_v_i
           x_k[idx, :, :] = _best_p_i
     else:
@@ -353,7 +353,7 @@ def main(problem, **kwargs):
       subproblem_method = single_dp
     elif subproblem_alg_name == 'cppdp':
       # use dp
-      subproblem_method = run_dp_single
+      subproblem_method = cppdp_single
     else:
       raise ValueError("unknown method for sub problem")
 

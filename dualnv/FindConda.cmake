@@ -60,7 +60,7 @@ if(NOT CMAKE_FIND_ANACONDA_PYTHON_INCLUDED)
         set( ANACONDA_PYTHON_VERSION ${_py_version_major}.${_py_version_minor} )
         message("${ANACONDA_PYTHON_VERSION}")
 
-        if( ${_py_version_major} MATCHES 2 )
+        if((${_py_version_major} MATCHES 2) OR (${_py_version_minor} GREATER_EQUAL 8))
             set( _py_ext "")
         else()
             set( _py_ext "m")

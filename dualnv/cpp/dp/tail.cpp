@@ -7,7 +7,7 @@
 
 tail_counter tc = tail_counter();
 
-tail::~tail() {};
+tail::~tail() = default;
 
 tail::tail(state &st, action &ac) {
     this->st = state(st);

@@ -57,9 +57,9 @@ if(APPLE)
             LINK_FLAGS "-flat_namespace -undefined suppress"
             )
 elseif(UNIX)
-#    set_target_properties(pyFoo PROPERTIES
-#            INSTALL_RPATH "$ORIGIN:$ORIGIN/../../${PROJECT_NAME}/.libs"
-#            )
+    set_target_properties(pyFoo PROPERTIES
+            INSTALL_RPATH "$ORIGIN:$ORIGIN/"
+            )
 endif()
 
 

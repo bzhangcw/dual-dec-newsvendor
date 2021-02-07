@@ -61,6 +61,67 @@ class _SwigNonDynamicMeta(type):
     __setattr__ = _swig_setattr_nondynamic_class_variable(type.__setattr__)
 
 
+class SwigPyIterator(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+
+    def __init__(self, *args, **kwargs):
+        raise AttributeError("No constructor defined - class is abstract")
+    __repr__ = _swig_repr
+    __swig_destroy__ = _pydp.delete_SwigPyIterator
+
+    def value(self):
+        return _pydp.SwigPyIterator_value(self)
+
+    def incr(self, n=1):
+        return _pydp.SwigPyIterator_incr(self, n)
+
+    def decr(self, n=1):
+        return _pydp.SwigPyIterator_decr(self, n)
+
+    def distance(self, x):
+        return _pydp.SwigPyIterator_distance(self, x)
+
+    def equal(self, x):
+        return _pydp.SwigPyIterator_equal(self, x)
+
+    def copy(self):
+        return _pydp.SwigPyIterator_copy(self)
+
+    def next(self):
+        return _pydp.SwigPyIterator_next(self)
+
+    def __next__(self):
+        return _pydp.SwigPyIterator___next__(self)
+
+    def previous(self):
+        return _pydp.SwigPyIterator_previous(self)
+
+    def advance(self, n):
+        return _pydp.SwigPyIterator_advance(self, n)
+
+    def __eq__(self, x):
+        return _pydp.SwigPyIterator___eq__(self, x)
+
+    def __ne__(self, x):
+        return _pydp.SwigPyIterator___ne__(self, x)
+
+    def __iadd__(self, n):
+        return _pydp.SwigPyIterator___iadd__(self, n)
+
+    def __isub__(self, n):
+        return _pydp.SwigPyIterator___isub__(self, n)
+
+    def __add__(self, n):
+        return _pydp.SwigPyIterator___add__(self, n)
+
+    def __sub__(self, *args):
+        return _pydp.SwigPyIterator___sub__(self, *args)
+    def __iter__(self):
+        return self
+
+# Register SwigPyIterator in _pydp:
+_pydp.SwigPyIterator_swigregister(SwigPyIterator)
+
 class double_array(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -87,6 +148,127 @@ _pydp.double_array_swigregister(double_array)
 
 def double_array_frompointer(t):
     return _pydp.double_array_frompointer(t)
+
+
+def new_doubleP():
+    return _pydp.new_doubleP()
+
+def copy_doubleP(value):
+    return _pydp.copy_doubleP(value)
+
+def delete_doubleP(obj):
+    return _pydp.delete_doubleP(obj)
+
+def doubleP_assign(obj, value):
+    return _pydp.doubleP_assign(obj, value)
+
+def doubleP_value(obj):
+    return _pydp.doubleP_value(obj)
+class DoubleVector(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def iterator(self):
+        return _pydp.DoubleVector_iterator(self)
+    def __iter__(self):
+        return self.iterator()
+
+    def __nonzero__(self):
+        return _pydp.DoubleVector___nonzero__(self)
+
+    def __bool__(self):
+        return _pydp.DoubleVector___bool__(self)
+
+    def __len__(self):
+        return _pydp.DoubleVector___len__(self)
+
+    def __getslice__(self, i, j):
+        return _pydp.DoubleVector___getslice__(self, i, j)
+
+    def __setslice__(self, *args):
+        return _pydp.DoubleVector___setslice__(self, *args)
+
+    def __delslice__(self, i, j):
+        return _pydp.DoubleVector___delslice__(self, i, j)
+
+    def __delitem__(self, *args):
+        return _pydp.DoubleVector___delitem__(self, *args)
+
+    def __getitem__(self, *args):
+        return _pydp.DoubleVector___getitem__(self, *args)
+
+    def __setitem__(self, *args):
+        return _pydp.DoubleVector___setitem__(self, *args)
+
+    def pop(self):
+        return _pydp.DoubleVector_pop(self)
+
+    def append(self, x):
+        return _pydp.DoubleVector_append(self, x)
+
+    def empty(self):
+        return _pydp.DoubleVector_empty(self)
+
+    def size(self):
+        return _pydp.DoubleVector_size(self)
+
+    def swap(self, v):
+        return _pydp.DoubleVector_swap(self, v)
+
+    def begin(self):
+        return _pydp.DoubleVector_begin(self)
+
+    def end(self):
+        return _pydp.DoubleVector_end(self)
+
+    def rbegin(self):
+        return _pydp.DoubleVector_rbegin(self)
+
+    def rend(self):
+        return _pydp.DoubleVector_rend(self)
+
+    def clear(self):
+        return _pydp.DoubleVector_clear(self)
+
+    def get_allocator(self):
+        return _pydp.DoubleVector_get_allocator(self)
+
+    def pop_back(self):
+        return _pydp.DoubleVector_pop_back(self)
+
+    def erase(self, *args):
+        return _pydp.DoubleVector_erase(self, *args)
+
+    def __init__(self, *args):
+        _pydp.DoubleVector_swiginit(self, _pydp.new_DoubleVector(*args))
+
+    def push_back(self, x):
+        return _pydp.DoubleVector_push_back(self, x)
+
+    def front(self):
+        return _pydp.DoubleVector_front(self)
+
+    def back(self):
+        return _pydp.DoubleVector_back(self)
+
+    def assign(self, n, x):
+        return _pydp.DoubleVector_assign(self, n, x)
+
+    def resize(self, *args):
+        return _pydp.DoubleVector_resize(self, *args)
+
+    def insert(self, *args):
+        return _pydp.DoubleVector_insert(self, *args)
+
+    def reserve(self, n):
+        return _pydp.DoubleVector_reserve(self, n)
+
+    def capacity(self):
+        return _pydp.DoubleVector_capacity(self)
+    __swig_destroy__ = _pydp.delete_DoubleVector
+
+# Register DoubleVector in _pydp:
+_pydp.DoubleVector_swigregister(DoubleVector)
 
 
 def run_dp_single(c, N, a, b, L, tau, s0, _print, truncate):

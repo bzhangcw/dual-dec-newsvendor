@@ -1,17 +1,27 @@
 /* File: dp.i */
 %module dp
 %include "carrays.i"
-%array_class(double , double_array);
+%include "std_vector.i"
+%include "cpointer.i"
+
+// arrays and vectors
+%array_class(double, double_array);
+%pointer_functions(double, doubleP);
+
+namespace std
+{
+    %template(DoubleVector) vector<double>;
+}
+
+
 %{
 #define SWIG_FILE_WITH_INIT
-
 #include "dp.h"
-
+#include "sol.h"
 %}
 
 
-// int fact(int n);
-int run_dp_single(
+std::vector<double> run_dp_single(
         double *c,
         int N,
         double a,
