@@ -12,14 +12,13 @@ public:
     double *s;
     double *m;
     double value;
-    double *concat;
+    Eigen::ArrayXd compactSol;
 
     Solution(){
         x = nullptr;
         s = nullptr;
         m = nullptr;
         value = 0.0;
-        concat = nullptr;
     }
 
     Solution(Eigen::ArrayXXd &array, double v);
