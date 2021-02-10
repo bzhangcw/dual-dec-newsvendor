@@ -51,14 +51,15 @@ For \(\delta, \epsilon\) we have a convex optimization problem in the positive o
 We also assume minimizing the linear objective under \(y\in \Omega_y\) can be well-solved.
 In later sections we show some special cases where \(\Omega_y\) may be further decomposed into smaller problems.
 
-Denote $f^\star, \phi^\star$ be the optimal objective for primal and dual problem, respectively.
-
+Denote \(f^\star\) is the optimal value of \eqref{eq:primal}, \(\phi^\star\) is the optimal value of \(\max \phi(\lambda)\).
 
 \subsection{Affine case}\label{affine-case}
 
 Let \(f=p^\mathsf{T}\delta + h^\mathsf{T} \epsilon, p, h \in \mathbb R_+^n\), we have
 
-\[\phi(\lambda) = \min_{\delta, \epsilon} (p+ \lambda)^\mathsf{T}\delta + (h - \lambda)^\mathsf{T} \epsilon+ \min_y \lambda^\mathsf{T} y - \lambda^\mathsf{T} b\]
+\begin{equation}\label{eq:def_affine}
+  \phi(\lambda) = \min_{\delta, \epsilon} (p+ \lambda)^\mathsf{T}\delta + (h - \lambda)^\mathsf{T} \epsilon+ \min_y \lambda^\mathsf{T} y - \lambda^\mathsf{T} b
+\end{equation}
 
 Then \(\phi\) is unbounded unless \(\lambda \in \Lambda\) where
 \(\Lambda = \{\lambda: \lambda \in [-p, h]\}\), in which case

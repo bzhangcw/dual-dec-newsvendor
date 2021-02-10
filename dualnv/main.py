@@ -28,13 +28,14 @@ if __name__ == '__main__':
     "i": ni,
     "t": nt,
     "subproblem_alg_name": 'cppdp',
-    "mp": False,
-    "mp_num": 8,
+    "mp": True,
+    "proc": 0,
+    "mp_num": 4,
     "gap": 0.005,
     "scale": nt,
-    "max_iteration": 400,
+    "max_iteration": 300,
     "eps_step": 1e-5,
-    "evals": evals
+    # "evals": evals
   }
 
   scale = kwargs.get('scale')
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     # "normal" convex sg
     # "bran95_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", "hyper_option": "optimal", **kwargs},
     "normal_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "subgrad", **kwargs},
-    "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
+    # "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
     # "volume" convex sg
     # "volume_sg": {"r0": 1.5, **kwargs}
   }

@@ -8,44 +8,42 @@
 \subsection{Conditions for strong
   duality}\label{sec:dual.conditions-for-strong-duality}
 
-It's well known that strong duality does not hold in general. We review
-some of the cases here. The Lagrangian duality theory can be found in
-any standard text.
 
-\begin{theorem}
-  if \(\Omega_y\) is convex then the strong duality holds ...,
-  i.e.~\(\phi^\star = f^\star\)
-\end{theorem}
+% \begin{theorem}
+%   if \(\Omega_y\) is convex then the strong duality holds ...,
+%   i.e.~\(\phi^\star = f^\star\)
+% \end{theorem}
 
-add justifications here (slater, ...)
+% add justifications here (slater, ...)
 
-A more interesting result is devoted to mixed integer problems.
+% A more interesting result is devoted to mixed integer problems.
 We know Lagrangian relaxation produces a bound up to
 linear relaxation of a problem with the "easy" constraints
 and the convex hull of relaxed constraints.
 
 \textbf{(Review Here)}.
 
-\begin{lemma}
+\begin{lemma}\label{lemma.bound}
   if \(\Omega_y = \{y \in \mathbb R^n: y \in \Omega, y\in \mathbb Z^n\}\).
   Then we have the following relation for dual function,
   \[ \phi^\star = \min_{\delta, \epsilon} f(\delta, \epsilon)\quad \textbf{ s.t. }  y + \delta - \epsilon = b,\; y \in \textrm{conv}(\Omega_y)\]
 \end{lemma}
 
-This immediately allows us to have strong duality by definition of perfect formulation,
-in which case the linear relaxation solves the original problem.
+The above lemma immediately allows us to have strong duality by definition of perfect formulation. We first define set \(Y\) be the intersection of the hyperplane and \(\textsf{conv}(\Omega_y)\),
 
-\begin{corollary}\label{strong-ip}
-  We conclude the strong duality holds since
-  \(Y = \{(y, \delta, \epsilon): y + \delta - \epsilon = b,\; y \in \textsf{conv}(\Omega_y)\}\)
-  is already \emph{a perfect formulation} in the sense that
-  \(Y = \textsf{conv}(Y)\)
+\begin{equation}
+  Y = \{(y, \delta, \epsilon): y + \delta - \epsilon = b,\; y \in \textsf{conv}(\Omega_y)\}
+\end{equation}
+
+Then we have the following results,
+
+\begin{corollary}\label{lemma.strong-ip}
+  We conclude the strong duality holds since \(Y\) is already \emph{a perfect formulation} in the sense that
+  \(Y = \textsf{conv}(Y)\).
 \end{corollary}
 
-\textbf{show this or add more conditions to
-  justify}
-
-
+We conclude \(\phi^\star = f^\star\) since
+\(f^\star = \min_{(y, \delta, \epsilon) \in \textsf{conv}(Y)} f(\delta, \epsilon)\).
 
 \subsection{Subgradient Method}\label{sec:dual.subgradient}
 To solve the reduced problem for $\lambda$, we consider a class of subgradient
@@ -55,7 +53,7 @@ methods:
   \lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}d_{k})
 \end{equation}
 
-where \(\mathbf P\) is the projection onto dual space \(\Lambda\).
+where \(\mathbf P\) is the projection onto dual space \(\Lambda\), in the affine case \eqref{eq:def_affine}, we compute the projection onto box \(\Lambda = [-p, h]\).
 \(d_k\) is the update direction for current iteration and \(s_{k}\) is
 the step size using target-based rule:
 
@@ -63,13 +61,14 @@ the step size using target-based rule:
   s_{k} = \gamma_k\frac{\phi^\star - \phi(\lambda_k)}{\|d_{k}\|^2}
 \end{equation}
 
+In practice, we take primal feasible values which over estimate the \(\phi^\star\).
 
 During the progress on dual problem,
 we compute an weighted average solution \(\bar y_k\) from the convex combination of previous iterations:
-\(\{y_i\}_{i=1,...k}\) and each \(y_i\) solves \(\phi_i = \phi(\lambda_i)\).
+\(\{y_i\}_{i=1,...k}\) and each \(y_i\) solves \(\phi_i = \phi(\lambda_i)\), \(y_i = \arg\min_{y\in \Omega_y} \lambda_i^\mathsf{T}y\).
 
 \begin{align}
-  \label{eq:bar_y_average} \bar y_k & = \sum^i_k \alpha^i_k y_i,\quad  \sum^i_k \alpha^i_k = 1, \alpha^i_k \ge 0 \\
+  \label{eq:bar_y_average} \bar y_k & = \sum^i_k \alpha_i^{(k)} y_i,\quad  \sum^i_k \alpha_i^{(k)} = 1,\alpha_i^{(k)} \ge 0 \\
   \label{eq:bar_y_recursive}        & = (1-\alpha_k)\cdot\bar y_{k-1} + \alpha_k \cdot y_k
 \end{align}
 
@@ -80,14 +79,8 @@ of \(\phi\) at \(\lambda_k\):
 \begin{equation}g_k \in \partial \phi_k\end{equation}
 
 
-The search direction is computed from subgradient.
-We can use a convex alternative such that \(d_k = \bar y_k - b\).
-Similarly, it can be expressed as convex combinations.
-\begin{equation}\label{eq:direction_recursive}
-  d_k = (1-\alpha_k) \cdot d_{k-1} + \alpha_k\cdot g_k
-\end{equation}
+The search direction can be computed from subgradient.
 
-As a comparison, there is a choice solely involves the subgradient itself,
 \begin{equation}\label{eq:simple_subgrad}
   \begin{aligned}
      & \lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}g_{k})             \\
@@ -95,7 +88,13 @@ As a comparison, there is a choice solely involves the subgradient itself,
   \end{aligned}
 \end{equation}
 
-For simplicity, we refer to the convex choice \eqref{eq:main_subgrad} whenever term \(d_k\) is used.
+As a comparison, we can use a convex alternative such that \(d_k = \bar y_k - b\).
+Similarly, it can be expressed as convex combinations.
+\begin{equation}\label{eq:direction_recursive}
+  d_k = (1-\alpha_k) \cdot d_{k-1} + \alpha_k\cdot g_k
+\end{equation}
+
+For simplicity, we refer to the convex choice \eqref{eq:direction_recursive} whenever term \(d_k\) is used.
 
 The dual subgradient algorithm can be summarized as follows.
 \(\varepsilon,\varepsilon_s\) are the tolerance parameter for objective gap and stepsize, respectively.
@@ -137,7 +136,7 @@ To simplify our presentation, let
 also convex in \(y\) since both function \(f\) and \(\max\{\cdot, 0\}\)
 are convex. It's also worth to notice that \(\bar \epsilon_k\) should
 not be calculated as running averages:
-\(\bar \epsilon_k \neq \sum^i_k \alpha^i_k \epsilon_i\). For such an
+\(\bar \epsilon_k \neq \sum^i_k \alpha_i^{(k)} \epsilon_i\). For such an
 ``averaged'' solution, we let
 \(\bar z_k = z(\bar y_k)\). We later find the recovery algorithm achieves
 at the optimal objective.
@@ -189,62 +188,64 @@ we suggest several specific choices of parameters regarding the subgradient meth
 
 \subsection{Convergence Analysis}\label{dual.analysis}
 
-\begin{itemize}
+Comments:
 
-  \item
-        we've showed \(\phi^\star = f^\star= z^\star\)
-  \item
-        we show \(\lambda_k\) converges to \(\lambda^\star \in \Lambda^\star\)
-        for our choices of \(\gamma_k, \alpha_k\)
-  \item
-        we show primal solution \(\bar z_k\) converges to \(z^\star\)
-\end{itemize}
+1. From Lemma \ref{lemma.bound} and Corollary \ref{lemma.strong-ip}, we see \(\phi^\star = f^\star\).
 
-\begin{lemma}\(\epsilon\)-subgradient.
-  \begin{equation}\label{eq:subgrad}
-    \begin{aligned}
-      g_{k}^\mathsf{T}(\lambda_{k}  -\lambda) \le \phi_{k} - \phi(\lambda) \\
-      d_{k}^\mathsf{T}(\lambda_{k}  -\lambda) \le \phi_{k} - \phi(\lambda) + \epsilon_k
-    \end{aligned}
-  \end{equation}
-\end{lemma}
+2. We assume convergence of dual method: \(\lambda_k \to \lambda^\star\), we don't limit our choice of direction here (the simplest one should also work).
 
-where
+3. \(z_k = z(y_k)\) is not convergent, see the \emph{green} lines in Figure \ref{fig:divergent_volume}, nor \(min_k z(y_k)\).
 
-\begin{equation}\label{eq:def_eps}
-  \epsilon_k = \sum^i_k \alpha^i_k \cdot \left [g_i^\mathsf{T}(\lambda_k - \lambda_i) + \phi_i - \phi_k \right ]
-\end{equation}
+4. \(\bar y_k\) is feasible to linear relaxation (may not be integral) and
+\(z(\bar y)\) is convergent. see the \emph{orange} lines
 
-Notice \(\epsilon_k\) can be further simplified by the definition of
-\(\phi\):
+% This part is only needed 
+%   if use d_k (convex direction)
+% \begin{lemma}\(\epsilon\)-subgradient.
+%   \begin{equation}\label{eq:subgrad}
+%     \begin{aligned}
+%       g_{k}^\mathsf{T}(\lambda_{k}  -\lambda) \le \phi_{k} - \phi(\lambda) \\
+%       d_{k}^\mathsf{T}(\lambda_{k}  -\lambda) \le \phi_{k} - \phi(\lambda) + \epsilon_k
+%     \end{aligned}
+%   \end{equation}
+% \end{lemma}
 
-\begin{equation}\label{eq:def_eps_simple}
-  \epsilon_k = \sum^i_k \alpha^i_k \cdot \left ( g_i^\mathsf{T}\lambda_k  - \phi_k \right )
-\end{equation}
+% where
 
-\begin{lemma} \label{lemma:dual_conv} Dual convergence, \cite{brannlund1995generalized}. The
-  subgradient method is convergent if \(\epsilon_k\) satisfies:
-  \begin{equation}
-    \frac{1}{2}(2 - \gamma_k) (\phi_{k} - \phi^\star)  + \epsilon_k \le 0
-  \end{equation}
-\end{lemma}
-\begin{proof}
-  The proof can be done by showing the monotonic decrease of
-  \(\|\lambda_{k} - \lambda^\star\|\) via the iterative equations.
-  \begin{equation}\begin{aligned}
-      \|\lambda_{k+1} - \lambda^\star\|^2 \le ||\lambda_k - \lambda^\star||^2
-      + 2\cdot \gamma_k \frac{(\phi^\star - \phi_{k})}{\|d_{k}\|^{2}} d_k^\mathsf{T}(\lambda_k - \lambda^\star)
-      + (\gamma_{k})^{2} \frac{(\phi^\star - \phi_{k})^{2}}{\|d_{k}\|^{2}}
-    \end{aligned}\end{equation}
+% \begin{equation}\label{eq:def_eps}
+%   \epsilon_k = \sum^i_k \alpha^i_k \cdot \left [g_i^\mathsf{T}(\lambda_k - \lambda_i) + \phi_i - \phi_k \right ]
+% \end{equation}
 
-  Notice: \begin{equation}\begin{aligned}
-          & 2  \cdot d_k^\mathsf{T}(\lambda_k - \lambda^\star) + \gamma_{k}(\phi^\star - \phi_{k})
-      \le & 2 (\phi_{k} - \phi^\star + \epsilon_k) + \gamma_k(\phi^\star -\phi_k)                  \\
-      =   & (2 - \gamma_k) (\phi_{k} - \phi^\star)  + 2\epsilon_k \le 0
-    \end{aligned}\end{equation}
+% Notice \(\epsilon_k\) can be further simplified by the definition of
+% \(\phi\):
 
-  and we have the convergence.
-\end{proof}
+% \begin{equation}\label{eq:def_eps_simple}
+%   \epsilon_k = \sum^i_k \alpha^i_k \cdot \left ( g_i^\mathsf{T}\lambda_k  - \phi_k \right )
+% \end{equation}
+
+% \begin{lemma} \label{lemma:dual_conv} Dual convergence, \cite{brannlund1995generalized}. The
+%   subgradient method is convergent if \(\epsilon_k\) satisfies:
+%   \begin{equation}
+%     \frac{1}{2}(2 - \gamma_k) (\phi_{k} - \phi^\star)  + \epsilon_k \le 0
+%   \end{equation}
+% \end{lemma}
+% \begin{proof}
+%   The proof can be done by showing the monotonic decrease of
+%   \(\|\lambda_{k} - \lambda^\star\|\) via the iterative equations.
+%   \begin{equation}\begin{aligned}
+%       \|\lambda_{k+1} - \lambda^\star\|^2 \le ||\lambda_k - \lambda^\star||^2
+%       + 2\cdot \gamma_k \frac{(\phi^\star - \phi_{k})}{\|d_{k}\|^{2}} d_k^\mathsf{T}(\lambda_k - \lambda^\star)
+%       + (\gamma_{k})^{2} \frac{(\phi^\star - \phi_{k})^{2}}{\|d_{k}\|^{2}}
+%     \end{aligned}\end{equation}
+
+%   Notice: \begin{equation}\begin{aligned}
+%           & 2  \cdot d_k^\mathsf{T}(\lambda_k - \lambda^\star) + \gamma_{k}(\phi^\star - \phi_{k})
+%       \le & 2 (\phi_{k} - \phi^\star + \epsilon_k) + \gamma_k(\phi^\star -\phi_k)                  \\
+%       =   & (2 - \gamma_k) (\phi_{k} - \phi^\star)  + 2\epsilon_k \le 0
+%     \end{aligned}\end{equation}
+
+%   and we have the convergence.
+% \end{proof}
 
 
 Now we visit properties for primal solutions.

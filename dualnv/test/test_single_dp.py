@@ -12,23 +12,21 @@ import time
 TEST_DIR = 'test'
 
 if __name__ == '__main__':
-    idx = 1
+    idx = 0
     size = int(sys.argv[1])
 
-    problem = json.load(open(f"{TEST_DIR}/test_large_{size}.json", 'rb'))
-    s0 = problem['s0']
+    problem = json.load(open(f"{TEST_DIR}/test_{size}.json", 'rb'))
+    s0 = problem['s0'][idx]
     a = problem['a'][idx]
     b = problem['b'][idx]
     L = problem['L']
-    tau = problem['tau']
+    tau = problem['tau'][idx]
     T = problem['T'][:size]
     c1 = -10 + 8 * np.random.random(size=size)
-
+    print(
+    f"problem size: {size}\n")
+    
     start = time.time()
-    best_v1, best_p1, *_ = purepy.single_dp(problem, size, c1, idx)
-    print(best_v1)
-    print(best_p1)
-    end_purepy = time.time()
     c_arr = py.double_array(size)
     for i in range(size):
         c_arr[i] = c1[i]
@@ -38,6 +36,16 @@ if __name__ == '__main__':
 
     print(
         f"problem size: {size}\n"
-        f"purepy  used: {end_purepy - start:.2f}\n"
-        f"cpp-dp  used: {end_cpp - end_purepy:.2f}\n"
+        f"cpp-dp  used: {end_cpp - start:.2f}\n"
+    )
+
+
+    best_v1, best_p1, *_ = purepy.single_dp(problem, size, c1, idx)
+    print(best_v1)
+    print(best_p1)
+    end_purepy = time.time()
+    print(
+        f"problem size: {size}\n"
+        f"purepy  used: {end_purepy - end_cpp:.2f}\n"
+
     )

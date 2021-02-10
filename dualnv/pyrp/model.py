@@ -86,14 +86,14 @@ def repair_mip_model(problem, **kwargs):
   # constrs
   for idx, i in enumerate(I):
     a, b = problem['a'][idx], problem['b'][idx]
-    model.addConstr(s[i, 0] == s0 - a * u[i, 0])
+    model.addConstr(s[i, 0] == s0[idx] - a * u[i, 0])
     for t in T[:-1]:
       model.addConstr(s[i, t + 1] == s[i, t] - a * u[i, t + 1] +
-                      b * x.get((i, t - tau + 1), 0))
+                      b * x.get((i, t - tau[idx] + 1), 0))
 
   for idx, i in enumerate(I):
     for t in T:
-      for rho in range(t, t + tau):
+      for rho in range(t, t + tau[idx]):
         if rho == t:
           model.addConstr(x[i, t] + u.get((i, rho), 0) <= 1)
         else:

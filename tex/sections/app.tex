@@ -173,117 +173,117 @@ programming in polynomial time, the complexity is:
 % \end{itemize}
 
 % still working on this.
-\subsection{Flight Maintenance Problem: Extensions}\label{sec.sfmp}
+% \subsection{Flight Maintenance Problem: Extensions}\label{sec.sfmp}
 
 
-We now assume the demand is stochastic with some distribution \(f\in \mathscr F\).
-We use boldface notation to denote random variables and corresponding
-decision variables.
+% We now assume the demand is stochastic with some distribution \(f\in \mathscr F\).
+% We use boldface notation to denote random variables and corresponding
+% decision variables.
 
-\subsubsection{Distributionally Robust Flight Maintenance Problem}\label{sec.lro_fmp}
+% \subsubsection{Distributionally Robust Flight Maintenance Problem}\label{sec.lro_fmp}
 
 
-\[\begin{aligned}
-                  & \min \max_{f\in \mathscr F}\mathbb E_f  \left[e^\mathsf{T}( b \cdot\mathbfit{\delta}  + h\cdot \mathbfit\epsilon)\right]                                 \\
-    \mathbf{s.t.} &                                                                                                                                                          \\
-                  & \mathbfit{U} ^\mathsf{T} e + \mathbfit \delta - \mathbfit\epsilon  = \mathbfit d                                         & \forall \mathbfit d \in \Xi_d \\
-                  & \mathbfit U_{(i,\cdot)}, \mathbfit X_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i                                   & \forall i\in I
-  \end{aligned}\]
+% \[\begin{aligned}
+%                   & \min \max_{f\in \mathscr F}\mathbb E_f  \left[e^\mathsf{T}( b \cdot\mathbfit{\delta}  + h\cdot \mathbfit\epsilon)\right]                                 \\
+%     \mathbf{s.t.} &                                                                                                                                                          \\
+%                   & \mathbfit{U} ^\mathsf{T} e + \mathbfit \delta - \mathbfit\epsilon  = \mathbfit d                                         & \forall \mathbfit d \in \Xi_d \\
+%                   & \mathbfit U_{(i,\cdot)}, \mathbfit X_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i                                   & \forall i\in I
+%   \end{aligned}\]
 
-Let \(\mathbfit Q = [\mathbfit{q}^1, ..., \mathbfit{q}^N]\)
+% Let \(\mathbfit Q = [\mathbfit{q}^1, ..., \mathbfit{q}^N]\)
 
-\[\begin{aligned}
-     & \max_{\beta, \theta, \Omega_i, \forall i} \theta + \beta \gamma +  \beta N - \underbrace{\beta \mathbf N^\mathsf{T} \log(\frac{\beta \mathbf N}{\mathbfit{Q} e-\theta \mathbf 1})}_{\mathcal D_{KL}(\beta \mathbf N | \mathbfit{Q} e-\theta \mathbf 1)}                         \\
-    \textbf {s.t.}                                                                                                                                                                                                                                                                     \\
-     & \beta \ge 0                                                                                                                                                                                                                                                                     \\
-     & \mathbfit{Q} e \ge \theta \mathbf 1                                                                                                                                                                                                                                             \\
-     & \mathbfit{U} ^\mathsf{T} e + \mathbfit \delta - \mathbfit\epsilon  = \mathbfit d^n                                                                                                                                                                      & \forall n = 1, ..., N \\
-     & \mathbfit X_{(i,\cdot)}, \mathbfit U_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i                                                                                                                                                                  & \forall i\in I
-  \end{aligned}\]
+% \[\begin{aligned}
+%      & \max_{\beta, \theta, \Omega_i, \forall i} \theta + \beta \gamma +  \beta N - \underbrace{\beta \mathbf N^\mathsf{T} \log(\frac{\beta \mathbf N}{\mathbfit{Q} e-\theta \mathbf 1})}_{\mathcal D_{KL}(\beta \mathbf N | \mathbfit{Q} e-\theta \mathbf 1)}                         \\
+%     \textbf {s.t.}                                                                                                                                                                                                                                                                     \\
+%      & \beta \ge 0                                                                                                                                                                                                                                                                     \\
+%      & \mathbfit{Q} e \ge \theta \mathbf 1                                                                                                                                                                                                                                             \\
+%      & \mathbfit{U} ^\mathsf{T} e + \mathbfit \delta - \mathbfit\epsilon  = \mathbfit d^n                                                                                                                                                                      & \forall n = 1, ..., N \\
+%      & \mathbfit X_{(i,\cdot)}, \mathbfit U_{(i,\cdot)}, \mathbfit S_{(i,\cdot)} \in \Omega_i                                                                                                                                                                  & \forall i\in I
+%   \end{aligned}\]
 
-This problem can be solved by the same methods mentioned in Section \ref{sec:dual}, cf. \eqref{eq:main_subgrad}, \eqref{eq:recovery}.
+% This problem can be solved by the same methods mentioned in Section \ref{sec:dual}, cf. \eqref{eq:main_subgrad}, \eqref{eq:recovery}.
 
-\subsubsection{Dynamic Flight Maintenance Problem}\label{sec.dynamic_fmp}
+% \subsubsection{Dynamic Flight Maintenance Problem}\label{sec.dynamic_fmp}
 
-Let \(\Xi_d\) be the support for random variable \(\mathbfit{d}\). Let
-\(\mathbfit y = \left[\mathbfit m,\mathbfit s \right]\) be the
-variable under uncertainty. Since \(\mathbfit y\) sufficiently
-represents the state at period \(t\), we can write the multistage
-optimization model using dynamic programming equations.
+% Let \(\Xi_d\) be the support for random variable \(\mathbfit{d}\). Let
+% \(\mathbfit y = \left[\mathbfit m,\mathbfit s \right]\) be the
+% variable under uncertainty. Since \(\mathbfit y\) sufficiently
+% represents the state at period \(t\), we can write the multistage
+% optimization model using dynamic programming equations.
 
-Define \(V_{t}\) is the optimal value with \(t\) periods to go. Consider
-the following multistage stochastic optimization problem:
+% Define \(V_{t}\) is the optimal value with \(t\) periods to go. Consider
+% the following multistage stochastic optimization problem:
 
-\begin{equation}\label{eq:dynamic_fmp.model}
-  z_T(y) = \min_{\mathbfit\epsilon_t, \mathbfit\delta_t, \mathbfit u_{it}, \mathbfit x_{it}}
-  \mathbb{E}_f \left[ \sum_{t=1}^{|T|}h \cdot \mathbfit \epsilon_t + b \cdot \mathbfit \delta_t  | \mathbfit y \right]
-\end{equation}
+% \begin{equation}\label{eq:dynamic_fmp.model}
+%   z_T(y) = \min_{\mathbfit\epsilon_t, \mathbfit\delta_t, \mathbfit u_{it}, \mathbfit x_{it}}
+%   \mathbb{E}_f \left[ \sum_{t=1}^{|T|}h \cdot \mathbfit \epsilon_t + b \cdot \mathbfit \delta_t  | \mathbfit y \right]
+% \end{equation}
 
-Decision are made under restrictions:
+% Decision are made under restrictions:
 
-\begin{align}
-   & \sum_i \mathbfit u_{it} - \mathbfit\epsilon_t + \mathbfit\delta_t = \mathbfit{d}_t, \quad \\
-   & \mathbfit s_{it}, \mathbfit u_{it}, \mathbfit x_{it}\in \Omega_i
-\end{align}
+% \begin{align}
+%    & \sum_i \mathbfit u_{it} - \mathbfit\epsilon_t + \mathbfit\delta_t = \mathbfit{d}_t, \quad \\
+%    & \mathbfit s_{it}, \mathbfit u_{it}, \mathbfit x_{it}\in \Omega_i
+% \end{align}
 
-We limit the scope to finite horizon. We are interested in the
-expected value with known initial state \(\mathbfit y_0\).
-Similar to the deterministic problem, the Bellman iteration can be
-written as:
+% We limit the scope to finite horizon. We are interested in the
+% expected value with known initial state \(\mathbfit y_0\).
+% Similar to the deterministic problem, the Bellman iteration can be
+% written as:
 
-\begin{equation}\label{eq:dynamic_fmp.main_iteration}
-  V_{t}(\mathbfit y, \mathbfit{d}_t) =
-  \min_{\small{\mathbfit\epsilon_t, \mathbfit\delta_t, \mathbfit u_{it}, \mathbfit x_{it}}}
-  h \cdot \mathbfit \epsilon_t + b \cdot \mathbfit \delta_t +
-  \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_{t-1}) \big | \mathbfit y, \mathbfit{d}_t\right]
-\end{equation}
+% \begin{equation}\label{eq:dynamic_fmp.main_iteration}
+%   V_{t}(\mathbfit y, \mathbfit{d}_t) =
+%   \min_{\small{\mathbfit\epsilon_t, \mathbfit\delta_t, \mathbfit u_{it}, \mathbfit x_{it}}}
+%   h \cdot \mathbfit \epsilon_t + b \cdot \mathbfit \delta_t +
+%   \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_{t-1}) \big | \mathbfit y, \mathbfit{d}_t\right]
+% \end{equation}
 
-We now investigate the Lagrangian relaxation. The analysis is similar to
-existing results in \cite{adelman_relaxations_2008}, \cite{hawkins_langrangian_2003}.
-% The difference lies in the fact that we do not enforce \(\lambda_t\) to be identical across the stages \(t = 1, ..., |T|\), which is necessary for infinite dimensional problems.
+% We now investigate the Lagrangian relaxation. The analysis is similar to
+% existing results in \cite{adelman_relaxations_2008}, \cite{hawkins_langrangian_2003}.
+% % The difference lies in the fact that we do not enforce \(\lambda_t\) to be identical across the stages \(t = 1, ..., |T|\), which is necessary for infinite dimensional problems.
 
-\begin{lemma}
-  Lagrangian relaxation provides a lower bound for
-  any multiplier \(\lambda = (\lambda_1, ..., \lambda_{|T|})\) such that
-  \(\lambda_t \in [-b, h],\; \forall t=1,..., |T|\).
-  \begin{equation}\label{eq:d}
-    V_{t}(\mathbfit y, \mathbfit d_t) \ge
-    \phi_t(\mathbfit y, \mathbfit d_t) \stackrel{\mathsf{def}}{=}
-    - \lambda_t \mathbfit d_t + \sum_{i\in I} V_{it}(\mathbfit y_i, \mathbfit d_t)
-  \end{equation}
+% \begin{lemma}
+%   Lagrangian relaxation provides a lower bound for
+%   any multiplier \(\lambda = (\lambda_1, ..., \lambda_{|T|})\) such that
+%   \(\lambda_t \in [-b, h],\; \forall t=1,..., |T|\).
+%   \begin{equation}\label{eq:d}
+%     V_{t}(\mathbfit y, \mathbfit d_t) \ge
+%     \phi_t(\mathbfit y, \mathbfit d_t) \stackrel{\mathsf{def}}{=}
+%     - \lambda_t \mathbfit d_t + \sum_{i\in I} V_{it}(\mathbfit y_i, \mathbfit d_t)
+%   \end{equation}
 
-  Where \(V_{it}\) is the optimal equation for each \(i\)
+%   Where \(V_{it}\) is the optimal equation for each \(i\)
 
-  \begin{equation}\label{eq:dynamic_fmp.sub_iteration}
-    V_{it}(\mathbfit y, \mathbfit d_t) = \min_{\mathbfit u_{it}}\mathbfit u_{it} \lambda_t + \mathbb E_{f} \left [ V_{i,t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t \right]
-  \end{equation}
+%   \begin{equation}\label{eq:dynamic_fmp.sub_iteration}
+%     V_{it}(\mathbfit y, \mathbfit d_t) = \min_{\mathbfit u_{it}}\mathbfit u_{it} \lambda_t + \mathbb E_{f} \left [ V_{i,t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t \right]
+%   \end{equation}
 
-\end{lemma}
-\begin{proof}
-  Relax binding constraints, since any feasible solution is
-  the solution to the relaxed problem, we have:
+% \end{lemma}
+% \begin{proof}
+%   Relax binding constraints, since any feasible solution is
+%   the solution to the relaxed problem, we have:
 
-  \[\begin{aligned}
-      V_{t}(\mathbfit y, \mathbfit d_t) & \ge
-      \min_{\small{\mathbfit\epsilon_t, \mathbfit\delta_t, \mathbfit u_{it}, \mathbfit x_{it}}}
-      (h - \lambda_t )\cdot \mathbfit \epsilon_t + (b + \lambda_t) \cdot \mathbfit \delta_t
-      + \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
-      + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t \right ] \\
-    \end{aligned}\]
+%   \[\begin{aligned}
+%       V_{t}(\mathbfit y, \mathbfit d_t) & \ge
+%       \min_{\small{\mathbfit\epsilon_t, \mathbfit\delta_t, \mathbfit u_{it}, \mathbfit x_{it}}}
+%       (h - \lambda_t )\cdot \mathbfit \epsilon_t + (b + \lambda_t) \cdot \mathbfit \delta_t
+%       + \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
+%       + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t \right ] \\
+%     \end{aligned}\]
 
-  The RHS is unbounded unless \(\lambda_t \in [-b, h]\), we have:
+%   The RHS is unbounded unless \(\lambda_t \in [-b, h]\), we have:
 
-  \[\begin{aligned}
-      V_{t}(\mathbfit y, \mathbfit d_t) & \ge
-      \min_{\small{\mathbfit u_{it}, \mathbfit x_{it}}}
-      \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
-      + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t\right]             \\
-                                        & = - \lambda_t \mathbfit d_t + \sum_{i\in I} V_{it}(\mathbfit y_i, \mathbfit d_t)
-    \end{aligned}\]
+%   \[\begin{aligned}
+%       V_{t}(\mathbfit y, \mathbfit d_t) & \ge
+%       \min_{\small{\mathbfit u_{it}, \mathbfit x_{it}}}
+%       \sum_i \mathbfit{u}_{it} \lambda_t - \lambda_t \mathbfit d_t
+%       + \mathbb E_{f} \left [ V_{t-1}(\mathbfit y', \mathbfit{d}'_t) \big | \mathbfit y, \mathbfit{d}_t\right]             \\
+%                                         & = - \lambda_t \mathbfit d_t + \sum_{i\in I} V_{it}(\mathbfit y_i, \mathbfit d_t)
+%     \end{aligned}\]
 
-  The last line can be verified by induction similar to \cite{hawkins_langrangian_2003}.
-  This completes the proof.
-\end{proof}
+%   The last line can be verified by induction similar to \cite{hawkins_langrangian_2003}.
+%   This completes the proof.
+% \end{proof}
 
 
 

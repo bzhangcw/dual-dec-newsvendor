@@ -8,6 +8,7 @@
 # @description:
 
 import multiprocessing as mpc
+import concurrent.futures as cf
 import time
 from collections import namedtuple
 from .pydp import cppdp_single, double_array
@@ -89,7 +90,6 @@ class Param:
 
 
 def convert_to_c_arr(size, lambda_k):
-
   c_arr = double_array(size)
   for i in range(size):
     c_arr[i] = lambda_k[i]
@@ -140,7 +140,14 @@ def dualnv_subgradient(
   param.use_optimal = hyper_option != 'simple'
   param.use_cpp_dp = subproblem_method.__name__ == 'cppdp_single'
   param.direction = 'cvx' if dir_option == 'cvx' else 'subgrad'
-
+  if mp:
+    if kwargs.get("proc"):
+      mpc = 1
+    else:
+      mpc = 0
+  else:
+    mpc = -1
+  print(f"using mpc = {mpc}: 0-threads;1-procs")
   # ==================
   # INITIALIZATION
   # ==================
@@ -177,47 +184,59 @@ def dualnv_subgradient(
 
     # solve decomposable subproblems
     #   can use lazy multiprocessing
-    if param.use_cpp_dp:
-      c_arr = convert_to_c_arr(scale, lambda_k.astype(float))
-      _s0 = problem['s0']
-      _L = problem['L']
-      _tau = problem['tau']
-      if mp:
-        results = []
-        for idx, i in enumerate(I):
-          _a = problem['a'][idx]
-          _b = problem['b'][idx]
+    # if param.use_cpp_dp:
+    c_arr = convert_to_c_arr(scale, lambda_k.astype(float))
+    _L = problem['L']
+    if mp:
+      results = []
+      for idx, i in enumerate(I):
+        _a = problem['a'][idx]
+        _b = problem['b'][idx]
+        _s0 = problem['s0'][idx]
+        _tau = problem['tau'][idx]
+        if mpc:
+          # NOT WORKING YET
           r = pool.apply_async(
             subproblem_method,
             (c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
           )
+          for idx, r in enumerate(results):
+            _best_v_i, _best_p_i, *_ = r.get()
+            sub_v_k[idx] = _best_v_i
+            x_k[idx, :, :] = _best_p_i
+        else:
+          r = pool.submit(
+            subproblem_method, c_arr, scale, _a, _b, _L, _tau, _s0, False, True
+          )
           results.append(r)
-        for idx, r in enumerate(results):
-          _best_v_i, _best_p_i, *_ = r.get()
-          sub_v_k[idx] = _best_v_i
-          x_k[idx, :, :] = _best_p_i
-      else:
-        for idx, i in enumerate(I):
-          _a = problem['a'][idx]
-          _b = problem['b'][idx]
-          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
-          sub_v_k[idx] = _best_v_i
-          x_k[idx, :, :] = _best_p_i
+          for idx, r in enumerate(results):
+            _best_v_i, _best_p_i, *_ = r.result()
+            sub_v_k[idx] = _best_v_i
+            x_k[idx, :, :] = _best_p_i
     else:
-      if mp:
-        results = [
-          pool.apply_async(subproblem_method, (problem, scale, lambda_k, idx))
-          for idx, i in enumerate(I)
-        ]
-        for idx, r in enumerate(results):
-          _best_v_i, _best_p_i, *_ = r.get()
-          sub_v_k[idx] = _best_v_i
-          x_k[idx, :, :] = _best_p_i
-      else:
-        for idx, i in enumerate(I):
-          _best_v_i, _best_p_i, *_ = subproblem_method(problem, scale, lambda_k, idx)
-          sub_v_k[idx] = _best_v_i
-          x_k[idx, :, :] = _best_p_i
+      for idx, i in enumerate(I):
+        _a = problem['a'][idx]
+        _b = problem['b'][idx]
+        _s0 = problem['s0'][idx]
+        _tau = problem['tau'][idx]
+        _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
+        sub_v_k[idx] = _best_v_i
+        x_k[idx, :, :] = _best_p_i
+    # else:
+    #   if mp:
+    #     results = [
+    #       pool.apply_async(subproblem_method, (problem, scale, lambda_k, idx))
+    #       for idx, i in enumerate(I)
+    #     ]
+    #     for idx, r in enumerate(results):
+    #       _best_v_i, _best_p_i, *_ = r.get()
+    #       sub_v_k[idx] = _best_v_i
+    #       x_k[idx, :, :] = _best_p_i
+    #   else:
+    #     for idx, i in enumerate(I):
+    #       _best_v_i, _best_p_i, *_ = subproblem_method(problem, scale, lambda_k, idx)
+    #       sub_v_k[idx] = _best_v_i
+    #       x_k[idx, :, :] = _best_p_i
 
     # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
@@ -307,11 +326,11 @@ def dualnv_subgradient(
       lambda_b = lambda_k.copy()
 
     gap_k = (z_bar - phi_bar) / abs(z_bar)
-
-    print(
-      f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-      f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}"
-    )
+    if k % 20 == 0:
+      print(
+        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+        f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
+      )
 
     sol.primal_val.append(z_bar)
     sol.primal_k.append(z_k)
@@ -356,12 +375,18 @@ def main(problem, **kwargs):
       subproblem_method = cppdp_single
     else:
       raise ValueError("unknown method for sub problem")
-
-  _ = dualnv_subgradient(
-    problem,
-    subproblem_method=subproblem_method,
-    pool=mpc.Pool(processes=mp_num),
-    **kwargs)
+  if kwargs.get("proc"):
+    _ = dualnv_subgradient(
+      problem,
+      subproblem_method=subproblem_method,
+      pool=mpc.Pool(processes=mp_num),
+      **kwargs)
+  else:
+    _ = dualnv_subgradient(
+      problem,
+      subproblem_method=subproblem_method,
+      pool=cf.ThreadPoolExecutor(mp_num),
+      **kwargs)
   return _
 
 

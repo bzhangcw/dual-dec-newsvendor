@@ -39,11 +39,11 @@ Tail = namedtuple('p', field_names=['u', 'm', 's', 't'])
 
 
 def single_dp(problem, nT, c, idx, u_target=None, x_target=None):
-    s0 = problem['s0']
+    s0 = problem['s0'][idx]
     a = problem['a'][idx]
     b = problem['b'][idx]
     L = problem['L']
-    tau = problem['tau']
+    tau = problem['tau'][idx]
     T = problem['T'][:nT]
 
     # define the stage ~ action evaluation
