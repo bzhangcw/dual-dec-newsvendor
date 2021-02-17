@@ -15,6 +15,14 @@ plt.rcParams["font.family"] = "roboto"
 plt.rcParams["font.monospace"] = "roboto mono"
 plt.rcParams["lines.linewidth"] = 0.8
 plt.rcParams["legend.fontsize"] = "small"
+plt.rcParams["text.usetex"]: True
+
+# TEX alias
+tex_alias = {
+  'lb': r'$\phi_k$',
+  'val': r'$\bar z_k$',
+  'primal_k': r'$z_k$'
+}
 
 if __name__ == '__main__':
   print(sys.argv)
@@ -27,8 +35,8 @@ if __name__ == '__main__':
   kwargs = {  # kwargs
     "i": ni,
     "t": nt,
-    "subproblem_alg_name": 'cppdp',
-    "mp": True,
+    "subproblem_alg_name": 'cppdp_batch',
+    "mp": False,
     "proc": 0,
     "mp_num": 4,
     "gap": 0.005,
@@ -52,7 +60,7 @@ if __name__ == '__main__':
     # "normal" convex sg
     # "bran95_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", "hyper_option": "optimal", **kwargs},
     "normal_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "subgrad", **kwargs},
-    # "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
+    "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
     # "volume" convex sg
     # "volume_sg": {"r0": 1.5, **kwargs}
   }
@@ -84,9 +92,9 @@ if __name__ == '__main__':
       for who in ['lb', 'val', 'primal_k']:
         length = len(r[f"{method}_{who}"])
         if who == 'primal_k':
-          plt.plot(range(length), r[f"{method}_{who}"], label=f"{method}_{who}", linestyle='dashed')
+          plt.plot(range(length), r[f"{method}_{who}"], label=tex_alias.get(who), linestyle='dashed')
         else:
-          plt.plot(range(length), r[f"{method}_{who}"], label=f"{method}_{who}")
+          plt.plot(range(length), r[f"{method}_{who}"], label=tex_alias.get(who))
 
       plt.legend(loc="lower left")
       plt.savefig(f"fig/conv_{i}_{method}_{num_i}_{num_t}.png", dpi=500)

@@ -18,11 +18,11 @@ _logger.setLevel(logging.DEBUG)
 
 def single_mip(problem, nT, c, idx, target=None):
   import gurobipy as grb
-  s0 = problem['s0']
+  s0 = problem['s0'][idx]
   a = problem['a'][idx]
   b = problem['b'][idx]
   L = problem['L']
-  tau = problem['tau']
+  tau = problem['tau'][idx]
   T = problem['T'][:nT]
 
   model = grb.Model("rep")

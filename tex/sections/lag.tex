@@ -194,7 +194,7 @@ Comments:
 
 2. We assume convergence of dual method: \(\lambda_k \to \lambda^\star\), we don't limit our choice of direction here (the simplest one should also work).
 
-3. \(z_k = z(y_k)\) is not convergent, see the \emph{green} lines in Figure \ref{fig:divergent_volume}, nor \(min_k z(y_k)\).
+3. \(z_k = z(y_k)\) is not convergent, see the \emph{green} lines in Figure \ref{fig:divergent_volume}, nor \(\min_k z(y_k)\).
 
 4. \(\bar y_k\) is feasible to linear relaxation (may not be integral) and
 \(z(\bar y)\) is convergent. see the \emph{orange} lines
@@ -420,17 +420,17 @@ We implement subgradient methods mentioned in our paper in Python 3.7. Specifica
         \[\lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}g_{k})\]
   \item Convex subgradient, \textsf{convex\_sg}, using:
         \[\lambda_{k+1} = \mathbf{P}(\lambda_{k} + s_{k}d_{k})\]
-        where \(d_k\) is averaged over past iterations, cf. \eqref{eq:direction}
+        where \(d_k\) is averaged over past iterations, cf. \eqref{eq:direction_recursive}
 \end{enumerate}
 
 As shown in Figure \ref{fig:divergent_volume}, our results show that averaged solution by recovery algorithm \eqref{eq:recovery} converges to the best lower bound.
 
 \begin{figure}
   \subfloat[][Normal subgradient method using \(g_k\)]{
-    \includegraphics[width=.49\linewidth]{../imgs/conv_0_normal_sg_10_10.png}
+    \includegraphics[width=.49\linewidth]{../imgs/conv_0_normal_sg_5_20.png}
   }
   \subfloat[][Convex subgradient method using \(d_k\)]{
-    \includegraphics[width=.49\linewidth]{../imgs/conv_0_convex_sg_10_10.png}
+    \includegraphics[width=.49\linewidth]{../imgs/conv_0_convex_sg_5_20.png}
   }
 
   \caption{

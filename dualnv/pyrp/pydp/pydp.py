@@ -122,32 +122,59 @@ class SwigPyIterator(object):
 # Register SwigPyIterator in _pydp:
 _pydp.SwigPyIterator_swigregister(SwigPyIterator)
 
-class double_array(object):
+class double_array_py(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, nelements):
-        _pydp.double_array_swiginit(self, _pydp.new_double_array(nelements))
-    __swig_destroy__ = _pydp.delete_double_array
+        _pydp.double_array_py_swiginit(self, _pydp.new_double_array_py(nelements))
+    __swig_destroy__ = _pydp.delete_double_array_py
 
     def __getitem__(self, index):
-        return _pydp.double_array___getitem__(self, index)
+        return _pydp.double_array_py___getitem__(self, index)
 
     def __setitem__(self, index, value):
-        return _pydp.double_array___setitem__(self, index, value)
+        return _pydp.double_array_py___setitem__(self, index, value)
 
     def cast(self):
-        return _pydp.double_array_cast(self)
+        return _pydp.double_array_py_cast(self)
 
     @staticmethod
     def frompointer(t):
-        return _pydp.double_array_frompointer(t)
+        return _pydp.double_array_py_frompointer(t)
 
-# Register double_array in _pydp:
-_pydp.double_array_swigregister(double_array)
+# Register double_array_py in _pydp:
+_pydp.double_array_py_swigregister(double_array_py)
 
-def double_array_frompointer(t):
-    return _pydp.double_array_frompointer(t)
+def double_array_py_frompointer(t):
+    return _pydp.double_array_py_frompointer(t)
+
+class int_array_py(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self, nelements):
+        _pydp.int_array_py_swiginit(self, _pydp.new_int_array_py(nelements))
+    __swig_destroy__ = _pydp.delete_int_array_py
+
+    def __getitem__(self, index):
+        return _pydp.int_array_py___getitem__(self, index)
+
+    def __setitem__(self, index, value):
+        return _pydp.int_array_py___setitem__(self, index, value)
+
+    def cast(self):
+        return _pydp.int_array_py_cast(self)
+
+    @staticmethod
+    def frompointer(t):
+        return _pydp.int_array_py_frompointer(t)
+
+# Register int_array_py in _pydp:
+_pydp.int_array_py_swigregister(int_array_py)
+
+def int_array_py_frompointer(t):
+    return _pydp.int_array_py_frompointer(t)
 
 
 def new_doubleP():
@@ -273,5 +300,8 @@ _pydp.DoubleVector_swigregister(DoubleVector)
 
 def run_dp_single(c, N, a, b, L, tau, s0, _print, truncate):
     return _pydp.run_dp_single(c, N, a, b, L, tau, s0, _print, truncate)
+
+def run_dp_batch(size, c, N, a, b, L, tau, s0, _print, truncate):
+    return _pydp.run_dp_batch(size, c, N, a, b, L, tau, s0, _print, truncate)
 
 

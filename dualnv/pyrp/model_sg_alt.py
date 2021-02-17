@@ -11,7 +11,7 @@ import multiprocessing as mpc
 import concurrent.futures as cf
 import time
 from collections import namedtuple
-from .pydp import cppdp_single, double_array
+from .pydp import cppdp_single, cppdp_batch, convert_to_c_arr, convert_to_c_arr_int
 from .model_single import single_mip
 from .model_single_dp import single_dp
 from .util import *
@@ -89,14 +89,6 @@ class Param:
     self.use_optimal = False
 
 
-def convert_to_c_arr(size, lambda_k):
-  c_arr = double_array(size)
-  for i in range(size):
-    c_arr[i] = lambda_k[i]
-
-  return c_arr
-
-
 def dualnv_subgradient(
     problem,
     scale,
@@ -143,11 +135,13 @@ def dualnv_subgradient(
   if mp:
     if kwargs.get("proc"):
       mpc = 1
+      pool = mpc.Pool(4)
     else:
-      mpc = 0
+      mpc = cf.ThreadPoolExecutor(4)
+    print(f"using mpc = {mpc}: 0-threads; 1-procs")
   else:
     mpc = -1
-  print(f"using mpc = {mpc}: 0-threads;1-procs")
+
   # ==================
   # INITIALIZATION
   # ==================
@@ -171,6 +165,16 @@ def dualnv_subgradient(
   fc_vals = {}
   for fc in funcs:
     fc_vals[fc] = []
+
+  # ==================
+  # C TYPES
+  # ==================
+  _I_size = len(I)
+  a_arr = convert_to_c_arr(_I_size, problem['a'])
+  b_arr = convert_to_c_arr(_I_size, problem['b'])
+  tau_arr = convert_to_c_arr_int(_I_size, problem['tau'])
+  s_arr = convert_to_c_arr(_I_size, problem['s0'])
+
   # ==================
   # MAIN ROUTINE
   # ==================
@@ -200,6 +204,7 @@ def dualnv_subgradient(
             subproblem_method,
             (c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
           )
+          results.append(r)
           for idx, r in enumerate(results):
             _best_v_i, _best_p_i, *_ = r.get()
             sub_v_k[idx] = _best_v_i
@@ -214,29 +219,16 @@ def dualnv_subgradient(
             sub_v_k[idx] = _best_v_i
             x_k[idx, :, :] = _best_p_i
     else:
-      for idx, i in enumerate(I):
-        _a = problem['a'][idx]
-        _b = problem['b'][idx]
-        _s0 = problem['s0'][idx]
-        _tau = problem['tau'][idx]
-        _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
-        sub_v_k[idx] = _best_v_i
-        x_k[idx, :, :] = _best_p_i
-    # else:
-    #   if mp:
-    #     results = [
-    #       pool.apply_async(subproblem_method, (problem, scale, lambda_k, idx))
-    #       for idx, i in enumerate(I)
-    #     ]
-    #     for idx, r in enumerate(results):
-    #       _best_v_i, _best_p_i, *_ = r.get()
-    #       sub_v_k[idx] = _best_v_i
-    #       x_k[idx, :, :] = _best_p_i
-    #   else:
-    #     for idx, i in enumerate(I):
-    #       _best_v_i, _best_p_i, *_ = subproblem_method(problem, scale, lambda_k, idx)
-    #       sub_v_k[idx] = _best_v_i
-    #       x_k[idx, :, :] = _best_p_i
+
+      # for idx, i in enumerate(I):
+      #   _a = problem['a'][idx]
+      #   _b = problem['b'][idx]
+      #   _s0 = problem['s0'][idx]
+      #   _tau = problem['tau'][idx]
+      #   _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
+      #   sub_v_k[idx] = _best_v_i
+      #   x_k[idx, :, :] = _best_p_i
+      sub_v_k, x_k = subproblem_method(_I_size, c_arr, scale, a_arr, b_arr, _L, tau_arr, s_arr, False, True)
 
     # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
@@ -373,20 +365,17 @@ def main(problem, **kwargs):
     elif subproblem_alg_name == 'cppdp':
       # use dp
       subproblem_method = cppdp_single
+    elif subproblem_alg_name == 'cppdp_batch':
+      # use dp
+      subproblem_method = cppdp_batch
     else:
       raise ValueError("unknown method for sub problem")
-  if kwargs.get("proc"):
-    _ = dualnv_subgradient(
-      problem,
-      subproblem_method=subproblem_method,
-      pool=mpc.Pool(processes=mp_num),
-      **kwargs)
-  else:
-    _ = dualnv_subgradient(
-      problem,
-      subproblem_method=subproblem_method,
-      pool=cf.ThreadPoolExecutor(mp_num),
-      **kwargs)
+
+  _ = dualnv_subgradient(
+    problem,
+    subproblem_method=subproblem_method,
+    **kwargs)
+
   return _
 
 

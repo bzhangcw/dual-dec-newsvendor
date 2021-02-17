@@ -8,7 +8,8 @@ double evaluate(state &s, action &ac, double multiplier) {
     return int(ac.is_work == 1) * multiplier;
 }
 
-std::vector<double> run_dp_single(
+
+Solution run_dp_single_sol(
         double *c,
         int N,
         double a,
@@ -144,10 +145,63 @@ std::vector<double> run_dp_single(
     }
 
     auto solStruct = Solution(output, value_dict[k_init]);
-    auto sol = get_solutions(solStruct, N, print);
-    return sol;
+    return solStruct;
 
 }
+
+
+std::vector<double> run_dp_single(
+        double *c,
+        int N,
+        double a,
+        double b,
+        double L,
+        int tau,
+        double s0,
+        bool print = true,
+        bool truncate = true // whether we truncate strictly @stage N
+) {
+    auto sol = run_dp_single_sol(c, N, a, b, L, tau, s0, print, truncate);
+    auto array = get_solutions(sol, N, print);
+    return array;
+}
+
+
+std::vector<double> run_dp_batch(
+        int size,
+        double *c,
+        int N,
+        double *a,
+        double *b,
+        double L,
+        int *tau,
+        double *s0,
+        bool print = true,
+        bool truncate = true // whether we truncate strictly @stage N
+) {
+    /*
+     * auto sol = run_dp_single_sol(c, N, a, b, L, tau, s0, print, truncate);
+     * auto array = get_solutions(sol, N, print);
+     * return array;
+     */
+    unsigned int nthreads = size;
+
+    std::vector<std::future<Solution>> futures(nthreads);
+    std::vector<Solution> outputs(nthreads);
+    for (decltype(futures)::size_type i = 0; i < nthreads; ++i) {
+        futures[i] = std::async(
+                run_dp_single_sol,
+                c, N, a[i], b[i], L, tau[i], s0[i], print, truncate
+        );
+    }
+    for (decltype(futures)::size_type i = 0; i < nthreads; ++i) {
+        outputs[i] = futures[i].get();
+    }
+
+    auto array = get_solutions(outputs, N);
+    return array;
+}
+
 
 json parse_json(char *fp) {
     using namespace std;
@@ -163,7 +217,7 @@ json parse_json(const std::string &fp) {
     return _json;
 }
 
-int run_test(char *fp, bool bool_speed_test = false) {
+int run_test(char *fp, bool bool_batch_test = true, bool bool_speed_test = false) {
     using namespace std;
     time_t start_time;
     time_t end_time;
@@ -174,6 +228,7 @@ int run_test(char *fp, bool bool_speed_test = false) {
      * @date: 2021/02/05
      *
      * */
+    if (bool_batch_test) { return run_batch_test(fp); }
     json test = parse_json(fp); // benchmark stored at "src/test/test.json"
     if (!bool_speed_test) cout << test.dump(2) << endl;
 
@@ -246,5 +301,61 @@ int run_test(char *fp, bool bool_speed_test = false) {
          << difftime(end_time, start_time)
          << " seconds"
          << endl;
+    return 1;
+}
+
+int run_batch_test(char *fp) {
+    using namespace std;
+    time_t start_time;
+    time_t end_time;
+    time(&start_time);  /* get current time; same as: timer = time(NULL)  */
+
+    /*
+     * TEST DATA WITH BENCHMARK RESULTS
+     * @date: 2021/02/05
+     *
+     * */
+    json test = parse_json(fp); // benchmark stored at "src/test/test.json"
+
+    int N = test["T"].size();
+    int i_N = test["a"].size();
+
+    /*
+     * initialize random seed to run test
+     * */
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_real_distribution<double> dist(1.0, 10.0);
+    double cval[N];
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) cval[j] = -dist(mt);
+//        for (int j = 0; j < N; j++) cout << cval[j] << ",";
+//        cout << endl;
+    }
+
+    double single_vals[i_N];
+    for (int idx = 0; idx < i_N; ++idx) {
+        auto a = test["a"][idx].get<double>();
+        auto b = test["b"][idx].get<double>();
+        auto L = test["L"].get<double>();
+        auto tau = test["tau"][idx].get<int>();
+        auto s0 = test["s0"][idx].get<double>();
+        auto array = run_dp_single(cval, N, a, b, L, tau, s0, false, false);
+        single_vals[idx] = array.back();
+        cout << single_vals[idx] << ",";
+    }
+    cout << endl;
+    auto L = test["L"].get<double>();
+    auto a_arr = test["a"].get<vector<double>>();
+    auto b_arr = test["b"].get<vector<double>>();
+    auto tau_arr = test["tau"].get<vector<int>>();
+    auto s0_arr = test["s0"].get<vector<double>>();
+    auto array_batch = run_dp_batch(i_N, cval, N, a_arr.data(), b_arr.data(), L, tau_arr.data(), s0_arr.data(), false,
+                                    false);
+    int out_index = 0;
+    for (int idx = 0; idx < i_N; ++idx) {
+        cout << array_batch[out_index + N * 3] << ",";
+    }
+    cout << endl;
     return 1;
 }

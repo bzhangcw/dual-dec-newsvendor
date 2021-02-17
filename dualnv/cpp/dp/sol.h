@@ -31,4 +31,5 @@ public:
 };
 
 std::vector<double> get_solutions(Solution &s, int size, bool print);
+std::vector<double> get_solutions(std::vector<Solution> &s, int size);
 #endif //DUALNEWSVENDOR_SOL_H

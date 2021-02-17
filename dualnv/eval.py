@@ -4,14 +4,14 @@ import pickle as pk
 import pandas as pd
 
 pd.set_option("display.float_format", lambda x: f"{x: .2f}")
-INSTANCE_DIR = '../instances'
+INSTANCE_DIR = './instances'
 
 dfs = []
 methods = [
     # "normal" regular sg
     "normal_sg",
     # "avg" convex sg
-    "convex_sg"
+    #"convex_sg"
 ]
 
 
