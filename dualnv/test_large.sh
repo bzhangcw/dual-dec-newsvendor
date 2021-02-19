@@ -8,7 +8,12 @@
 # @description:
 
 NUM_INSTANCES=3
-
+for i in {12..16..4}; do
+  for t in {15..30..5}; do
+    echo $i $t
+    python -u main.py $NUM_INSTANCES $i $t &> $NUM_INSTANCES$i$t.log
+  done
+done
 for i in {4..12..4}; do
   for t in {80..160..40}; do
     echo $i $t
