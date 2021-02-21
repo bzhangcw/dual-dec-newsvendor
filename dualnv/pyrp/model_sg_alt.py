@@ -76,11 +76,13 @@ def alpha_method(gamma0, iteration, use_optimal, d, g):
 # ===================
 class Sol:
   def __init__(self):
-    self.primal_sol = []
-    self.primal_val = []
-    self.primal_k = []
+    self.z_bar = []
+    self.z_k = []
+    self.z_best = []
     self.lb = []
     self.fc = {}
+    self.x_bar = []
+    self.x_best = []
 
 
 class Param:
@@ -94,7 +96,7 @@ def dualnv_subgradient(
     scale,
     subproblem_method=cppdp_single,
     projection_method=projection_box,
-    mp=True,
+    mp=False,
     pool=None,
     max_iteration=150,
     gap=0.01,
@@ -130,7 +132,7 @@ def dualnv_subgradient(
   param = Param()
   param.use_maximum = dual_option == 'max'
   param.use_optimal = hyper_option != 'simple'
-  param.use_cpp_dp = subproblem_method.__name__ == 'cppdp_single'
+  param.use_cpp_single = subproblem_method.__name__ == 'cppdp_single'
   param.direction = 'cvx' if dir_option == 'cvx' else 'subgrad'
   if mp:
     if kwargs.get("proc"):
@@ -147,8 +149,9 @@ def dualnv_subgradient(
   # ==================
   # initial solution:
   #   do nothing and thus everything is short
-  x_bar = i_bar = 0
+  x_best = x_bar = i_bar = 0
   # primal dual bound
+  z_best = 1e6
   z_bar = b * sum(D)
   phi_bar = -1e3
   # dual variable
@@ -192,6 +195,7 @@ def dualnv_subgradient(
     c_arr = convert_to_c_arr(scale, lambda_k.astype(float))
     _L = problem['L']
     if mp:
+      print("pls not using Python multiprocessings!")
       results = []
       for idx, i in enumerate(I):
         _a = problem['a'][idx]
@@ -219,16 +223,17 @@ def dualnv_subgradient(
             sub_v_k[idx] = _best_v_i
             x_k[idx, :, :] = _best_p_i
     else:
-
-      # for idx, i in enumerate(I):
-      #   _a = problem['a'][idx]
-      #   _b = problem['b'][idx]
-      #   _s0 = problem['s0'][idx]
-      #   _tau = problem['tau'][idx]
-      #   _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
-      #   sub_v_k[idx] = _best_v_i
-      #   x_k[idx, :, :] = _best_p_i
-      sub_v_k, x_k = subproblem_method(_I_size, c_arr, scale, a_arr, b_arr, _L, tau_arr, s_arr, False, True)
+      if param.use_cpp_single:
+        for idx, i in enumerate(I):
+          _a = problem['a'][idx]
+          _b = problem['b'][idx]
+          _s0 = problem['s0'][idx]
+          _tau = problem['tau'][idx]
+          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
+          sub_v_k[idx] = _best_v_i
+          x_k[idx, :, :] = _best_p_i
+      else:
+        sub_v_k, x_k = subproblem_method(_I_size, c_arr, scale, a_arr, b_arr, _L, tau_arr, s_arr, False, True)
 
     # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
@@ -266,6 +271,11 @@ def dualnv_subgradient(
     surplus_idx_k = g_k > 0
     z_k = h * g_k[surplus_idx_k].sum(
       0) - b * g_k[~surplus_idx_k].sum(0)
+
+    if z_k < z_best:
+      z_best = z_k
+      x_best = x_k
+
 
     # calculate cvx (averaging primal heuristic)
     surplus_idx_bar = d_k > 0
@@ -314,25 +324,30 @@ def dualnv_subgradient(
 
     # update base "dual multipliers"
     # condition (phi_k > phi_bar) is only for the volume algorithm
+    # volume algorithm:
+    # Barahona, Francisco, and Ranga Anbil.
+    # “The Volume Algorithm: Producing Primal Solutions with a Subgradient Method.” Mathematical Programming 87, no. 3 (2000): 385–99.
     if not param.use_maximum or _bool_lb_updated:
       lambda_b = lambda_k.copy()
 
     gap_k = (z_bar - phi_bar) / abs(z_bar)
     if k % 20 == 0:
       print(
-        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @primal: {z_k:.2f}; @primal_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
         f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
       )
 
-    sol.primal_val.append(z_bar)
-    sol.primal_k.append(z_k)
+    sol.z_bar.append(z_bar)
+    sol.z_k.append(z_k)
+    sol.z_best.append(z_best)
     sol.lb.append(phi_bar)
     sol.fc = fc_vals
 
     if k >= max_iteration or gap_k < gap or step < eps_step:
       x_bar = (1 - alp_k) * x_bar + x_k * alp_k
       i_bar = (1 - alp_k) * i_bar + i_k * alp_k
-      sol.primal_sol = x_bar
+      sol.x_bar = x_bar
+      sol.x_best = x_best
       break
 
     # increment iteration

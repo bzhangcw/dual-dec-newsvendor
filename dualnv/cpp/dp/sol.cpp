@@ -67,18 +67,3 @@ std::vector<double> get_solutions(std::vector<Solution> &sols, int size)
     }
     return rtl;
 }
-
-std::vector<double> get_solutions(std::vector<Solution> &sols, int size) {
-
-    auto length = sols.size();
-    auto rtl = std::vector<double>((size * 3) * length);
-    int current_sol = 0; // slides
-    for (auto &sol:sols) {
-        for (int i = 0; i < size * 3; ++i) {
-            rtl[current_sol] = sol.compactSol[i];
-            current_sol++;
-        }
-        rtl.push_back(sol.value);
-    }
-    return rtl;
-}

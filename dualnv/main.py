@@ -59,7 +59,7 @@ if __name__ == '__main__':
   methods = {
     # "normal" convex sg
     # "bran95_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", "hyper_option": "optimal", **kwargs},
-    "normal_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "subgrad", **kwargs},
+    # "normal_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "subgrad", **kwargs},
     "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
     # "volume" convex sg
     # "volume_sg": {"r0": 1.5, **kwargs}
@@ -78,9 +78,8 @@ if __name__ == '__main__':
       sol, i_sol, alp, z_primal, l_b, sol_container, total_runtime = subgrad_main.main(
         problem, **kw)
       r[f"{method}_lb"] = results[f"{method}_lb"][i] = sol_container.lb[1:]
-      r[f"{method}_val"] = results[f"{method}_val"][i] = sol_container.primal_val[1:]
-      r[f"{method}_sol"] = results[f"{method}_sol"][i] = sol_container.primal_sol[1:]
-      r[f"{method}_primal_k"] = results[f"{method}_primal_k"][i] = sol_container.primal_k[1:]
+      r[f"{method}_val"] = results[f"{method}_val"][i] = sol_container.z_bar[1:]
+      r[f"{method}_primal_k"] = results[f"{method}_primal_k"][i] = sol_container.z_best[1:]
       r[f'{method}_time'] = results[f'{method}_time'][i] = total_runtime
       for fc, v in sol_container.fc.items():
         plt.plot(v[1:], label=f"{method}_{fc}", linestyle='dashed')

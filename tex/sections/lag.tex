@@ -190,11 +190,7 @@ Comments:
 
 2. We assume convergence of dual method: \(\lambda_k \to \lambda^\star\), we don't limit our choice of subgradient method here. (computations has been done for using \(g_k\) or \(d_k\))
 
-<<<<<<< HEAD
-3. \(z_k = z(y_k)\) is not convergent, see the \emph{green} lines in Figure \ref{fig:divergent_volume}, nor \(\min_k z(y_k)\).
-=======
 3. Simple recovery by using \(k\)-th solution, \(z_k = z(y_k)\), will not be convergent, see the \emph{green} lines in Figure \ref{fig:divergent_volume}, nor will the one using \(\min_k z(y_k)\).
->>>>>>> temp
 
 4. Averaged recovery with \(\bar y_k\) and its value \(z(\bar y_k)\) is convergent, see the \emph{orange} lines. It is feasible to continuous relaxation (may not be integral). We expect its convergence to \(\phi^\star\).
 
@@ -426,17 +422,10 @@ As shown in Figure \ref{fig:divergent_volume}, our results show that averaged so
 
 \begin{figure}
   \subfloat[][Normal subgradient method using \(g_k\)]{
-<<<<<<< HEAD
-    \includegraphics[width=.49\linewidth]{../imgs/conv_0_normal_sg_5_20.png}
-  }
-  \subfloat[][Convex subgradient method using \(d_k\)]{
-    \includegraphics[width=.49\linewidth]{../imgs/conv_0_convex_sg_5_20.png}
-=======
     \includegraphics[width=.49\linewidth]{../imgs/conv_0_normal_sg_5_80.png}
   }
   \subfloat[][Convex subgradient method using \(d_k\)]{
     \includegraphics[width=.49\linewidth]{../imgs/conv_0_convex_sg_5_80.png}
->>>>>>> temp
   }
 
   \caption{
