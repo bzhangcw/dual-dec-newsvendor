@@ -21,21 +21,23 @@ def create_instance(nI: int, nT: int):
   tau = np.random.randint(2, 5, nI)
   a = np.random.randint(2, 5, nI)
   b = np.random.randint(5, 10, nI)
-  h = 11
-  p = 18
+  h = np.random.randint(10, 15, nT)
+  p = np.random.randint(10, 16, nT)
+  # h = np.ones(nT) * 11
+  # p = np.ones(nT) * 18
   s0 = np.random.randint(5, 8, nI)
   return dict(
-    D=D.astype(float).tolist(),
-    a=a.astype(float).tolist(),
-    b=b.astype(float).tolist(),
-    I=I,
-    T=list(T),
-    L=L,
-    U=U,
-    tau=tau.astype(int).tolist(),
-    s0=s0.astype(float).tolist(),
-    h=h,
-    p=p)
+      D=D.astype(float).tolist(),
+      a=a.astype(float).tolist(),
+      b=b.astype(float).tolist(),
+      I=I,
+      T=list(T),
+      L=L,
+      U=U,
+      tau=tau.astype(int).tolist(),
+      s0=s0.astype(float).tolist(),
+      h=h,
+      p=p)
 
 
 def create_instance_vec(nI: int, nT: int, nIns: int = 100):
@@ -60,24 +62,24 @@ def create_instance_vec(nI: int, nT: int, nIns: int = 100):
   s0 = 1
   D = np.random.randint(nI // 2, nI, size=(nIns, nT))
   return dict(
-    Darr=D,
-    D=D.astype(float).tolist(),
-    a=a.tolist(),
-    b=b.tolist(),
-    I=I,
-    T=T,
-    L=L,
-    U=U,
-    tau=2,
-    s0=s0,
-    h=h,
-    p=p)
+      Darr=D,
+      D=D.astype(float).tolist(),
+      a=a.tolist(),
+      b=b.tolist(),
+      I=I,
+      T=T,
+      L=L,
+      U=U,
+      tau=2,
+      s0=s0,
+      h=h,
+      p=p)
 
 
 if __name__ == '__main__':
   import sys
   import json
-  I, T  = sys.argv[1:]
+  I, T = sys.argv[1:]
   m = create_instance(int(I), int(T))
   with open(f"test/test_{T}.json", 'w') as f:
     json.dump(m, f)

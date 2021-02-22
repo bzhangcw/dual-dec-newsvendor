@@ -31,7 +31,15 @@ def projection_box(x, lower, upper):
   return np.minimum(np.maximum(x, lower), upper)
 
 
-def multiplier_method(g_k, d_k, delta_k, gamma_k, lambda_b, projection_method, b, h, option='subgrad'):
+def multiplier_method(g_k,
+                      d_k,
+                      delta_k,
+                      gamma_k,
+                      lambda_b,
+                      projection_method,
+                      b,
+                      h,
+                      option='subgrad'):
   if option == 'cvx':
     _d = d_k
   elif option == 'subgrad':
@@ -75,6 +83,7 @@ def alpha_method(gamma0, iteration, use_optimal, d, g):
 # CONTAINERS
 # ===================
 class Sol:
+
   def __init__(self):
     self.z_bar = []
     self.z_k = []
@@ -86,26 +95,26 @@ class Sol:
 
 
 class Param:
+
   def __init__(self):
     self.use_maximum = False
     self.use_optimal = False
 
 
-def dualnv_subgradient(
-    problem,
-    scale,
-    subproblem_method=cppdp_single,
-    projection_method=projection_box,
-    mp=False,
-    pool=None,
-    max_iteration=150,
-    gap=0.01,
-    r0=2,
-    dual_option="max",
-    hyper_option="simple",
-    dir_option='subgrad',
-    eps_step=1e-4,
-    **kwargs):
+def dualnv_subgradient(problem,
+                       scale,
+                       subproblem_method=cppdp_single,
+                       projection_method=projection_box,
+                       mp=False,
+                       pool=None,
+                       max_iteration=150,
+                       gap=0.01,
+                       r0=2,
+                       dual_option="max",
+                       hyper_option="simple",
+                       dir_option='subgrad',
+                       eps_step=1e-4,
+                       **kwargs):
   """[summary]
   The subgradient algorithm for the repair problem
   Args:
@@ -115,7 +124,7 @@ def dualnv_subgradient(
       **kwargs
   """
   _unused_ = kwargs
-  h, b = problem['h'], problem['p']
+  h, b = problem['h'][:scale], problem['p'][:scale]
   T = problem['T'][:scale]
   I = problem['I']
   D = problem['D'][:scale]
@@ -155,7 +164,7 @@ def dualnv_subgradient(
   z_bar = b * sum(D)
   phi_bar = -1e3
   # dual variable
-  lambda_k = lambda_b = np.ones(scale) * h
+  lambda_k = lambda_b = h
   # hyper parameters
   improved = 0
   improved_eps = 30
@@ -205,18 +214,16 @@ def dualnv_subgradient(
         if mpc:
           # NOT WORKING YET
           r = pool.apply_async(
-            subproblem_method,
-            (c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
-          )
+              subproblem_method,
+              (c_arr, scale, _a, _b, _L, _tau, _s0, False, True))
           results.append(r)
           for idx, r in enumerate(results):
             _best_v_i, _best_p_i, *_ = r.get()
             sub_v_k[idx] = _best_v_i
             x_k[idx, :, :] = _best_p_i
         else:
-          r = pool.submit(
-            subproblem_method, c_arr, scale, _a, _b, _L, _tau, _s0, False, True
-          )
+          r = pool.submit(subproblem_method, c_arr, scale, _a, _b, _L, _tau,
+                          _s0, False, True)
           results.append(r)
           for idx, r in enumerate(results):
             _best_v_i, _best_p_i, *_ = r.result()
@@ -229,11 +236,13 @@ def dualnv_subgradient(
           _b = problem['b'][idx]
           _s0 = problem['s0'][idx]
           _tau = problem['tau'][idx]
-          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L, _tau, _s0, False, True)
+          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L,
+                                                       _tau, _s0, False, True)
           sub_v_k[idx] = _best_v_i
           x_k[idx, :, :] = _best_p_i
       else:
-        sub_v_k, x_k = subproblem_method(_I_size, c_arr, scale, a_arr, b_arr, _L, tau_arr, s_arr, False, True)
+        sub_v_k, x_k = subproblem_method(_I_size, c_arr, scale, a_arr, b_arr,
+                                         _L, tau_arr, s_arr, False, True)
 
     # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
@@ -248,7 +257,8 @@ def dualnv_subgradient(
     # update direction params
     # =====================
     # hint: use k + 1 since k start from 0
-    alp_k, gamma_k = alpha_method(gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
+    alp_k, gamma_k = alpha_method(
+        gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
 
     # =====================
     # compute direction
@@ -269,19 +279,14 @@ def dualnv_subgradient(
     #  and max{g, 0}, max{-g, 0} which are convex
     # calculate best primal
     surplus_idx_k = g_k > 0
-    z_k = h * g_k[surplus_idx_k].sum(
-      0) - b * g_k[~surplus_idx_k].sum(0)
-
+    z_k = np.maximum(g_k * h, -g_k * b).sum(0)
     if z_k < z_best:
       z_best = z_k
       x_best = x_k
 
-
     # calculate cvx (averaging primal heuristic)
     surplus_idx_bar = d_k > 0
-    z_bar = h * d_k[surplus_idx_bar].sum(
-      0) - b * d_k[~surplus_idx_bar].sum(0)
-
+    z_bar = np.maximum(d_k * h, -d_k * b).sum(0)
     # ================
     # test evaluations
     # ================
@@ -298,8 +303,16 @@ def dualnv_subgradient(
     # =====================
     # update dual vars
     # =====================
-    step, lambda_k = multiplier_method(g_k, d_k, z_bar - phi_k, gamma_k, lambda_b, projection_method, b, h,
-                                       option=param.direction)
+    step, lambda_k = multiplier_method(
+        g_k,
+        d_k,
+        z_bar - phi_k,
+        gamma_k,
+        lambda_b,
+        projection_method,
+        b,
+        h,
+        option=param.direction)
 
     # =====================
     # MAIN FINISHED
@@ -333,8 +346,8 @@ def dualnv_subgradient(
     gap_k = (z_bar - phi_bar) / abs(z_bar)
     if k % 20 == 0:
       print(
-        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-        f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
+          f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+          f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
       )
 
     sol.z_bar.append(z_bar)
@@ -357,7 +370,8 @@ def dualnv_subgradient(
   total_runtime = finish_sec - st_sec
   if max_iteration:
     print(
-      f"@summary: @k: {k}; @dual: {phi_k}; @primal: {z_bar}; @lb: {phi_bar}; @gap: {gap_k} @sec: {total_runtime}")
+        f"@summary: @k: {k}; @dual: {phi_k}; @primal: {z_bar}; @lb: {phi_bar}; @gap: {gap_k} @sec: {total_runtime}"
+    )
   return x_bar, i_bar, alp_k, z_bar, lambda_b, sol, total_runtime
 
 
@@ -386,22 +400,19 @@ def main(problem, **kwargs):
     else:
       raise ValueError("unknown method for sub problem")
 
-  _ = dualnv_subgradient(
-    problem,
-    subproblem_method=subproblem_method,
-    **kwargs)
+  _ = dualnv_subgradient(problem, subproblem_method=subproblem_method, **kwargs)
 
   return _
 
 
 if __name__ == "__main__":
   kwargs = {  # kwargs
-    "i": 10,
-    "t": 20,
-    "subproblem_alg": 'dp',
-    "mp": True,
-    "scale": 5,
-    "max_iteration": 50
+      "i": 10,
+      "t": 20,
+      "subproblem_alg": 'dp',
+      "mp": True,
+      "scale": 5,
+      "max_iteration": 50
   }
   problem = create_instance(kwargs['i'], kwargs['t'])
   _ = main(problem, **kwargs)

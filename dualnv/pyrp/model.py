@@ -72,8 +72,8 @@ def repair_mip_model(problem, **kwargs):
   I = problem['I']
   T = problem['T'][:scale]
   D = problem['D'][:scale]
-  h = problem['h']
-  p = problem['p']
+  h = problem['h'][:scale]
+  p = problem['p'][:scale]
   tau = problem['tau']
   s0 = problem['s0']
 
@@ -98,18 +98,18 @@ def repair_mip_model(problem, **kwargs):
           model.addConstr(x[i, t] + u.get((i, rho), 0) <= 1)
         else:
           model.addConstr(
-            x[i, t] + x.get((i, rho), 0) + u.get((i, rho), 0) <= 1)
+              x[i, t] + x.get((i, rho), 0) + u.get((i, rho), 0) <= 1)
   ql = qt = {}
   for t in T:
     i_sum = quicksum(u[i, t] for i in I)
-    ql[t] = model.addConstr(q[t] >= h * i_sum - h * D[t])
-    qt[t] = model.addConstr(q[t] >= p * D[t] - p * i_sum)
+    ql[t] = model.addConstr(q[t] >= h[t] * i_sum - h[t] * D[t])
+    qt[t] = model.addConstr(q[t] >= p[t] * D[t] - p[t] * i_sum)
 
   obj = quicksum(v for v in q.values())
   model.setObjective(obj)
   model.setParam(TIMELIMIT, time_limit)
   model.setParam(VERBOSE, 1)
-  model.setParam(MIPGAP, mipgap)
+  # model.setParam(MIPGAP, mipgap)
   try:
     model.setParam("Threads", mp_num)
   except:
@@ -147,7 +147,7 @@ if __name__ == '__main__':
   alg = args.alg
   if alg == 'mip':
     model, sol, xsol, usol, ssol, qsol, ql, qt = repair_mip_model(
-      problem, engine='gurobi', scale=5)
+        problem, engine='gurobi', scale=5)
     print(sol[0, 0])
   else:
     pass

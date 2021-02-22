@@ -4,8 +4,6 @@
 \author{Chuwen}
 \date{\today}
 
-\usepackage{subfiles}
-\usepackage{subfig}
 \begin{document}
 \frame{\titlepage}
 
@@ -115,7 +113,7 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Lagrangian relaxation: FMP}
+  \frametitle{FMP: Lagrangian relaxation}
   For the FMP, dual function:
   \[\begin{aligned}
       \phi(\lambda) & = - \sum_t \lambda_t d_t + \sum_i \min_{\Omega_i} \sum_t\lambda_t u_{it} \\
@@ -130,29 +128,105 @@
   \eqref{subproblem} is the subproblem to be solved by dynamic programming. (states: lifespan, action: work or start maintenance)
 \end{frame}
 
-
+\begin{frame}
+  \frametitle{FMP: subgradient method}
+  At each iteration \(k\):
+  \begin{itemize}
+    \item  \(y_k\) solves \(\phi(\lambda_k) = \min_y \lambda_k^\mathsf{T}(y-b)\)
+    \item for FMP: \(y_k = U_k ^\mathsf{T} 1 - d, U_k = (u^{(k)}_{it})\), solved from \eqref{subproblem} by DP.
+    \item update \(\lambda_k\) by \eqref{eq:simple_subgrad}
+  \end{itemize}
+\end{frame}
 \begin{frame}
   \frametitle{Results}
 
-  Computational findings (from FMP)
+  Tests are done on FMP with random instances: rand(low, high) means random integer in [low, high]
 
   \begin{itemize}
-    \item zero duality gap: \(\phi^\star = f^\star\), \(\phi^\star\) is the best bound by \(\phi\) and \( f^\star\) is the best primal value.
-    \item optimality of the heuristic for averaged solution: \(\bar z_k = z(\bar y_k)\) converges to \(\phi^\star\):
-          \[\bar z_k \to \phi^\star \]
+    \item L = 2
+    \item \(d_t= \textsf{rand}(\frac{|I|}{2}, |I|), \forall t\)
+    \item \(\tau_i = \textsf{rand}(2, 5), a_i =  \textsf{rand}(2, 5),  b_i =  \textsf{rand}(5, 10), \forall i\)
+    \item \(s_{i, 0} = \textsf{rand}(5, 8), \forall i\)
+  \end{itemize}
+
+  We consider two cases for objective function
+  \begin{itemize}
+    \item [i], time-invariant: \(h_t = 11, p_t = 18, \forall t\)
+    \item [ii], \(h_t = \textsf{rand}(10, 15), p_t = \textsf{rand}(10, 16), \forall t\)
   \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Primal solution}
+  \frametitle{Results}
 
-  \begin{figure}
-    \subfloat[][Normal subgradient method using \(g_k\)]{
-      \includegraphics[width=.49\linewidth]{imgs/conv_0_normal_sg_5_80.png}
-    }
-    \subfloat[][Convex subgradient method using \(d_k\)]{
-      \includegraphics[width=.49\linewidth]{imgs/conv_0_convex_sg_5_80.png}
-    }
-  \end{figure}
+  The subgradient method (sg) stops at (maximum) 400 iterations, then compared with benchmarks by Gurobi (grb).
+  \begin{itemize}
+    \item lb\_grb, \(f_{\textsf{grb}}\)  are lower bound, primal value from grb.
+    \item t\_grb, t\_sg are runtime from grb and sg, respectively.
+    \item \(\phi_{\textsf{sg}}\) is the dual value (\(\phi\)) by sg.
+    \item \(z_{\textsf{sg}}\) is primal value in sg using averaged primal recovery, i.e.
+          \[z_{\textsf{sg}} = z(\bar y_k) = f(\bar \delta_k, \bar \epsilon_k)\]
+    \item \(\phi_{\textsf{gap}}\), z\_gap are relative gap from sg to grb for dual and primal values.
+  \end{itemize}
 \end{frame}
+
+\begin{frame}
+  \frametitle{FMP: invariant \(h_t = h, b_t = b, \forall t = 1, ..., n\)}
+  \scriptsize
+  \begin{tabular}{lllrrrlllll}
+    \toprule
+    {} & lb\_grb              & \(f_{\textsf{grb}}\)   & t\_grb
+       & t\_sg                & \(\phi_{\textsf{sg}}\) & \(\phi_{\textsf{gap}}\)
+       & \( z_{\textsf{sg}}\) & z\_gap                                                                                          \\
+    \midrule
+    0  & 936.00               & 936.00                 & 23.93                   & 11.46 & 936.00  & -0.00\% & 952.02  & 1.71\% \\
+    1  & 954.00               & 954.00                 & 11.00                   & 8.88  & 954.00  & 0.00\%  & 958.78  & 0.50\% \\
+    2  & 1224.00              & 1224.00                & 1.11                    & 6.74  & 1224.00 & 0.00\%  & 1230.12 & 0.50\% \\
+    3  & 1026.00              & 1026.00                & 2.76                    & 7.58  & 1026.00 & 0.00\%  & 1031.13 & 0.50\% \\
+    4  & 882.00               & 882.00                 & 3.41                    & 6.98  & 882.00  & 0.00\%  & 886.39  & 0.50\% \\
+    5  & 990.00               & 990.00                 & 0.94                    & 9.35  & 990.00  & 0.00\%  & 994.95  & 0.50\% \\
+    6  & 774.00               & 774.00                 & 1.08                    & 9.73  & 774.00  & 0.00\%  & 778.58  & 0.59\% \\
+    7  & 864.00               & 864.00                 & 1.26                    & 9.06  & 864.00  & 0.00\%  & 868.34  & 0.50\% \\
+    8  & 972.00               & 972.00                 & 1.02                    & 6.97  & 972.00  & 0.00\%  & 976.85  & 0.50\% \\
+    9  & 648.00               & 648.00                 & 88.56                   & 16.14 & 645.14  & -0.44\% & 665.45  & 2.69\% \\
+    \bottomrule
+  \end{tabular}
+  \normalsize
+\end{frame}
+
+\begin{frame}
+  \frametitle{FMP: variant \(h, b\)}
+  \scriptsize
+  \begin{tabular}{lllrrrlllll}
+    \toprule
+    {} & lb\_grb              & \(f_{\textsf{grb}}\)   & t\_grb
+       & t\_sg                & \(\phi_{\textsf{sg}}\) & \(\phi_{\textsf{gap}}\)
+       & \( z_{\textsf{sg}}\) & z\_gap                                                                                         \\
+    \midrule
+    0  & 608.00               & 608.00                 & 8.34                    & 12.76 & 607.57 & -0.07\% & 650.63 & 7.01\%  \\
+    1  & 587.00               & 587.00                 & 3.93                    & 12.01 & 586.60 & -0.07\% & 619.44 & 5.53\%  \\
+    2  & 538.00               & 538.00                 & 22.73                   & 12.33 & 537.36 & -0.12\% & 574.96 & 6.87\%  \\
+    3  & 534.00               & 534.00                 & 4.05                    & 13.03 & 532.69 & -0.24\% & 607.16 & 13.70\% \\
+    4  & 684.00               & 684.00                 & 19.14                   & 7.61  & 684.00 & 0.00\%  & 691.68 & 1.12\%  \\
+    5  & 620.00               & 620.00                 & 4.88                    & 8.06  & 619.98 & -0.00\% & 625.29 & 0.85\%  \\
+    6  & 657.00               & 657.00                 & 4.47                    & 9.70  & 655.73 & -0.19\% & 682.15 & 3.83\%  \\
+    7  & 625.00               & 625.00                 & 8.25                    & 12.04 & 622.30 & -0.43\% & 670.87 & 7.34\%  \\
+    8  & 422.00               & 422.00                 & 5.03                    & 12.40 & 421.25 & -0.18\% & 453.72 & 7.52\%  \\
+    9  & 485.00               & 485.00                 & 4.32                    & 13.59 & 484.87 & -0.03\% & 517.35 & 6.67\%  \\
+    \bottomrule
+  \end{tabular}
+  \normalsize
+\end{frame}
+
+\begin{frame}
+  \frametitle{Conclusion}
+
+  \begin{itemize}
+    \item zero duality gap: \(\phi^\star = f^\star\), \(\phi^\star\) is the best bound by \(\phi\) and \( f^\star\) is the best primal value.
+    \item can we bound the quality of heuristic for averaged solution? \(\bar z_k = z(\bar y_k)\) converges to \(\phi^\star\):
+          \[|\bar z_k - \phi^\star| \]
+    \item for variant case, can we improve \(\bar z = z(\bar y)\)?
+  \end{itemize}
+\end{frame}
+
 \end{document}

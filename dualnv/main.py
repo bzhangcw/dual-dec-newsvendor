@@ -41,7 +41,7 @@ if __name__ == '__main__':
     "mp_num": 4,
     "gap": 0.005,
     "scale": nt,
-    "max_iteration": 300,
+    "max_iteration": 500,
     "eps_step": 1e-5,
     # "evals": evals
   }
