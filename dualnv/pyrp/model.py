@@ -74,6 +74,7 @@ def repair_mip_model(problem, **kwargs):
   D = problem['D'][:scale]
   h = problem['h'][:scale]
   p = problem['p'][:scale]
+  c = problem['c']
   tau = problem['tau']
   s0 = problem['s0']
 
@@ -101,7 +102,7 @@ def repair_mip_model(problem, **kwargs):
               x[i, t] + x.get((i, rho), 0) + u.get((i, rho), 0) <= 1)
   ql = qt = {}
   for t in T:
-    i_sum = quicksum(u[i, t] for i in I)
+    i_sum = quicksum(c[idx] * u[i, t] for idx, i in enumerate(I))
     ql[t] = model.addConstr(q[t] >= h[t] * i_sum - h[t] * D[t])
     qt[t] = model.addConstr(q[t] >= p[t] * D[t] - p[t] * i_sum)
 

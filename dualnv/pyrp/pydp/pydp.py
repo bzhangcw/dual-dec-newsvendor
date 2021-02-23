@@ -298,10 +298,10 @@ class DoubleVector(object):
 _pydp.DoubleVector_swigregister(DoubleVector)
 
 
-def run_dp_single(c, N, a, b, L, tau, s0, _print, truncate):
-    return _pydp.run_dp_single(c, N, a, b, L, tau, s0, _print, truncate)
+def run_dp_single(_lambda, c, N, a, b, L, tau, s0, _print, truncate):
+    return _pydp.run_dp_single(_lambda, c, N, a, b, L, tau, s0, _print, truncate)
 
-def run_dp_batch(size, c, N, a, b, L, tau, s0, _print, truncate):
-    return _pydp.run_dp_batch(size, c, N, a, b, L, tau, s0, _print, truncate)
+def run_dp_batch(size, _lambda, c, N, a, b, L, tau, s0, _print, truncate):
+    return _pydp.run_dp_batch(size, _lambda, c, N, a, b, L, tau, s0, _print, truncate)
 
 

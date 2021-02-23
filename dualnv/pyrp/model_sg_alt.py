@@ -103,7 +103,7 @@ class Param:
 
 def dualnv_subgradient(problem,
                        scale,
-                       subproblem_method=cppdp_single,
+                       subproblem_method=cppdp_batch,
                        projection_method=projection_box,
                        mp=False,
                        pool=None,
@@ -126,6 +126,7 @@ def dualnv_subgradient(problem,
   _unused_ = kwargs
   h, b = problem['h'][:scale], problem['p'][:scale]
   T = problem['T'][:scale]
+  c = problem['c']
   I = problem['I']
   D = problem['D'][:scale]
   numI = len(problem['I'])
@@ -164,7 +165,7 @@ def dualnv_subgradient(problem,
   z_bar = b * sum(D)
   phi_bar = -1e3
   # dual variable
-  lambda_k = lambda_b = h
+  lambda_k = lambda_b = np.zeros(scale)
   # hyper parameters
   improved = 0
   improved_eps = 30
@@ -200,35 +201,11 @@ def dualnv_subgradient(problem,
 
     # solve decomposable subproblems
     #   can use lazy multiprocessing
-    # if param.use_cpp_dp:
-    c_arr = convert_to_c_arr(scale, lambda_k.astype(float))
+    lambda_arr = convert_to_c_arr(scale, lambda_k.astype(float))
+    c_arr = convert_to_c_arr(_I_size, c.astype(float))
     _L = problem['L']
     if mp:
-      print("pls not using Python multiprocessings!")
-      results = []
-      for idx, i in enumerate(I):
-        _a = problem['a'][idx]
-        _b = problem['b'][idx]
-        _s0 = problem['s0'][idx]
-        _tau = problem['tau'][idx]
-        if mpc:
-          # NOT WORKING YET
-          r = pool.apply_async(
-              subproblem_method,
-              (c_arr, scale, _a, _b, _L, _tau, _s0, False, True))
-          results.append(r)
-          for idx, r in enumerate(results):
-            _best_v_i, _best_p_i, *_ = r.get()
-            sub_v_k[idx] = _best_v_i
-            x_k[idx, :, :] = _best_p_i
-        else:
-          r = pool.submit(subproblem_method, c_arr, scale, _a, _b, _L, _tau,
-                          _s0, False, True)
-          results.append(r)
-          for idx, r in enumerate(results):
-            _best_v_i, _best_p_i, *_ = r.result()
-            sub_v_k[idx] = _best_v_i
-            x_k[idx, :, :] = _best_p_i
+      raise ValueError("pls not using Python multiprocessings!")
     else:
       if param.use_cpp_single:
         for idx, i in enumerate(I):
@@ -236,12 +213,14 @@ def dualnv_subgradient(problem,
           _b = problem['b'][idx]
           _s0 = problem['s0'][idx]
           _tau = problem['tau'][idx]
-          _best_v_i, _best_p_i, *_ = subproblem_method(c_arr, scale, _a, _b, _L,
-                                                       _tau, _s0, False, True)
+          _c = c[idx]
+          _best_v_i, _best_p_i, *_ = subproblem_method(lambda_arr, _c, scale, _a, _b,
+                                                       _L, _tau, _s0, False,
+                                                       True)
           sub_v_k[idx] = _best_v_i
           x_k[idx, :, :] = _best_p_i
       else:
-        sub_v_k, x_k = subproblem_method(_I_size, c_arr, scale, a_arr, b_arr,
+        sub_v_k, x_k = subproblem_method(_I_size, lambda_arr, c_arr, scale, a_arr, b_arr,
                                          _L, tau_arr, s_arr, False, True)
 
     # eval \phi_k
@@ -250,7 +229,7 @@ def dualnv_subgradient(problem,
     # =====================
     # subgradient computation
     # =====================
-    i_k = x_k.sum(0)[:, 0]
+    i_k = c.dot(x_k[:, :, 0])  # x_k.sum(0)[:, 0]
     g_k = (i_k - D)
 
     # =====================
@@ -372,6 +351,8 @@ def dualnv_subgradient(problem,
     print(
         f"@summary: @k: {k}; @dual: {phi_k}; @primal: {z_bar}; @lb: {phi_bar}; @gap: {gap_k} @sec: {total_runtime}"
     )
+    print(lambda_k)
+    print(c)
   return x_bar, i_bar, alp_k, z_bar, lambda_b, sol, total_runtime
 
 

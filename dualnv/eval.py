@@ -9,17 +9,17 @@ INSTANCE_DIR = './instances'
 dfs = []
 methods = [
     # "normal" regular sg
-    # "normal_sg",
+    "normal_sg",
     # "avg" convex sg
-    "convex_sg"
+    # "convex_sg"
 ]
 
 
 def get_last(df, serie):
   try:
-    return df[serie].apply(lambda x: x[-1])
+    return df[serie].apply(lambda x: x[-1]).round(4)
   except:
-    return df[serie]
+    return df[serie].round(4)
 
 
 for fname in os.listdir(INSTANCE_DIR):
@@ -28,7 +28,7 @@ for fname in os.listdir(INSTANCE_DIR):
   n, i, t = fname.split("_")[1:4]
   print(n, i, t)
   data = pk.load(open(f"{INSTANCE_DIR}/{fname}", 'rb'))
-  df = pd.DataFrame(data)
+  df = pd.DataFrame(data).round(4)
   method_vals = {}
   for method in methods:
     for who in ['lb', 'val', 'time']:
@@ -40,8 +40,9 @@ for fname in os.listdir(INSTANCE_DIR):
 
 df_all = pd.concat(dfs, sort=False).reset_index(drop=True)
 
-df_out = df_all[['I', 'T', 'bench_lb', 'bench_val', 'bench_time'] +
-                list(method_vals.keys())]
+df_out = df_all[
+    ['I', 'T', 'bench_lb', 'bench_val', 'bench_root_val', 'bench_time'] +
+    list(method_vals.keys())]
 df_out.to_csv("eval.clean.csv")
 group_vals = {}
 for method in methods:
@@ -72,6 +73,7 @@ df_out = df_out\
 cols = []
 # cols += ['I', 'T']
 cols += ['bench_lb', 'bench_val', 'bench_time']
+cols += ['bench_root_val']
 for method in methods:
   cols += [
       f'{method}_time', f'{method}_lb', f'{method}_lb_gap', f'{method}_val',

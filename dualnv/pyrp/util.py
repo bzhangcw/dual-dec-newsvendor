@@ -21,10 +21,13 @@ def create_instance(nI: int, nT: int):
   tau = np.random.randint(2, 5, nI)
   a = np.random.randint(2, 5, nI)
   b = np.random.randint(5, 10, nI)
-  h = np.random.randint(10, 15, nT)
-  p = np.random.randint(10, 16, nT)
-  # h = np.ones(nT) * 11
-  # p = np.ones(nT) * 18
+  h = np.random.randint(1, 5, nT)
+  p = np.random.randint(2, 6, nT)
+  # c = np.random.randint(1, 5, nI)
+
+  # h = np.ones(nT) * 2
+  # p = np.ones(nT) * 3
+  c = np.ones(nI)
   s0 = np.random.randint(5, 8, nI)
   return dict(
       D=D.astype(float).tolist(),
@@ -33,6 +36,7 @@ def create_instance(nI: int, nT: int):
       I=I,
       T=list(T),
       L=L,
+      c=c,
       U=U,
       tau=tau.astype(int).tolist(),
       s0=s0.astype(float).tolist(),

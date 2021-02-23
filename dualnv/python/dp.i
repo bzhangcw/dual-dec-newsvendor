@@ -26,7 +26,8 @@ namespace std
 
 
 std::vector<double> run_dp_single(
-        double *c,
+        double *lambda,
+        double c,
         int N,
         double a,
         double b,
@@ -40,6 +41,7 @@ std::vector<double> run_dp_single(
 
 std::vector<double> run_dp_batch(
         int size,
+        double *lambda,
         double *c,
         int N,
         double *a,

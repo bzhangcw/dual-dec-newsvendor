@@ -7,10 +7,10 @@
 #    Sunday, 29th November 2020 9:41:53 pm
 # @description:
 
-NUM_INSTANCES=5
+NUM_INSTANCES=$1
 
-for i in {12..24..4}; do
-  for t in {15..30..5}; do
+for i in {12..24..1}; do
+  for t in {15..30..1}; do
     echo $i $t
     python -u main.py $NUM_INSTANCES $i $t &> $NUM_INSTANCES$i$t.log
   done

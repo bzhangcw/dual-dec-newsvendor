@@ -24,10 +24,11 @@ using int_array = Eigen::ArrayXi;
 double evaluate(state &s, action &ac, double multiplier);
 
 std::vector<double>
-run_dp_single(double *c, int N, double a, double b, double L, int tau, double s0, bool print, bool truncate);
+run_dp_single(double *lambda, double c, int N, double a, double b, double L, int tau, double s0, bool print, bool truncate);
 
 std::vector<double> run_dp_batch(
         int size,
+        double *lambda,
         double *c,
         int N,
         double *a,

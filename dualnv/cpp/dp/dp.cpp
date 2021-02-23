@@ -10,7 +10,8 @@ double evaluate(state &s, action &ac, double multiplier) {
 
 
 Solution run_dp_single_sol(
-        double *c,
+        double *lambda,
+        double c,
         int N,
         double a,
         double b,
@@ -103,7 +104,7 @@ Solution run_dp_single_sol(
 
         for (auto &tl : _tails) {
             auto tl_s_k = tl.st.to_string();
-            double value = value_dict[tl_s_k] + evaluate(tl.st, tl.ac, c[n]);
+            double value = value_dict[tl_s_k] + evaluate(tl.st, tl.ac, lambda[n] * c);
             if (value < min_val) {
                 min_val = value;
                 best_ac = tl.ac;
@@ -131,7 +132,7 @@ Solution run_dp_single_sol(
             break;
         current_k = got->second.st.to_string();
         auto is_work = got->second.ac.is_work;
-        output.col(0)[s.stage] = (is_work == 1) * c[s.stage];
+        output.col(0)[s.stage] = (is_work == 1) * lambda[s.stage];
         output.col(1)[s.stage] = float(is_work == -1);
         output.col(2)[s.stage] = float(is_work == 1);
 
@@ -151,7 +152,8 @@ Solution run_dp_single_sol(
 
 
 std::vector<double> run_dp_single(
-        double *c,
+        double *lambda,
+        double c,
         int N,
         double a,
         double b,
@@ -161,7 +163,7 @@ std::vector<double> run_dp_single(
         bool print = true,
         bool truncate = true // whether we truncate strictly @stage N
 ) {
-    auto sol = run_dp_single_sol(c, N, a, b, L, tau, s0, print, truncate);
+    auto sol = run_dp_single_sol(lambda, c, N, a, b, L, tau, s0, print, truncate);
     auto array = get_solutions(sol, N, print);
     return array;
 }
@@ -169,6 +171,7 @@ std::vector<double> run_dp_single(
 
 std::vector<double> run_dp_batch(
         int size,
+        double *lambda,
         double *c,
         int N,
         double *a,
@@ -191,7 +194,7 @@ std::vector<double> run_dp_batch(
     for (decltype(futures)::size_type i = 0; i < nthreads; ++i) {
         futures[i] = std::async(
                 run_dp_single_sol,
-                c, N, a[i], b[i], L, tau[i], s0[i], print, truncate
+                lambda, c[i], N, a[i], b[i], L, tau[i], s0[i], print, truncate
         );
     }
     for (decltype(futures)::size_type i = 0; i < nthreads; ++i) {
@@ -265,11 +268,11 @@ int run_test(char *fp, bool bool_batch_test = true, bool bool_speed_test = false
                            -0.22512148925156905, -0.3217034035286185, -0.5818429443491299, -0.6022893435405621,
                            -0.89940023010885, -0.6361390464933777}; // 4.01
 
-            __unused auto status0 = run_dp_single(c0, N, a, b, L, tau, s0);
-            __unused auto status1 = run_dp_single(c1, N, a, b, L, tau, s0);
-            __unused auto status2 = run_dp_single(c2, N, a, b, L, tau, s0);
-            __unused auto status3 = run_dp_single(c3, N, a, b, L, tau, s0);
-            __unused auto status4 = run_dp_single(c4, N, a, b, L, tau, s0);
+            __unused auto status0 = run_dp_single(c0, 1,  N, a, b, L, tau, s0);
+            __unused auto status1 = run_dp_single(c1, 1,  N, a, b, L, tau, s0);
+            __unused auto status2 = run_dp_single(c2, 1, N, a, b, L, tau, s0);
+            __unused auto status3 = run_dp_single(c3, 1,  N, a, b, L, tau, s0);
+            __unused auto status4 = run_dp_single(c4, 1, N, a, b, L, tau, s0);
             return 1;
         }
         if (N == 20) {
@@ -277,7 +280,7 @@ int run_test(char *fp, bool bool_batch_test = true, bool bool_speed_test = false
                            -5.37123, -9.23084,
                            -8.02637, -2.56384, -6.17786, -2.06662, -1.6506, -6.34907, -9.173, -4.36922,
                            -6.49543}; // 40.34791
-            __unused auto status0 = run_dp_single(c0, N, a, b, L, tau, s0);
+            __unused auto status0 = run_dp_single(c0, 1,  N, a, b, L, tau, s0);
             return 1;
         }
     }
@@ -287,12 +290,13 @@ int run_test(char *fp, bool bool_batch_test = true, bool bool_speed_test = false
     random_device rd;
     mt19937 mt(rd());
     uniform_real_distribution<double> dist(1.0, 10.0);
+    double cl[10] = {1.0};
     for (int i = 0; i < 10; i++) {
         double cval[N];
         for (int j = 0; j < N; j++) cval[j] = -dist(mt);
         for (int j = 0; j < N; j++) cout << cval[j] << ",";
         cout << endl;
-        run_dp_single(cval, N, a, b, L, tau, s0, !bool_speed_test);
+        run_dp_single(cval, 1.0, N, a, b, L, tau, s0, !bool_speed_test);
     }
     time(&end_time);
     cout << "test finished for "
@@ -340,7 +344,7 @@ int run_batch_test(char *fp) {
         auto L = test["L"].get<double>();
         auto tau = test["tau"][idx].get<int>();
         auto s0 = test["s0"][idx].get<double>();
-        auto array = run_dp_single(cval, N, a, b, L, tau, s0, false, false);
+        auto array = run_dp_single(cval, 1.0, N, a, b, L, tau, s0, false, false);
         single_vals[idx] = array.back();
         cout << single_vals[idx] << ",";
     }
@@ -350,7 +354,9 @@ int run_batch_test(char *fp) {
     auto b_arr = test["b"].get<vector<double>>();
     auto tau_arr = test["tau"].get<vector<int>>();
     auto s0_arr = test["s0"].get<vector<double>>();
-    auto array_batch = run_dp_batch(i_N, cval, N, a_arr.data(), b_arr.data(), L, tau_arr.data(), s0_arr.data(), false,
+    double *cl = new double[i_N];
+    std::fill_n(cl, i_N, 1.0);
+    auto array_batch = run_dp_batch(i_N, cval, cl, N, a_arr.data(), b_arr.data(), L, tau_arr.data(), s0_arr.data(), false,
                                     false);
     int out_index = 0;
     for (int idx = 0; idx < i_N; ++idx) {

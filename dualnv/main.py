@@ -15,35 +15,31 @@ plt.rcParams["font.family"] = "roboto"
 plt.rcParams["font.monospace"] = "roboto mono"
 plt.rcParams["lines.linewidth"] = 0.8
 plt.rcParams["legend.fontsize"] = "small"
-plt.rcParams["text.usetex"]: True
+plt.rcParams["text.usetex"] = True
 
 # TEX alias
-tex_alias = {
-  'lb': r'$\phi_k$',
-  'val': r'$\bar z_k$',
-  'primal_k': r'$z_k$'
-}
+tex_alias = {'lb': r'$\phi_k$', 'val': r'$\bar z_k$', 'primal_k': r'$z_k$'}
 
 if __name__ == '__main__':
   print(sys.argv)
-  # np.random.seed(1)
+  np.random.seed(1)
   instances, ni, nt = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
   timestamp = int(time.time())
   # test evals
   evals = ['cv_func2']
 
   kwargs = {  # kwargs
-    "i": ni,
-    "t": nt,
-    "subproblem_alg_name": 'cppdp_batch',
-    "mp": False,
-    "proc": 0,
-    "mp_num": 4,
-    "gap": 0.005,
-    "scale": nt,
-    "max_iteration": 500,
-    "eps_step": 1e-5,
-    # "evals": evals
+      "i": ni,
+      "t": nt,
+      "subproblem_alg_name": 'cppdp_batch',
+      "mp": False,
+      "proc": 0,
+      "mp_num": 4,
+      "gap": 0.005,
+      "scale": nt,
+      "max_iteration": 1000,
+      "eps_step": 1e-5,
+      # "evals": evals
   }
 
   scale = kwargs.get('scale')
@@ -57,12 +53,17 @@ if __name__ == '__main__':
   results = defaultdict(dict)
 
   methods = {
-    # "normal" convex sg
-    # "bran95_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", "hyper_option": "optimal", **kwargs},
-    # "normal_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "subgrad", **kwargs},
-    "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
-    # "volume" convex sg
-    # "volume_sg": {"r0": 1.5, **kwargs}
+      # "normal" convex sg
+      # "bran95_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", "hyper_option": "optimal", **kwargs},
+      "normal_sg": {
+          "r0": 1.2,
+          "dual_option": "normal",
+          "dir_option": "subgrad",
+          **kwargs
+      },
+      # "convex_sg": {"r0": 1.2, "dual_option": "normal", "dir_option": "cvx", **kwargs},
+      # "volume" convex sg
+      # "volume_sg": {"r0": 1.5, **kwargs}
   }
 
   for i in range(instances):
@@ -76,10 +77,11 @@ if __name__ == '__main__':
     for method, kw in methods.items():
       # run the method wrapper
       sol, i_sol, alp, z_primal, l_b, sol_container, total_runtime = subgrad_main.main(
-        problem, **kw)
+          problem, **kw)
       r[f"{method}_lb"] = results[f"{method}_lb"][i] = sol_container.lb[1:]
       r[f"{method}_val"] = results[f"{method}_val"][i] = sol_container.z_bar[1:]
-      r[f"{method}_primal_k"] = results[f"{method}_primal_k"][i] = sol_container.z_best[1:]
+      r[f"{method}_primal_k"] = results[f"{method}_primal_k"][
+          i] = sol_container.z_best[1:]
       r[f'{method}_time'] = results[f'{method}_time'][i] = total_runtime
       for fc, v in sol_container.fc.items():
         plt.plot(v[1:], label=f"{method}_{fc}", linestyle='dashed')
@@ -91,24 +93,35 @@ if __name__ == '__main__':
       for who in ['lb', 'val', 'primal_k']:
         length = len(r[f"{method}_{who}"])
         if who == 'primal_k':
-          plt.plot(range(length), r[f"{method}_{who}"], label=tex_alias.get(who), linestyle='dashed')
+          plt.plot(
+              range(length),
+              r[f"{method}_{who}"],
+              label=tex_alias.get(who),
+              linestyle='dashed')
         else:
-          plt.plot(range(length), r[f"{method}_{who}"], label=tex_alias.get(who))
+          plt.plot(
+              range(length), r[f"{method}_{who}"], label=tex_alias.get(who))
 
       plt.legend(loc="lower left")
       plt.savefig(f"fig/conv_{i}_{method}_{num_i}_{num_t}.png", dpi=500)
       plt.clf()
 
     model, *_ = mip.repair_mip_model(
-      problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=gap)
+        problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=gap)
+
+    model_rel = model.relax()
+    model_rel.optimize()
 
     r['bench_lb'] = results['bench_lb'][i] = model.ObjBoundC
+    r['bench_root_val'] = results['bench_root_val'][i] = model_rel.ObjVal
     r['bench_val'] = results['bench_val'][i] = model.ObjVal
     r['bench_time'] = results['bench_time'][i] = model.Runtime
 
-    with open(f"instances_pr/{instances}_{num_i}_{num_t}_{timestamp}_{i}.json",
-              'wb') as f:
-      pk.dump(problem, f)
+    if abs(r['bench_lb'] - r[f"{method}_lb"][-1]) > 0.01:
+      with open(
+          f"instances_pr/{instances}_{num_i}_{num_t}_{timestamp}_{i}.json",
+          'wb') as f:
+        pk.dump(problem, f)
 
   with open(f"instances/result_{instances}_{num_i}_{num_t}_{timestamp}.pk",
             'wb') as f:
