@@ -44,3 +44,19 @@ def cppdp_batch(i_size, lambda_arr, c_arr, size, a, b, L, tau, s0, _print=False,
   policy = arr[:-i_size].reshape(i_size, 3, -1).swapaxes(1,2)
 
   return val, policy
+
+def test_phi_lambda(lambda_k, problem, scale):
+  # ======================
+  # DEBUG for phi(lambda)
+  # ======================
+  num_i = len(problem['I'])
+  lambda_arr = convert_to_c_arr(scale, lambda_k.astype(float))
+  a_arr = convert_to_c_arr(num_i, problem['a'])
+  b_arr =  convert_to_c_arr(num_i, problem['b'])
+  tau_arr =  convert_to_c_arr_int(num_i, problem['tau'])
+  s_arr =  convert_to_c_arr(num_i, problem['s0'])
+  c_arr = convert_to_c_arr(num_i, problem['c'].astype(float))
+  _L = problem['L']
+  sub_v_k, x_k = cppdp_batch(num_i, lambda_arr, c_arr, scale, a_arr, b_arr,
+                 _L, tau_arr, s_arr, True, True)
+  return sub_v_k, x_k

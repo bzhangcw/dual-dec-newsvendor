@@ -10,12 +10,15 @@
 import multiprocessing as mpc
 import concurrent.futures as cf
 import time
-from collections import namedtuple
+
+# INNER
 from .pydp import cppdp_single, cppdp_batch, convert_to_c_arr, convert_to_c_arr_int
 from .model_single import single_mip
 from .model_single_dp import single_dp
 from .util import *
 from .test import eval
+
+LOGGING_INTERVAL = 1
 
 
 # ===================
@@ -99,7 +102,8 @@ class Param:
   def __init__(self):
     self.use_maximum = False
     self.use_optimal = False
-
+    self.improved_eps = 20
+    self.improved_multiplier = 2
 
 def dualnv_subgradient(problem,
                        scale,
@@ -114,6 +118,7 @@ def dualnv_subgradient(problem,
                        hyper_option="simple",
                        dir_option='subgrad',
                        eps_step=1e-4,
+                       log_interval=LOGGING_INTERVAL,
                        **kwargs):
   """[summary]
   The subgradient algorithm for the repair problem
@@ -162,19 +167,20 @@ def dualnv_subgradient(problem,
   x_best = x_bar = i_bar = 0
   # primal dual bound
   z_best = 1e6
-  z_bar = b * sum(D)
-  phi_bar = -1e3
+  phi_best = -1e3
   # dual variable
   lambda_k = lambda_b = np.zeros(scale)
   # hyper parameters
   improved = 0
-  improved_eps = 30
-  # initial direction
+  improved_eps = param.improved_eps
+  improved_multiplier = param.improved_multiplier
+  # initial cvx direction
   d_k = 0
   # alpha & gamma
   alp_k = gamma_k = 1
   # iteration #
   k = 0
+  step = 1
   fc_vals = {}
   for fc in funcs:
     fc_vals[fc] = []
@@ -237,12 +243,14 @@ def dualnv_subgradient(problem,
     # =====================
     # hint: use k + 1 since k start from 0
     alp_k, gamma_k = alpha_method(
-        gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
+      gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
 
     # =====================
-    # compute direction
+    # compute a cvx direction
     # =====================
     # there are many ways to do this
+    x_bar = (1 - alp_k) * x_bar + x_k * alp_k
+    i_bar = (1 - alp_k) * i_bar + i_k * alp_k
     d_k = (1 - alp_k) * d_k + g_k * alp_k
 
     # =====================
@@ -256,18 +264,18 @@ def dualnv_subgradient(problem,
     #  since you retrieve a primal solution
     #  using g = U^T e - d
     #  and max{g, 0}, max{-g, 0} which are convex
+    #
     # calculate best primal
-    surplus_idx_k = g_k > 0
+    #
     z_k = np.maximum(g_k * h, -g_k * b).sum(0)
     if z_k < z_best:
       z_best = z_k
       x_best = x_k
 
     # calculate cvx (averaging primal heuristic)
-    surplus_idx_bar = d_k > 0
     z_bar = np.maximum(d_k * h, -d_k * b).sum(0)
     # ================
-    # test evaluations
+    # on-watch evaluations
     # ================
     _args = z_bar, lambda_k, d_k, g_k
     for fc in funcs:
@@ -280,20 +288,6 @@ def dualnv_subgradient(problem,
         print(f"no such method in {eval.__name__}")
 
     # =====================
-    # update dual vars
-    # =====================
-    step, lambda_k = multiplier_method(
-        g_k,
-        d_k,
-        z_bar - phi_k,
-        gamma_k,
-        lambda_b,
-        projection_method,
-        b,
-        h,
-        option=param.direction)
-
-    # =====================
     # MAIN FINISHED
     # =====================
 
@@ -303,57 +297,91 @@ def dualnv_subgradient(problem,
     # =====================
     #
     # dual value evaluation
-    _bool_lb_updated = phi_k > phi_bar
+    _bool_lb_updated = round(phi_k, 4) > round(phi_best, 4)
     if _bool_lb_updated:
-      phi_bar = phi_k
+      phi_best = phi_k
       lambda_b = lambda_k.copy()
       improved = 0
     else:
       improved += 1
       if improved >= improved_eps:
-        r0 = r0 / 2
+        r0 = r0 / improved_multiplier
         improved = 0
 
-    # update base "dual multipliers"
-    # condition (phi_k > phi_bar) is only for the volume algorithm
-    # volume algorithm:
+    # @note:
+    # update based on "best dual multipliers that gives the best bound"
+    #   with condition (phi_k > phi_bar) is only for the "volume algorithm"
+    # else, we always update by current lambda_k
+    # @ref:
     # Barahona, Francisco, and Ranga Anbil.
-    # “The Volume Algorithm: Producing Primal Solutions with a Subgradient Method.” Mathematical Programming 87, no. 3 (2000): 385–99.
+    #   “The Volume Algorithm: Producing Primal Solutions with a Subgradient Method.”
+    #   Mathematical Programming 87, no. 3 (2000): 385–99.
     if not param.use_maximum or _bool_lb_updated:
       lambda_b = lambda_k.copy()
 
-    gap_k = (z_bar - phi_bar) / abs(z_bar)
-    if k % 20 == 0:
+    gap_k = (z_best - phi_best) / abs(z_best + 1e-4)
+    if k % log_interval == 0:
       print(
-          f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_bar:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-          f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
+        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_k: {z_k:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+        f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
       )
 
     sol.z_bar.append(z_bar)
     sol.z_k.append(z_k)
     sol.z_best.append(z_best)
-    sol.lb.append(phi_bar)
+    sol.lb.append(phi_best)
+    # on-watches
     sol.fc = fc_vals
 
     if k >= max_iteration or gap_k < gap or step < eps_step:
-      x_bar = (1 - alp_k) * x_bar + x_k * alp_k
-      i_bar = (1 - alp_k) * i_bar + i_k * alp_k
-      sol.x_bar = x_bar
-      sol.x_best = x_best
       break
+
+    # =====================
+    # update dual vars
+    # =====================
+    step, lambda_k = multiplier_method(
+      g_k,
+      d_k,
+      z_bar - phi_k,
+      gamma_k,
+      lambda_b,
+      projection_method,
+      b,
+      h,
+      option=param.direction)
 
     # increment iteration
     k += 1
 
   finish_sec = time.time()
   total_runtime = finish_sec - st_sec
+
+  sol.x_bar = x_bar
+  sol.x_best = x_best
+  sol.lambda_k = lambda_k
+  sol.total_runtime = total_runtime
+
   if max_iteration:
     print(
-        f"@summary: @k: {k}; @dual: {phi_k}; @primal: {z_bar}; @lb: {phi_bar}; @gap: {gap_k} @sec: {total_runtime}"
+      f"=== FINISHED @{k} ===\n"
+      f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+      f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
     )
-    print(lambda_k)
-    print(c)
-  return x_bar, i_bar, alp_k, z_bar, lambda_b, sol, total_runtime
+    print(
+      f"=== SUMMARIZE @{k} ===\n"
+      f"|---------------------\n"
+      f"|@k: {k}; @sec: {total_runtime:.2f}; @lambda: {lambda_k}\n"
+      f"|@primal_best: {z_best:.3f}; @primal_avg: {z_bar:.3f}; @dual: {phi_best:.3f}; @gap: {gap_k:.3f} \n"
+    )
+    print(
+      f"=== PROBLEM CHAR ===\n"
+      f"c: {problem['c']}\n"
+      f"h: {problem['h']}\n"
+      f"p: {problem['p']}\n"
+      f"d: {problem['D']}\n"
+      f"sum_c*x: {i_k}"
+      )
+  return sol
 
 
 def main(problem, **kwargs):
@@ -388,12 +416,12 @@ def main(problem, **kwargs):
 
 if __name__ == "__main__":
   kwargs = {  # kwargs
-      "i": 10,
-      "t": 20,
-      "subproblem_alg": 'dp',
-      "mp": True,
-      "scale": 5,
-      "max_iteration": 50
+    "i": 10,
+    "t": 20,
+    "subproblem_alg": 'dp',
+    "mp": True,
+    "scale": 5,
+    "max_iteration": 50
   }
   problem = create_instance(kwargs['i'], kwargs['t'])
   _ = main(problem, **kwargs)
