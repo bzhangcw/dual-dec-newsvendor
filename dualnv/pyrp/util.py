@@ -17,7 +17,7 @@ def create_instance(nI: int, nT: int):
   T = range(nT)
   L = 2  # np.random.random() * 0.3
   U = np.random.randint(1, 10) + 12
-  D = np.random.randint(nI // 2, nI + 1, size=nT)
+  D = np.random.randint(nI // 2, 2 * nI + 1, size=nT)
   tau = np.random.randint(1, 2, nI)
   a = np.random.randint(2, 5, nI)
   b = np.random.randint(5, 10, nI)
@@ -25,12 +25,10 @@ def create_instance(nI: int, nT: int):
 
   # h = np.ones(nT) * 2
   # p = np.ones(nT) * 3
-  # c = np.random.randint(1, 3, nI)
-
   h = np.random.randint(1, 5, nT)
   p = np.random.randint(2, 6, nT)
   c = np.ones(nI)
-
+  # c = np.random.randint(2, 4, nI)
   return dict(
     D=D.astype(float).tolist(),
     a=a.astype(float).tolist(),
@@ -42,42 +40,6 @@ def create_instance(nI: int, nT: int):
     U=U,
     tau=tau.astype(int).tolist(),
     s0=s0.astype(float).tolist(),
-    h=h,
-    p=p)
-
-
-def create_instance_vec(nI: int, nT: int, nIns: int = 100):
-  """create randomly instances:
-    D is of shape (nIns, None)
-  Args:
-      nI (int): [description]
-      nT (int): [description]
-      nIns (int): number of samples
-  Returns:
-      [type]: [description]
-  """
-  I = [f"fl_{i}" for i in range(nI)]
-  T = range(nT)
-  L = np.random.random() * 0.3
-  U = np.random.random() * 0.5 + 1.2
-  # D = np.random.randint(nI // 2, nI, size=nT)
-  a = np.random.random(nI) * 0.5
-  b = np.random.random(nI) * 0.5 + 0.5
-  h = 1
-  p = 2
-  s0 = 1
-  D = np.random.randint(nI // 2, nI, size=(nIns, nT))
-  return dict(
-    Darr=D,
-    D=D.astype(float).tolist(),
-    a=a.tolist(),
-    b=b.tolist(),
-    I=I,
-    T=T,
-    L=L,
-    U=U,
-    tau=2,
-    s0=s0,
     h=h,
     p=p)
 

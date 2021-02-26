@@ -1,0 +1,249 @@
+
+\include{header.slides}
+\title{Dual Optimization for Newsvendor-like Problem}
+% \title{Dual Method for Solving Flight Mainte0.00ce Scheduling Problem}
+\author{Chuwen}
+\date{\today}
+
+\begin{document}
+\frame{\titlepage}
+
+
+\begin{frame}
+  \frametitle{FMP}
+  Recall FMP formulation:
+  \begin{align}
+    \label{eq:fmp.obj}  f =    & \min_{x_{it}, u_{it}, \delta_t, \epsilon_t} \sum_t (b\cdot  \delta_t + h \cdot \epsilon_t)                                                            \\
+    \nonumber \mathbf{s.t.}    &                                                                                                                                                       \\
+    \label{eq:fmp.demand}      & \sum_i u_{it} + \delta_t - \epsilon_t = d_t                                                ,\quad\forall t \in T                                      \\
+    \label{eq:fmp.lifespan}    & s_{i, t+1} =  s_{i t}  - \alpha_i  u_{it} + \beta_i  x_{i, t- \tau}                        ,\quad\forall i \in I, t \in T                             \\
+    \label{eq:fmp.work_or_not} & x_{it} +  u_{i, t} \le 1                                                                  ,\quad \forall i \in I, t \in T                             \\
+    \label{eq:fmp.leadtime}    & x_{it} + x_{i\rho} + u_{i, \rho} \le 1                                                     ,\quad \forall i \in I,  t\in T, \rho = t + 1, ..., t+\tau \\
+    \label{eq:fmp.lifespan_lb} & s_{i t} \ge L                                                                              ,\quad \forall i \in I, t \in T
+  \end{align}
+  \eqref{eq:fmp.lifespan} - \eqref{eq:fmp.lifespan_lb} can be expressed as \(\Omega_i, \forall i \in I\)
+\end{frame}
+
+\begin{frame}
+  \frametitle{FMP: variant case and weighted summation}
+  \begin{align}
+    \label{eq:fmp.obj}  f = & \min_{x_{it}, u_{it}, \delta_t, \epsilon_t}
+    \textcolor{red}{b}^\mathsf{T}  \delta + \textcolor{red}{h}^\mathsf{T}\epsilon                                   \\
+    \nonumber \mathbf{s.t.} &                                                                                       \\
+    \label{eq:fmp.demand}   & \sum_i \textcolor{red}{c_i} u_{it} + \delta_t - \epsilon_t = d_t,\quad\forall t \in T \\
+                            & U_{i, \cdot}, S_{i, \cdot}, X_{i, \cdot} \in \Omega_i,\quad \forall i\in I
+  \end{align}
+  \begin{itemize}
+    \item \(b, h\) are time-variant
+    \item \(c_i \neq 1\).
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{FMP: Lagrangian relaxation}
+  For the FMP, dual function:
+  \[\begin{aligned}
+      \phi(\lambda) & = - \sum_t \lambda_t d_t + \sum_i  \min_{\Omega_i} \textcolor{red}{c_i} \sum_t \lambda_t u_{it} \\
+    \end{aligned}\]
+
+  It reduces to a set of low dimensional minimization problems for each \(i \in I, \forall \lambda\)
+
+  (Recall \(\lambda_t \in [-b, h] \) and \(\delta_t^\star = \epsilon_t^\star = 0\) else unbounded)
+  \begin{equation}\label{subproblem}\begin{aligned}
+      \min_{\Omega_i} \textcolor{red}{c_i} \sum_t \lambda_t \cdot u_{i,t}
+    \end{aligned}\end{equation}
+  \eqref{subproblem} is the subproblem to be solved by dynamic programming. (states: lifespan, action: work or start maintence)
+\end{frame}
+
+\begin{frame}
+  \frametitle{FMP: subgradient method}
+  At each iteration \(k\):
+  \begin{itemize}
+    \item  \(y_k\) solves \(\phi(\lambda_k) = \min_y \lambda_k^\mathsf{T}(y-b)\)
+    \item for FMP: \(y_k = U_k ^\mathsf{T} \textcolor{red}{c}, U_k = (u^{(k)}_{it})\), solved from \eqref{subproblem} by DP.
+    \item update \(\lambda_k\).
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Results}
+
+  Tests are done on FMP with random instances: rand(low, high) means random integer in [low, high]
+
+  \begin{itemize}
+    \item L = 2
+    \item \(d_t= \textsf{rand}(\frac{|I|}{2}, |I|), \forall t\)
+    \item \(\tau_i = \textsf{rand}(2, 5), a_i =  \textsf{rand}(2, 5),  b_i =  \textsf{rand}(5, 10), \forall i\)
+    \item \(s_{i, 0} = \textsf{rand}(5, 8), \forall i\)
+    \item \textcolor{red}{\(c = \textsf{rand}(1, 5)\)}
+  \end{itemize}
+
+  We consider following different parameters
+  \begin{itemize}
+    \item [i], invariant: \(h_t = 2, p_t = 3, \forall t\) or variant: \(h_t = \textsf{rand}(1, 5), p_t = \textsf{rand}(2, 6), \forall t\)
+    \item [ii], \(c = 1\) or \(c = \textsf{rand}(1, 5)\)
+  \end{itemize}
+
+  so we have 4 test settings.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Results}
+
+  The subgradient method (sg) stops at (maximum) 400 iterations, then compared with benchmarks by Gurobi (grb).
+  \begin{itemize}
+    \item lb\_grb, \(f_{\textsf{grb}}\)  are lower bound, primal value from grb.
+    \item \textcolor{green}{\(f_{\textsf{grb\_lp}}\)} is the relaxed LP value from grb
+    \item t\_grb, t\_sg are runtime from grb and sg, respectively.
+    \item \(\phi_{\textsf{sg}}\) is the dual value (\(\phi\)) by sg.
+    \item \(z_{\textsf{sg}}\) is primal value in sg using averaged primal recovery, i.e.
+          \[z_{\textsf{sg}} = z(\bar y_k) = f(\bar \delta_k, \bar \epsilon_k)\]
+    \item \(\phi_{\textsf{gap}}\), z\_gap are relative gap from sg to grb for dual and primal values.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{FMP: \(c=1\), invariant \(h, b\)}
+  \scriptsize
+  \begin{tabular}{lllrrrlllll}
+    \toprule
+    {} & lb\_grb              & \(f_{\textsf{grb}}\)   & t\_grb
+       & t\_sg                & \(\phi_{\textsf{sg}}\) & \(\phi_{\textsf{gap}}\)
+       & \( z_{\textsf{sg}}\) & z\_gap                                                                                   \\
+    \midrule
+    0  & 0.00                 & 0.00                   & 0.01                    & 0.38 & 0.00  & 0.00\% & 0.02 & inf\%  \\
+    1  & 0.00                 & 0.00                   & 0.00                    & 0.33 & -0.02 & -inf\% & 2.33 & inf\%  \\
+    2  & 3.00                 & 3.00                   & 0.00                    & 0.24 & 3.00  & 0.00\% & 3.02 & 0.83\% \\
+    3  & 0.00                 & 0.00                   & 0.00                    & 0.33 & 0.00  & 0.00\% & 0.02 & inf\%  \\
+    4  & 0.00                 & 0.00                   & 0.00                    & 0.34 & 0.00  & 0.00\% & 0.01 & inf\%  \\
+    5  & 0.00                 & 0.00                   & 0.00                    & 0.33 & 0.00  & 0.00\% & 0.02 & inf\%  \\
+    6  & 3.00                 & 3.00                   & 0.00                    & 0.18 & 3.00  & 0.00\% & 3.02 & 0.57\% \\
+    7  & 0.00                 & 0.00                   & 0.00                    & 0.39 & 0.00  & 0.00\% & 0.06 & inf\%  \\
+    8  & 0.00                 & 0.00                   & 0.00                    & 0.31 & 0.00  & 0.00\% & 0.02 & inf\%  \\
+    9  & 0.00                 & 0.00                   & 0.00                    & 0.32 & 0.00  & 0.00\% & 0.01 & inf\%  \\
+    10 & 0.00                 & 0.00                   & 0.01                    & 0.38 & 0.00  & 0.00\% & 0.02 & inf\%  \\
+    11 & 3.00                 & 3.00                   & 0.00                    & 0.21 & 3.00  & 0.00\% & 3.03 & 1.10\% \\
+    12 & 9.00                 & 9.00                   & 0.00                    & 0.07 & 9.00  & 0.00\% & 9.04 & 0.50\% \\
+    13 & 6.00                 & 6.00                   & 0.00                    & 0.17 & 6.00  & 0.00\% & 6.03 & 0.50\% \\
+    14 & 0.00                 & 0.00                   & 0.00                    & 0.40 & 0.00  & 0.00\% & 0.05 & inf\%  \\
+    15 & 3.00                 & 3.00                   & 0.00                    & 0.29 & 3.00  & 0.00\% & 3.03 & 1.01\% \\
+    16 & 9.00                 & 9.00                   & 0.00                    & 0.06 & 9.00  & 0.00\% & 9.05 & 0.50\% \\
+    17 & 9.00                 & 9.00                   & 0.00                    & 0.11 & 9.00  & 0.00\% & 9.05 & 0.50\% \\
+    18 & 0.00                 & 0.00                   & 0.00                    & 0.50 & 0.00  & 0.00\% & 0.05 & inf\%  \\
+    19 & 9.00                 & 9.00                   & 0.00                    & 0.13 & 9.00  & 0.00\% & 9.05 & 0.50\% \\
+    \bottomrule
+  \end{tabular}
+  \normalsize
+\end{frame}
+
+\begin{frame}
+  \frametitle{FMP: \(c = 1\) variant \(h, b\)}
+  \scriptsize
+  \begin{tabular}{lllrrrlllll}
+    \toprule
+    {} & lb\_grb              & \(f_{\textsf{grb}}\)   & t\_grb
+       & t\_sg                & \(\phi_{\textsf{sg}}\) & \(\phi_{\textsf{gap}}\)
+       & \( z_{\textsf{sg}}\) & z\_gap                                                                                                       \\
+    \midrule
+    0  & 0.00                 & 0.00                   & 0.00                    & 0.37 & -0.00                  & 0.00\% & 3.58  & inf\%    \\
+    1  & 0.00                 & 0.00                   & 0.00                    & 0.33 & \textcolor{red}{-3.00} & -inf\% & 8.94  & inf\%    \\
+    2  & 0.00                 & 0.00                   & 0.00                    & 0.40 & -0.00                  & 0.00\% & 0.07  & inf\%    \\
+    3  & 2.00                 & 2.00                   & 0.00                    & 0.29 & 2.00                   & 0.00\% & 2.01  & 0.67\%   \\
+    4  & 0.00                 & 0.00                   & 0.00                    & 0.32 & -0.05                  & -inf\% & 1.05  & inf\%    \\
+    5  & 0.00                 & 0.00                   & 0.00                    & 0.32 & -0.00                  & 0.00\% & 0.16  & inf\%    \\
+    6  & 0.00                 & 0.00                   & 0.00                    & 0.33 & -0.00                  & 0.00\% & 0.10  & inf\%    \\
+    7  & 0.00                 & 0.00                   & 0.00                    & 0.45 & -0.01                  & -inf\% & 2.20  & inf\%    \\
+    8  & 0.00                 & 0.00                   & 0.00                    & 0.33 & 0.00                   & 0.00\% & 0.08  & inf\%    \\
+    9  & 0.00                 & 0.00                   & 0.00                    & 0.32 & \textcolor{red}{-2.00} & -inf\% & 7.91  & inf\%    \\
+    10 & 8.00                 & 8.00                   & 0.00                    & 0.19 & 8.00                   & 0.00\% & 8.02  & 0.31\%   \\
+    11 & 2.00                 & 2.00                   & 0.00                    & 0.38 & 2.00                   & 0.00\% & 4.04  & 101.85\% \\
+    12 & 0.00                 & 0.00                   & 0.00                    & 0.38 & -0.03                  & -inf\% & 2.46  & inf\%    \\
+    13 & 4.00                 & 4.00                   & 0.00                    & 0.26 & 4.00                   & 0.00\% & 4.04  & 1.10\%   \\
+    14 & 3.00                 & 3.00                   & 0.00                    & 0.23 & 3.00                   & 0.00\% & 3.03  & 1.01\%   \\
+    15 & 5.00                 & 5.00                   & 0.00                    & 0.41 & 5.00                   & 0.00\% & 5.06  & 1.18\%   \\
+    16 & 0.00                 & 0.00                   & 0.00                    & 0.40 & 0.00                   & 0.00\% & 0.02  & inf\%    \\
+    17 & 0.00                 & 0.00                   & 0.00                    & 0.37 & -0.02                  & -inf\% & 1.97  & inf\%    \\
+    18 & 3.00                 & 3.00                   & 0.00                    & 0.34 & 3.00                   & 0.00\% & 3.02  & 0.70\%   \\
+    19 & 14.00                & 14.00                  & 0.00                    & 0.07 & 14.00                  & 0.00\% & 14.07 & 0.50\%   \\
+    20 & 4.00                 & 4.00                   & 0.00                    & 0.39 & 4.00                   & 0.00\% & 4.37  & 9.34\%   \\
+  \end{tabular}
+  \normalsize
+\end{frame}
+
+\begin{frame}
+  \frametitle{FMP: \(c \neq 1\) invariant \(h, b\)}
+  \scriptsize
+  \begin{tabular}{lllrrrlllll}
+    \toprule
+    {} & lb\_grb              & \(f_{\textsf{grb}}\)   & t\_grb                  & \textcolor{green}{\(f_{\textsf{grb\_lp}}\)}
+       & t\_sg                & \(\phi_{\textsf{sg}}\) & \(\phi_{\textsf{gap}}\)
+       & \( z_{\textsf{sg}}\) & z\_gap                                                                                                                                      \\
+    \midrule
+    0  & 3.00                 & 3.00                   & 0.00                    & 0.00                                        & 0.20 & 0.00 & -100.00\% & 4.39  & 46.28\%  \\
+    1  & 3.00                 & 3.00                   & 0.00                    & 0.00                                        & 0.08 & 3.00 & 0.00\%    & 3.02  & 0.50\%   \\
+    2  & 6.00                 & 6.00                   & 0.00                    & 0.00                                        & 0.24 & 0.00 & -100.00\% & 11.52 & 92.05\%  \\
+    3  & 6.00                 & 6.00                   & 0.00                    & 0.00                                        & 0.26 & 0.00 & -100.00\% & 3.70  & -38.30\% \\
+    4  & 6.00                 & 6.00                   & 0.00                    & 0.00                                        & 0.25 & 0.00 & -100.00\% & 2.58  & -56.93\% \\
+    5  & 2.00                 & 2.00                   & 0.00                    & 0.00                                        & 0.38 & 0.00 & -100.00\% & 0.95  & -52.43\% \\
+    6  & 4.00                 & 4.00                   & 0.00                    & 0.00                                        & 0.36 & 0.00 & -100.00\% & 8.07  & 101.66\% \\
+    7  & 2.00                 & 2.00                   & 0.00                    & 0.00                                        & 0.22 & 0.00 & -100.00\% & 0.95  & -52.43\% \\
+    8  & 0.00                 & 0.00                   & 0.00                    & 0.00                                        & 0.17 & 0.00 & nan\%     & 0.02  & inf\%    \\
+    9  & 0.00                 & 0.00                   & 0.00                    & 0.00                                        & 0.23 & 0.00 & nan\%     & 5.08  & inf\%    \\
+    10 & 8.00                 & 8.00                   & 0.00                    & 0.00                                        & 0.17 & 3.00 & -62.50\%  & 3.02  & -62.25\% \\
+    11 & 4.00                 & 4.00                   & 0.01                    & 0.00                                        & 0.28 & 0.00 & -100.00\% & 0.10  & -97.61\% \\
+    12 & 6.00                 & 6.00                   & 0.00                    & 0.00                                        & 0.36 & 0.00 & -100.00\% & 2.96  & -50.66\% \\
+    13 & 0.00                 & 0.00                   & 0.00                    & 0.00                                        & 0.23 & 0.00 & nan\%     & 0.03  & inf\%    \\
+    14 & 6.00                 & 6.00                   & 0.00                    & 0.00                                        & 0.39 & 0.00 & -100.00\% & 2.59  & -56.78\% \\
+    15 & 3.00                 & 3.00                   & 0.00                    & 0.75                                        & 0.29 & 3.00 & 0.00\%    & 3.02  & 0.57\%   \\
+    16 & 8.00                 & 8.00                   & 0.00                    & 0.00                                        & 0.23 & 3.00 & -62.50\%  & 3.02  & -62.25\% \\
+    17 & 8.00                 & 8.00                   & 0.00                    & 0.00                                        & 0.23 & 3.00 & -62.50\%  & 3.02  & -62.25\% \\
+    18 & 8.00                 & 8.00                   & 0.00                    & 0.00                                        & 0.37 & 0.00 & -100.00\% & 5.62  & -29.81\% \\
+    19 & 9.00                 & 9.00                   & 0.00                    & 0.00                                        & 0.31 & 0.00 & -100.00\% & 4.73  & -47.49\% \\
+  \end{tabular}
+  \normalsize
+\end{frame}
+
+\begin{frame}
+  \frametitle{FMP: \(c \neq 1\) variant \(h, b\)}
+  \scriptsize
+  \begin{tabular}{lllrrrlllll}
+    \toprule
+    {} & lb\_grb              & \(f_{\textsf{grb}}\)   & t\_grb                  & \textcolor{green}{\(f_{\textsf{grb\_lp}}\)}
+       & t\_sg                & \(\phi_{\textsf{sg}}\) & \(\phi_{\textsf{gap}}\)
+       & \( z_{\textsf{sg}}\) & z\_gap                                                                                                                                        \\
+    \midrule
+    0  & 5.00                 & 5.00                   & 0.00                    & 0.00                                        & 0.07 & 0.00  & -100.00\% & 0.00  & -100.00\% \\
+    1  & 2.00                 & 2.00                   & 0.00                    & 0.00                                        & 0.30 & 0.00  & -100.00\% & 1.19  & -40.71\%  \\
+    2  & 0.00                 & 0.00                   & 0.00                    & 0.00                                        & 0.43 & 0.00  & nan\%     & 5.98  & inf\%     \\
+    3  & 0.00                 & 0.00                   & 0.00                    & 0.00                                        & 0.25 & 0.00  & nan\%     & 12.87 & inf\%     \\
+    4  & 5.00                 & 5.00                   & 0.00                    & 0.00                                        & 0.24 & 0.00  & -100.00\% & 4.63  & -7.35\%   \\
+    5  & 5.00                 & 5.00                   & 0.00                    & 0.00                                        & 0.23 & 0.00  & -100.00\% & 12.02 & 140.33\%  \\
+    6  & 4.00                 & 4.00                   & 0.00                    & 0.00                                        & 0.23 & 0.00  & -100.00\% & 0.85  & -78.87\%  \\
+    7  & 0.00                 & 0.00                   & 0.00                    & 0.00                                        & 0.29 & 0.00  & nan\%     & 2.05  & inf\%     \\
+    8  & 2.00                 & 2.00                   & 0.00                    & 0.00                                        & 0.23 & 0.00  & -100.00\% & 3.03  & 51.44\%   \\
+    9  & 8.00                 & 8.00                   & 0.00                    & 0.00                                        & 0.32 & 0.00  & -100.00\% & 6.71  & -16.18\%  \\
+    10 & 9.00                 & 9.00                   & 0.02                    & 0.00                                        & 0.30 & 0.00  & -100.00\% & 8.41  & -6.59\%   \\
+    11 & 4.00                 & 4.00                   & 0.01                    & 0.00                                        & 0.16 & 0.00  & -100.00\% & 0.02  & -99.45\%  \\
+    12 & 6.00                 & 6.00                   & 0.00                    & 0.00                                        & 0.06 & 6.00  & 0.00\%    & 6.03  & 0.50\%    \\
+    13 & 8.00                 & 8.00                   & 0.00                    & 0.00                                        & 0.06 & 8.00  & 0.00\%    & 8.04  & 0.50\%    \\
+    14 & 9.00                 & 9.00                   & 0.00                    & 0.00                                        & 0.30 & 0.00  & -100.00\% & 7.41  & -17.66\%  \\
+    15 & 6.00                 & 6.00                   & 0.00                    & 0.00                                        & 0.28 & 0.00  & -100.00\% & 1.96  & -67.34\%  \\
+    16 & 5.00                 & 5.00                   & 0.00                    & 0.00                                        & 0.32 & 0.00  & -100.00\% & 5.46  & 9.25\%    \\
+    17 & 11.00                & 11.00                  & 0.00                    & 0.00                                        & 0.52 & 0.00  & -100.00\% & 10.94 & -0.53\%   \\
+    18 & 12.00                & 12.00                  & 0.00                    & 0.00                                        & 0.25 & 0.00  & -100.00\% & 1.98  & -83.48\%  \\
+    19 & 14.00                & 14.00                  & 0.00                    & 0.00                                        & 0.00 & 14.00 & 0.00\%    & 14.00 & 0.00\%    \\
+  \end{tabular}
+  \normalsize
+\end{frame}
+\begin{frame}
+  \frametitle{Conclusion}
+
+  \begin{itemize}
+    \item zero duality gap: \(\phi^\star = f^\star\), \(\phi^\star\) is the best bound by \(\phi\) and \( f^\star\) is the best primal value.
+    \item can we bound the quality of heuristic for averaged solution? \(\bar z_k = z(\bar y_k)\) converges to \(\phi^\star\):
+          \[|\bar z_k - \phi^\star| \]
+    \item for variant case, can we improve \(\bar z = z(\bar y)\)?
+  \end{itemize}
+\end{frame}
+
+\end{document}

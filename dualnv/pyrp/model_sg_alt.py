@@ -169,7 +169,7 @@ def dualnv_subgradient(problem,
   z_best = 1e6
   phi_best = -1e3
   # dual variable
-  lambda_k = lambda_b = np.zeros(scale)
+  lambda_k = lambda_b = np.ones(scale)
   # hyper parameters
   improved = 0
   improved_eps = param.improved_eps
