@@ -18,7 +18,7 @@ def create_instance(nI: int, nT: int):
   L = 2  # np.random.random() * 0.3
   U = np.random.randint(1, 10) + 12
   D = np.random.randint(nI // 2, 2 * nI + 1, size=nT)
-  tau = np.random.randint(1, 2, nI)
+  tau = np.random.randint(1, 5, nI)
   a = np.random.randint(2, 5, nI)
   b = np.random.randint(5, 10, nI)
   s0 = np.random.randint(5, 8, nI)
@@ -27,8 +27,8 @@ def create_instance(nI: int, nT: int):
   # p = np.ones(nT) * 3
   h = np.random.randint(1, 5, nT)
   p = np.random.randint(2, 6, nT)
-  c = np.ones(nI)
-  # c = np.random.randint(2, 4, nI)
+  # c = np.ones(nI)
+  c = np.random.randint(2, 4, nI)
   return dict(
     D=D.astype(float).tolist(),
     a=a.astype(float).tolist(),
@@ -43,6 +43,21 @@ def create_instance(nI: int, nT: int):
     h=h,
     p=p)
 
+
+NON_TRIVIAL_INS = {
+  'D': [1.0, 0.0],
+  'a': [2.0],
+  'b': [6.0],
+  'I': ['fl_0'],
+  'T': [0, 1],
+  'L': 2,
+  'c': np.array([1]),
+  'U': 18,
+  'tau': [1],
+  's0': [6.0],
+  'h': np.array([4, 1]),
+  'p': np.array([2, 3])
+}
 
 if __name__ == '__main__':
   import sys

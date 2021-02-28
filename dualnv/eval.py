@@ -7,6 +7,10 @@ pd.set_option("display.float_format", lambda x: f"{x: .2f}")
 INSTANCE_DIR = './instances'
 
 dfs = []
+relaxations = [
+  "relax_u",
+  "relax_x",
+]
 methods = [
   # "normal" regular sg
   "normal_sg",
@@ -14,6 +18,7 @@ methods = [
   # "convex_sg"
 ]
 
+relax_vals = [f"{r}_val" for r in relaxations]
 
 def get_last(df, serie):
   try:
@@ -42,8 +47,11 @@ for fname in os.listdir(INSTANCE_DIR):
 df_all = pd.concat(dfs, sort=False).reset_index(drop=True)
 
 df_out = df_all[
-  ['idx', 'I', 'T', 'bench_lb', 'bench_val', 'bench_root_val', 'bench_time'] +
-  list(method_vals.keys())]
+  ['idx', 'I', 'T', 'bench_lb', 'bench_val', 'bench_time']
+  + list(method_vals.keys())
+  + relax_vals
+]
+
 df_out.to_csv("eval.clean.csv")
 group_vals = {}
 for method in methods:
@@ -59,13 +67,13 @@ for method in methods:
     group_vals[f"{method}_{who}"] = \
       df_out[f"{method}_{who}"].apply(lambda x: f"{x:.2f}") * group_vals[f"{method}_{who}_gt"] \
       + df_out[f"{method}_{who}"].apply(lambda x: " \cellcolor{green!25}" + f"{x:.2f}") * (
-            1 - group_vals[f"{method}_{who}_gt"])
+          1 - group_vals[f"{method}_{who}_gt"])
 
   for who in ['lb']:
     group_vals[f"{method}_{who}"] = \
       df_out[f"{method}_{who}"].apply(lambda x: f"{x:.2f}") * (1 - group_vals[f"{method}_{who}_gt"]) \
       + df_out[f"{method}_{who}"].apply(lambda x: " \cellcolor{green!25}" + f"{x:.2f}") * (
-      group_vals[f"{method}_{who}_gt"])
+        group_vals[f"{method}_{who}_gt"])
 
 df_out = df_out \
   .assign(**group_vals) \
@@ -77,7 +85,8 @@ cols = []
 # cols += ['idx']
 # cols += ['I', 'T']
 cols += ['bench_lb', 'bench_val', 'bench_time']
-# cols += ['bench_root_val']
+cols += relax_vals
+
 for method in methods:
   cols += [
     f'{method}_time', f'{method}_lb', f'{method}_lb_gap',

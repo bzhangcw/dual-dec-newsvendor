@@ -35,11 +35,12 @@ if __name__ == '__main__':
     "mp": False,
     "proc": 0,
     "mp_num": 4,
-    "gap": 0.005,
+    "gap": 0.001,
     "scale": nt,
     "max_iteration": 1000,
     "eps_step": 1e-5,
     "log_interval": 20,
+    "mip_gap": 0
     # "evals": evals
   }
 
@@ -47,7 +48,7 @@ if __name__ == '__main__':
   num_i = kwargs.get('i')
   num_t = kwargs.get('t')
   mp_num = kwargs.get('mp_num')
-  gap = kwargs.get('gap')
+  mip_gap = kwargs.get('mip_gap')
   bench_lb = {}
   bench_sol = {}
 
@@ -77,17 +78,27 @@ if __name__ == '__main__':
 
     # benchmark
     model, *_ = mip.repair_mip_model(
-      problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=gap)
+      problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=mip_gap)
 
-    model_rel = model.relax()
-    model_rel.optimize()
+    model_relax_u, *u_ = mip.repair_mip_model(
+      problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=mip_gap, relax_u=True)
+
+    model_relax_x, *x_ = mip.repair_mip_model(
+      problem, engine='gurobi', scale=scale, mp_num=mp_num, gap=mip_gap, relax_x=True)
 
     instance_id = f"{num_i}_{num_t}_{timestamp}_{i}"
     r['idx'] = results['idx'][i] = instance_id
     r['bench_lb'] = results['bench_lb'][i] = model.ObjBound
-    r['bench_root_val'] = results['bench_root_val'][i] = model_rel.ObjVal
     r['bench_val'] = results['bench_val'][i] = model.ObjVal
     r['bench_time'] = results['bench_time'][i] = model.Runtime
+
+    # relaxations
+    r['relax_u_lb'] = results['relax_u_lb'][i] = model_relax_u.ObjBound
+    r['relax_u_val'] = results['relax_u_val'][i] = model_relax_u.ObjVal
+    r['relax_u_time'] = results['relax_u_time'][i] = model_relax_u.Runtime
+    r['relax_x_lb'] = results['relax_x_lb'][i] = model_relax_x.ObjBound
+    r['relax_x_val'] = results['relax_x_val'][i] = model_relax_x.ObjVal
+    r['relax_x_time'] = results['relax_x_time'][i] = model_relax_x.Runtime
 
     for method, kw in methods.items():
       # run the method wrapper
@@ -100,11 +111,11 @@ if __name__ == '__main__':
       r[f'{method}_time'] = results[f'{method}_time'][i] = sol.total_runtime
       for fc, v in sol.fc.items():
         plt.plot(v[1:], label=f"{method}_{fc}", linestyle='dashed')
-      # save evaluations
+      # save evaluations vals
       plt.legend(loc="lower left")
       plt.savefig(f"fig/evals_{i}_{method}_{num_i}_{num_t}.png", dpi=1000)
       plt.clf()
-      # save vals
+      # save major vals
       plt.plot(
         range(len(sol.lb) - 1),
         r['bench_val'] * np.ones(len(sol.lb) - 1),

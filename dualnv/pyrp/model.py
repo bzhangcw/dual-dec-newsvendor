@@ -40,17 +40,17 @@ def repair_model(problem, **kwargs):
     raise ValueError(f"unknown MILP engine {engine}")
 
 
-def repair_mip_model(problem, **kwargs):
+def repair_mip_model(problem, relax_u=False, relax_x=False, **kwargs):
   time_limit = kwargs.get("timelimit", 300)
   engine = kwargs.get("engine", "gurobi").lower()
   mp_num = kwargs.get("mp_num", 8)
   scale = kwargs.get("scale", 5)
-  mipgap = kwargs.get("gap", 5e-3)
+  mipgap = kwargs.get("gap", 0)
   if engine.lower() == 'copt':
     import coptpy as cp
     env = cp.Envr()
     # Create COPT model
-    model = env.createModel("assembly_shop")
+    model = env.createModel("fmp")
     quicksum = cp.quicksum
     ENGINE = cp.COPT
     PREFIX = "nameprefix"
@@ -60,7 +60,7 @@ def repair_mip_model(problem, **kwargs):
     # raise ValueError("need more dev")
   else:
     import gurobipy as gr
-    model = gr.Model('assembly_shop')
+    model = gr.Model('fmp')
     quicksum = gr.quicksum
     ENGINE = gr.GRB
     PREFIX = "name"
@@ -79,8 +79,14 @@ def repair_mip_model(problem, **kwargs):
   s0 = problem['s0']
 
   # add model vars
-  x = model.addVars(I, T, **{PREFIX: 'x', "vtype": ENGINE.BINARY})
-  u = model.addVars(I, T, **{PREFIX: 'u', "vtype": ENGINE.BINARY})
+  if relax_x:
+    x = model.addVars(I, T, **{PREFIX: 'x', "vtype": ENGINE.CONTINUOUS})
+  else:
+    x = model.addVars(I, T, **{PREFIX: 'x', "vtype": ENGINE.BINARY})
+  if relax_u:
+    u = model.addVars(I, T, **{PREFIX: 'u', "vtype": ENGINE.CONTINUOUS})
+  else:
+    u = model.addVars(I, T, **{PREFIX: 'u', "vtype": ENGINE.BINARY})
   s = model.addVars(I, T, **{PREFIX: 's', "lb": problem['L']})
   q = model.addVars(T, **{PREFIX: "aq"})
 
@@ -99,7 +105,7 @@ def repair_mip_model(problem, **kwargs):
           model.addConstr(x[i, t] + u.get((i, rho), 0) <= 1)
         else:
           model.addConstr(
-              x[i, t] + x.get((i, rho), 0) + u.get((i, rho), 0) <= 1)
+            x[i, t] + x.get((i, rho), 0) + u.get((i, rho), 0) <= 1)
   ql = qt = {}
   for t in T:
     i_sum = quicksum(c[idx] * u[i, t] for idx, i in enumerate(I))
@@ -110,7 +116,7 @@ def repair_mip_model(problem, **kwargs):
   model.setObjective(obj)
   model.setParam(TIMELIMIT, time_limit)
   model.setParam(VERBOSE, 1)
-  # model.setParam(MIPGAP, mipgap)
+  model.setParam(MIPGAP, mipgap)
   try:
     model.setParam("Threads", mp_num)
   except:
@@ -148,7 +154,7 @@ if __name__ == '__main__':
   alg = args.alg
   if alg == 'mip':
     model, sol, xsol, usol, ssol, qsol, ql, qt = repair_mip_model(
-        problem, engine='gurobi', scale=5)
+      problem, engine='gurobi', scale=5)
     print(sol[0, 0])
   else:
     pass
