@@ -7,16 +7,19 @@
 #    Sunday, 1st November 2020 9:56:16 pm
 # @description:
 
-import multiprocessing as mpc
 import concurrent.futures as cf
+import multiprocessing as mpc
 import time
 
-# INNER
-from .pydp import cppdp_single, cppdp_batch, convert_to_c_arr, convert_to_c_arr_int
+import tqdm
+
 from .model_single import single_mip
 from .model_single_dp import single_dp
-from .util import *
+# INNER
+from .pydp import (convert_to_c_arr, convert_to_c_arr_int, cppdp_batch,
+                   cppdp_single)
 from .test import eval
+from .util import *
 
 LOGGING_INTERVAL = 1
 
@@ -104,6 +107,7 @@ class Param:
     self.use_optimal = False
     self.improved_eps = 20
     self.improved_multiplier = 2
+
 
 def dualnv_subgradient(problem,
                        scale,
@@ -197,6 +201,7 @@ def dualnv_subgradient(problem,
   # ==================
   # MAIN ROUTINE
   # ==================
+  progress = tqdm.tqdm(max_iteration + 1)
   while True:
 
     # ==================
@@ -220,14 +225,15 @@ def dualnv_subgradient(problem,
           _s0 = problem['s0'][idx]
           _tau = problem['tau'][idx]
           _c = c[idx]
-          _best_v_i, _best_p_i, *_ = subproblem_method(lambda_arr, _c, scale, _a, _b,
-                                                       _L, _tau, _s0, False,
-                                                       True)
+          _best_v_i, _best_p_i, *_ = subproblem_method(lambda_arr, _c, scale,
+                                                       _a, _b, _L, _tau, _s0,
+                                                       False, True)
           sub_v_k[idx] = _best_v_i
           x_k[idx, :, :] = _best_p_i
       else:
-        sub_v_k, x_k = subproblem_method(_I_size, lambda_arr, c_arr, scale, a_arr, b_arr,
-                                         _L, tau_arr, s_arr, False, True)
+        sub_v_k, x_k = subproblem_method(_I_size, lambda_arr, c_arr, scale,
+                                         a_arr, b_arr, _L, tau_arr, s_arr,
+                                         False, True)
 
     # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
@@ -243,7 +249,7 @@ def dualnv_subgradient(problem,
     # =====================
     # hint: use k + 1 since k start from 0
     alp_k, gamma_k = alpha_method(
-      gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
+        gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
 
     # =====================
     # compute a cvx direction
@@ -322,8 +328,8 @@ def dualnv_subgradient(problem,
     gap_k = (z_best - phi_best) / abs(z_best + 1e-4)
     if k % log_interval == 0:
       print(
-        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_k: {z_k:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-        f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
+          f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_k: {z_k:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+          f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
       )
 
     sol.z_bar.append(z_bar)
@@ -340,17 +346,18 @@ def dualnv_subgradient(problem,
     # update dual vars
     # =====================
     step, lambda_k = multiplier_method(
-      g_k,
-      d_k,
-      z_bar - phi_k,
-      gamma_k,
-      lambda_b,
-      projection_method,
-      b,
-      h,
-      option=param.direction)
+        g_k,
+        d_k,
+        z_bar - phi_k,
+        gamma_k,
+        lambda_b,
+        projection_method,
+        b,
+        h,
+        option=param.direction)
 
     # increment iteration
+    progress.update(1)
     k += 1
 
   finish_sec = time.time()
@@ -363,24 +370,22 @@ def dualnv_subgradient(problem,
 
   if max_iteration:
     print(
-      f"=== FINISHED @{k} ===\n"
-      f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-      f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
+        f"=== FINISHED @{k} ===\n"
+        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+        f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
     )
     print(
-      f"=== SUMMARIZE @{k} ===\n"
-      f"|---------------------\n"
-      f"|@k: {k}; @sec: {total_runtime:.2f}; @lambda: {lambda_k}\n"
-      f"|@primal_best: {z_best:.3f}; @primal_avg: {z_bar:.3f}; @dual: {phi_best:.3f}; @gap: {gap_k:.3f} \n"
+        f"=== SUMMARIZE @{k} ===\n"
+        f"|---------------------\n"
+        f"|@k: {k}; @sec: {total_runtime:.2f}; @lambda: {lambda_k}\n"
+        f"|@primal_best: {z_best:.3f}; @primal_avg: {z_bar:.3f}; @dual: {phi_best:.3f}; @gap: {gap_k:.3f} \n"
     )
-    print(
-      f"=== PROBLEM CHAR ===\n"
-      f"c: {problem['c']}\n"
-      f"h: {problem['h']}\n"
-      f"p: {problem['p']}\n"
-      f"d: {problem['D']}\n"
-      f"sum_c*x: {i_k}"
-      )
+    print(f"=== PROBLEM CHAR ===\n"
+          f"c: {problem['c']}\n"
+          f"h: {problem['h']}\n"
+          f"p: {problem['p']}\n"
+          f"d: {problem['D']}\n"
+          f"sum_c*x: {i_k}")
   return sol
 
 
@@ -416,12 +421,12 @@ def main(problem, **kwargs):
 
 if __name__ == "__main__":
   kwargs = {  # kwargs
-    "i": 10,
-    "t": 20,
-    "subproblem_alg": 'dp',
-    "mp": True,
-    "scale": 5,
-    "max_iteration": 50
+      "i": 10,
+      "t": 20,
+      "subproblem_alg": 'dp',
+      "mp": True,
+      "scale": 5,
+      "max_iteration": 50
   }
   problem = create_instance(kwargs['i'], kwargs['t'])
   _ = main(problem, **kwargs)

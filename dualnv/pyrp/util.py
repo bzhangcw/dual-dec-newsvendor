@@ -12,7 +12,7 @@ import json
 import numpy as np
 
 
-def create_instance(nI: int, nT: int):
+def create_instance(nI: int, nT: int, uniform=True):
   I = [f"fl_{i}" for i in range(nI)]
   T = range(nT)
   L = 2  # np.random.random() * 0.3
@@ -27,8 +27,10 @@ def create_instance(nI: int, nT: int):
   # p = np.ones(nT) * 3
   h = np.random.randint(1, 5, nT)
   p = np.random.randint(2, 6, nT)
-  # c = np.ones(nI)
-  c = np.random.randint(2, 4, nI)
+  if uniform:
+    c = np.ones(nI)
+  else:
+    c = np.random.randint(2, 4, nI)
   return dict(
     D=D.astype(float).tolist(),
     a=a.astype(float).tolist(),
