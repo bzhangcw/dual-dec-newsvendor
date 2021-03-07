@@ -17,7 +17,7 @@ def create_instance(nI: int, nT: int, uniform=True):
   T = range(nT)
   L = 2  # np.random.random() * 0.3
   U = np.random.randint(1, 10) + 12
-  D = np.random.randint(nI // 2, 2 * nI + 1, size=nT)
+  D = np.random.randint(nI // 2, 1 * nI + 1, size=nT)
   tau = np.random.randint(1, 5, nI)
   a = np.random.randint(2, 5, nI)
   b = np.random.randint(5, 10, nI)

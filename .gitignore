@@ -23,6 +23,8 @@ tex/*/*.pdf
 
 # reference
 ref/*.pdf
+*.nav
+*.snm
 
 # MAC
 .DS_store
