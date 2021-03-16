@@ -10,7 +10,6 @@ try:
   from coptpy import *
 except:
   print('no COPTPY FOUND')
-import argparse
 
 from .util import *
 
@@ -44,7 +43,7 @@ def repair_mip_model(problem, relax_u=False, relax_x=False, **kwargs):
   time_limit = kwargs.get("timelimit", 300)
   engine = kwargs.get("engine", "gurobi").lower()
   mp_num = kwargs.get("mp_num", 8)
-  scale = kwargs.get("scale", 5)
+  scale = kwargs.get("scale", None)
   mipgap = kwargs.get("gap", 0)
   if engine.lower() == 'copt':
     import coptpy as cp
@@ -67,6 +66,9 @@ def repair_mip_model(problem, relax_u=False, relax_x=False, **kwargs):
     MIPGAP = gr.GRB.Param.MIPGap
     TIMELIMIT = gr.GRB.Param.TimeLimit
     VERBOSE = gr.GRB.Param.OutputFlag
+
+  if scale is None:
+    scale = len(problem['T'])
 
   # vars
   I = problem['I']

@@ -8,7 +8,7 @@
 # @description:
 
 import concurrent.futures as cf
-import multiprocessing as mpc
+import json
 import time
 
 import tqdm
@@ -110,7 +110,6 @@ class Param:
 
 
 def dualnv_subgradient(problem,
-                       scale,
                        subproblem_method=cppdp_batch,
                        projection_method=projection_box,
                        mp=False,
@@ -123,6 +122,7 @@ def dualnv_subgradient(problem,
                        dir_option='subgrad',
                        eps_step=1e-4,
                        log_interval=LOGGING_INTERVAL,
+                       scale=None,
                        **kwargs):
   """[summary]
   The subgradient algorithm for the repair problem
@@ -133,6 +133,8 @@ def dualnv_subgradient(problem,
       **kwargs
   """
   _unused_ = kwargs
+  if scale is None:
+    scale = len(problem['T'])
   h, b = problem['h'][:scale], problem['p'][:scale]
   T = problem['T'][:scale]
   c = problem['c']
@@ -215,25 +217,23 @@ def dualnv_subgradient(problem,
     lambda_arr = convert_to_c_arr(scale, lambda_k.astype(float))
     c_arr = convert_to_c_arr(_I_size, c.astype(float))
     _L = problem['L']
-    if mp:
-      raise ValueError("pls not using Python multiprocessings!")
+
+    if param.use_cpp_single:
+      for idx, i in enumerate(I):
+        _a = problem['a'][idx]
+        _b = problem['b'][idx]
+        _s0 = problem['s0'][idx]
+        _tau = problem['tau'][idx]
+        _c = c[idx]
+        _best_v_i, _best_p_i, *_ = subproblem_method(lambda_arr, _c, scale,
+                                                     _a, _b, _L, _tau, _s0,
+                                                     False, True)
+        sub_v_k[idx] = _best_v_i
+        x_k[idx, :, :] = _best_p_i
     else:
-      if param.use_cpp_single:
-        for idx, i in enumerate(I):
-          _a = problem['a'][idx]
-          _b = problem['b'][idx]
-          _s0 = problem['s0'][idx]
-          _tau = problem['tau'][idx]
-          _c = c[idx]
-          _best_v_i, _best_p_i, *_ = subproblem_method(lambda_arr, _c, scale,
-                                                       _a, _b, _L, _tau, _s0,
-                                                       False, True)
-          sub_v_k[idx] = _best_v_i
-          x_k[idx, :, :] = _best_p_i
-      else:
-        sub_v_k, x_k = subproblem_method(_I_size, lambda_arr, c_arr, scale,
-                                         a_arr, b_arr, _L, tau_arr, s_arr,
-                                         False, True)
+      sub_v_k, x_k = subproblem_method(_I_size, lambda_arr, c_arr, scale,
+                                       a_arr, b_arr, _L, tau_arr, s_arr,
+                                       False, True)
 
     # eval \phi_k
     phi_k = np.inner(D, -lambda_k) + sub_v_k.sum()
@@ -249,7 +249,7 @@ def dualnv_subgradient(problem,
     # =====================
     # hint: use k + 1 since k start from 0
     alp_k, gamma_k = alpha_method(
-        gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
+      gamma0=r0, iteration=k + 1, use_optimal=param.use_optimal, d=d_k, g=g_k)
 
     # =====================
     # compute a cvx direction
@@ -328,8 +328,8 @@ def dualnv_subgradient(problem,
     gap_k = (z_best - phi_best) / abs(z_best + 1e-4)
     if k % log_interval == 0:
       print(
-          f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_k: {z_k:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-          f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
+        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_k: {z_k:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+        f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
       )
 
     sol.z_bar.append(z_bar)
@@ -346,15 +346,15 @@ def dualnv_subgradient(problem,
     # update dual vars
     # =====================
     step, lambda_k = multiplier_method(
-        g_k,
-        d_k,
-        z_bar - phi_k,
-        gamma_k,
-        lambda_b,
-        projection_method,
-        b,
-        h,
-        option=param.direction)
+      g_k,
+      d_k,
+      z_bar - phi_k,
+      gamma_k,
+      lambda_b,
+      projection_method,
+      b,
+      h,
+      option=param.direction)
 
     # increment iteration
     progress.update(1)
@@ -370,28 +370,30 @@ def dualnv_subgradient(problem,
 
   if max_iteration:
     print(
-        f"=== FINISHED @{k} ===\n"
-        f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
-        f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
+      f"=== FINISHED @{k} ===\n"
+      f"k: {k} @dual: {phi_k:.2f}; @lb: {phi_best:.2f}; @z_best: {z_best:.2f}; @z_bar: {z_bar:.2f}; @gap: {gap_k:.4f}\n"
+      f"@stepsize: {step:.5f}; @norm: {np.abs(d_k).sum():.2f}; @alp: {alp_k:.4f}; @time: {time.time() - st_sec:.2f};"
     )
     print(
-        f"=== SUMMARIZE @{k} ===\n"
-        f"|---------------------\n"
-        f"|@k: {k}; @sec: {total_runtime:.2f}; @lambda: {lambda_k}\n"
-        f"|@primal_best: {z_best:.3f}; @primal_avg: {z_bar:.3f}; @dual: {phi_best:.3f}; @gap: {gap_k:.3f} \n"
+      f"=== SUMMARIZE @{k} ===\n"
+      f"|---------------------\n"
+      f"|@k: {k}; @sec: {total_runtime:.2f}; @lambda: {lambda_k}\n"
+      f"|@primal_best: {z_best:.3f}; @primal_avg: {z_bar:.3f}; @dual: {phi_best:.3f}; @gap: {gap_k:.3f} \n"
     )
     print(f"=== PROBLEM CHAR ===\n"
-          f"c: {problem['c']}\n"
-          f"h: {problem['h']}\n"
-          f"p: {problem['p']}\n"
-          f"d: {problem['D']}\n"
-          f"sum_c*x: {i_k}")
+          f"c: {problem['c'][:10]}\n"
+          f"h: {problem['h'][:10]}\n"
+          f"p: {problem['p'][:10]}\n"
+          f"d: {problem['D'][:10]}\n"
+          f"a: {problem['a'][:10]}\n"
+          f"b: {problem['b'][:10]}\n"
+          f"sum_c*x: {i_k[:10]}")
   return sol
 
 
 def main(problem, **kwargs):
-  print(f"THE SUBGRADIENT OPTIMIZATION ARGUMENTS:\n{kwargs}")
-  mp_num = kwargs.get('mp_num', 8)
+
+  print(f"THE SUBGRADIENT OPTIMIZATION ARGUMENTS:\n{json.dumps(kwargs, indent=2)}")
   subproblem_alg = kwargs.get('subproblem_alg')
   if subproblem_alg is not None:
     print(subproblem_alg.__name__)
@@ -421,12 +423,12 @@ def main(problem, **kwargs):
 
 if __name__ == "__main__":
   kwargs = {  # kwargs
-      "i": 10,
-      "t": 20,
-      "subproblem_alg": 'dp',
-      "mp": True,
-      "scale": 5,
-      "max_iteration": 50
+    "i": 10,
+    "t": 20,
+    "subproblem_alg": 'dp',
+    "mp": True,
+    "scale": 5,
+    "max_iteration": 50
   }
   problem = create_instance(kwargs['i'], kwargs['t'])
   _ = main(problem, **kwargs)
